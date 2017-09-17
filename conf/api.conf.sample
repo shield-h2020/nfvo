@@ -1,0 +1,8 @@
+[general]
+    host = 0.0.0.0
+    port = 8000
+    debug = True
+
+[security]
+    https_enabled = True
+    verify_client_cert = False
