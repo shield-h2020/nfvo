@@ -1,4 +1,4 @@
 cert/*
 conf/*.conf
-!conf/*.example
+!conf/*.sample
 *.pyc
