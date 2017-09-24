@@ -26,3 +26,9 @@ def onboard_package():
         return jsonify(output)
     except Exception as e:
         return "Error: %s" % str(e)
+
+@nfvo_views.route(endpoints.PKG_REMOVE, methods=["DELETE"])
+def remove_package(vnsf_name):
+    payload = pkg.remove_package(vnsf_name)
+    output = payload
+    return jsonify(output)

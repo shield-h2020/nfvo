@@ -13,6 +13,6 @@ from server import endpoints
 nfvo_views = Blueprint("nfvo_ns_views", __name__)
 
 
-@nfvo_views.route(endpoints.NFVI_C_NS, methods=["GET"])
+@nfvo_views.route(endpoints.NS_C_NSS, methods=["GET"])
 def fetch_config_nss():
     return jsonify(ns.fetch_config_nss())
