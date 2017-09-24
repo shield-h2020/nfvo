@@ -6,8 +6,6 @@ from flask import request
 from flask import Response
 
 
-# Common
-
 def data_not_in_request(request, expected_data):
     return any(map(lambda x: x not in request.json.keys(), expected_data))
 
@@ -45,19 +43,3 @@ def has_no_empty_params(rule):
 def parse_output_json(output):
     resp = Response(str(output), status=200, mimetype="application/json")
     return resp
-
-# OSM-specific
-
-def rest_auth_headers():
-    return {"Authorization": "Basic YWRtaW46YWRtaW4="}
-
-def get_default_headers():
-    headers = rest_auth_headers()
-    headers.update({"Accept": "application/vnd.yang.collection+json"})
-    return headers
-
-def post_default_headers():
-    headers = rest_auth_headers()
-    headers.update({"Content-Type": "application/vnd.yang.data+json",
-        "Accept": "application/vnd.yang.data+json"})
-    return headers

@@ -34,7 +34,6 @@ def api_endpoints():
         endpoints = get_endpoints(current_app)
         output = dict()
         output["endpoints"] = endpoints
-        #return methods.parse_output_json(output)
         return jsonify(output)
     else:
         return swagger.generate_swagger_docs()

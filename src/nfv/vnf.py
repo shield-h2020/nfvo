@@ -3,7 +3,6 @@
 
 from flask import current_app
 from nfvo.osm import endpoints as osm_eps
-from server import content
 from templates import nfvo as nfvo_tmpl
 
 import json
@@ -12,7 +11,7 @@ import requests
 
 def get_vnfr_config():
     resp = requests.get(osm_eps.VNF_CATALOG_C,
-        headers=content.get_default_headers(),
+        headers=osm_eps.get_default_headers(),
         verify=False)
     print(resp.text)
     output = json.loads(resp.text)
@@ -20,7 +19,7 @@ def get_vnfr_config():
 
 def get_vnfr_running():
     resp = requests.get(osm_eps.VNF_CATALOG_O,
-        headers=content.get_default_headers(),
+        headers=osm_eps.get_default_headers(),
         verify=False)
     output = json.loads(resp.text)
     return output
@@ -78,7 +77,7 @@ def format_vnsf_catalog(catalog):
 
 def post_action_to_vnf(payload):
     resp = requests.post(osm_eps.VNF_ACTION_EXEC,
-        headers=content.post_default_headers(),
+        headers=osm_eps.post_default_headers(),
         data=json.dumps(payload),
         verify=False)
     output = json.loads(resp.text)

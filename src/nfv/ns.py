@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from server import content
 from nfv import vnf
 from nfvo.osm import endpoints as osm_eps
 
@@ -11,14 +10,14 @@ import requests
 
 def get_nsr_config():
     resp = requests.get(osm_eps.NS_CATALOG_C,
-        headers=content.get_default_headers(),
+        headers=osm_eps.get_default_headers(),
         verify=False)
     output = json.loads(resp.text)
     return output
 
 def get_nsr_running():
     resp = requests.get(osm_eps.NS_CATALOG_O,
-        headers=content.get_default_headers(),
+        headers=osm_eps.get_default_headers(),
         verify=False)
     output = json.loads(resp.text)
     return output
