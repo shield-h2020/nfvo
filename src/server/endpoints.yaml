@@ -23,7 +23,7 @@ info:
 
 host: TBD
 
-basePath: /v0.1.0
+basePath: /
 
 tags:
   - name: common

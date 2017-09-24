@@ -1,6 +1,7 @@
 docker==2.5.1
 docker-compose==1.16.1
 Flask==0.12.2
+flask-swagger-ui==3.0.12
 pymongo==3.4.0
 PyYAML==3.12
 requests==2.11.1
