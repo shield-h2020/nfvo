@@ -33,6 +33,11 @@ tags:
     externalDocs:
       description: D3.1
       url: 'https://www.shield-h2020.eu/documents/project-deliverables/SHIELD_D3.1_Specifications,_Design_and_Architecture_for_the_vNSF_Ecosystem_v1.0.pdf'
+  - name: package
+    description: Package operations
+    externalDocs:
+      description: ''
+      url: 'n/a'
   - name: vim
     description: VIM operations
     externalDocs:
@@ -147,6 +152,32 @@ paths:
           required: true
           type: string
       responses: *API_RESPONSES
+
+  /package/onboard:
+    post:
+      tags:
+        - package
+      summary: Onboards package into the vNSFO
+      description: >-
+        <p>Uploads the package for a NS or vNSF into the vNSFO.</p>
+      operationId: onboardNsPackage
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+      - in: body
+        name: body
+        description: The body of the request
+        required: true
+        schema:
+          $ref: '#/definitions/PackageOnboardedInput'
+      responses:
+        200:
+          description: "Request succeeded"
+          schema:
+            $ref: "#/definitions/PackageOnboardedOutput"
+        <<: *API_RESPONSES
 
   /vim/vnsf_image:
     post:
@@ -266,6 +297,27 @@ definitions:
               items:
                 type: "string"
                 example: "GET"
+
+  PackageOnboardedInput:
+    type: "object"
+    required:
+      - path
+    properties:
+      path:
+        type: "string"
+        example: "/opt/osm_pkg/cirros_vnf.tar.gz"
+  PackageOnboardedOutput:
+    type: "object"
+    required:
+      - package
+      - transaction_id
+    properties:
+      package:
+        type: "string"
+        example: "/opt/osm_pkg/cirros_vnf.tar.gz"
+      transaction_id:
+        type: "string"
+        example: "fe54b446-0e8e-4041-9d00-c07387aa1804"
   RunningVnsfOutput:
     type: "array"
     items:
@@ -393,7 +445,7 @@ definitions:
                   vnfr-id-ref:
                     type: "string"
                     example: "afcb3492-f326-4979-acea-fcc47168ca12"
-  
+
 externalDocs:
   description: Find out more about the vNSFO API
   url: 'https://github.com/shield-h2020/vnsfo'

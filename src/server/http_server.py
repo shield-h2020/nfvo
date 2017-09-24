@@ -10,6 +10,7 @@ from gui.swagger import swagger_views as v_gui
 from server.views.endpoints import nfvo_views as v_endpoints
 from server.views.infra import nfvo_views as v_nfvi
 from server.views.ns import nfvo_views as v_ns
+from server.views.package import nfvo_views as v_pkg
 from server.views.vim import nfvo_views as v_vim
 from server.views.vnf import nfvo_views as v_vnsf
 from werkzeug import serving
@@ -98,6 +99,7 @@ class Server(object):
         self._app.register_blueprint(v_gui)
         self._app.register_blueprint(v_nfvi)
         self._app.register_blueprint(v_ns)
+        self._app.register_blueprint(v_pkg)
         self._app.register_blueprint(v_vim)
         self._app.register_blueprint(v_vnsf)
 

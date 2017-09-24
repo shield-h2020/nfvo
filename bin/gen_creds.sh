@@ -5,7 +5,7 @@ cert_path=${full_path}/../cert/
 mkdir -p $cert_path
 
 # Generate server certificate and key for HTTPS connections
-if [ -z ${cert_path}server.crt ] || [ -z ${cert_path}server.key ]; then
+if [ ! -f ${cert_path}server.crt ] || [ ! -f ${cert_path}server.key ]; then
     openssl req -x509 -nodes -newkey rsa:4096 -keyout ${cert_path}server.key -out ${cert_path}server.crt -days 3650
 fi
 
