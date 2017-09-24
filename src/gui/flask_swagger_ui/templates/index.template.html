@@ -1,0 +1,105 @@
+<!-- HTML for static distribution bundle build -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{app_name}}</title>
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Code+Pro:300,600|Titillium+Web:400,600,700" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="../dist/swagger-ui.css" >
+  <link rel="icon" type="image/png" href="../dist/img/favicon-32x32.png" sizes="32x32" />
+  <link rel="icon" type="image/png" href="../dist/img/favicon-16x16.png" sizes="16x16" />
+  <style>
+    html
+    {
+        box-sizing: border-box;
+        overflow: -moz-scrollbars-vertical;
+        overflow-y: scroll;
+    }
+    *,
+    *:before,
+    *:after
+    {
+        box-sizing: inherit;
+    }
+
+    #swagger-header {
+        padding-bottom: .5em;
+        padding-left: 3em;
+        padding-top: .5em;
+    }
+    #swagger-header {
+        background: #99cede;
+    }
+    #swagger-header #shield-logo {
+        width: 2.5em;
+    }
+    #swagger-header span {
+        color: #354862;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 1.2em;
+        padding-left: 2em;
+    }
+
+    body {
+      margin:0;
+      background: #fafafa;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="swagger-header">
+        <img id="shield-logo" alt="vNSFO REST API" src="../../dist/img/shield-logo.png">
+        <span>{{app_name}}</span>
+</div>
+
+<div id="swagger-ui"></div>
+
+<script src="../dist/swagger-ui-bundle.js"> </script>
+<script src="../dist/swagger-ui-standalone-preset.js"> </script>
+<script src="../dist/spec.js"></script>
+<script>
+function HideTopbarPlugin() {
+  // this plugin overrides the Topbar component to return nothing
+  return {
+    components: {
+      Topbar: function() { return null }
+    }
+  }
+}
+var config = {
+  spec: spec,
+  presets: [
+    SwaggerUIBundle.presets.apis,
+    SwaggerUIStandalonePreset
+  ],
+  plugins: [
+    SwaggerUIBundle.plugins.DownloadUrl,
+    HideTopbarPlugin
+  ]//,
+//  layout: "StandaloneLayout",
+//  validatorUrl: null
+}
+var user_config = {{config_json|safe}};  // User config options provided from Python code
+for (var attrname in user_config) {
+    config[attrname] = user_config[attrname];
+}
+//console.log(config);
+
+window.onload = function() {
+  // Build a system
+  const ui = SwaggerUIBundle(config)
+
+  {% if oauth_config_json %}
+    var oauth_user_config = {{oauth_config_json|safe}};  // OAuth2 user config options provided from Python code
+    console.log(oauth_user_config);
+    ui.initOAuth(oauth_user_config);
+  {% endif %}
+
+  window.ui = ui
+}
+</script>
+</body>
+
+</html>

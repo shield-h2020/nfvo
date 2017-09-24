@@ -1,11 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#from core import log
 from core.config import FullConfParser
 from db.manager import DBManager
-from flask import Flask, g, request, request_started, request_finished
-from server.views import nfvo_views
+from flask import Flask
+from flask import g
+from flask import request
+from gui.swagger import swagger_views as v_gui
+from server.views.endpoints import nfvo_views as v_endpoints
+from server.views.infra import nfvo_views as v_nfvi
+from server.views.ns import nfvo_views as v_ns
+from server.views.vim import nfvo_views as v_vim
+from server.views.vnf import nfvo_views as v_vnsf
 from werkzeug import serving
 
 import ast
@@ -33,7 +39,8 @@ class Server(object):
         """
         # Imports the named package, in this case this file
         self.__load_config()
-        self._app = Flask(__name__.split(".")[-1])
+        self._app = Flask(__name__.split(".")[-1],
+            template_folder=self.template_folder)
         self._app.mongo = DBManager()
         #self._app.nfvo_host = self.nfvo_host
         #self._app.nfvo_port = self.nfvo_port
@@ -64,6 +71,10 @@ class Server(object):
         self.verify_users = ast.literal_eval(\
                 self.api_sec.get("verify_client_cert")) \
                 or API_VERIFY_CLIENT
+        # GUI data
+        self.template_folder = os.path.normpath(
+            os.path.join(os.path.dirname(__file__),
+                         "../gui", "flask_swagger_ui/templates"))
         # General NFVO data
         #self.nfvo_category = self.config.get("nfvo.conf")
         #self.nfvo_general = self.nfvo_category.get("general")
@@ -81,9 +92,14 @@ class Server(object):
 
     def add_routes(self):
         """
-        New method. Allows to register URLs from a the views file.
+        New method. Allows to register URLs from the views files.
         """
-        self._app.register_blueprint(nfvo_views)
+        self._app.register_blueprint(v_endpoints)
+        self._app.register_blueprint(v_gui)
+        self._app.register_blueprint(v_nfvi)
+        self._app.register_blueprint(v_ns)
+        self._app.register_blueprint(v_vim)
+        self._app.register_blueprint(v_vnsf)
 
     def runServer(self, services=[]):
         """
