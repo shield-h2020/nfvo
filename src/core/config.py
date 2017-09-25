@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from StringIO import StringIO
-import ConfigParser
+try:
+    from StringIO import StringIO
+    import ConfigParser
+except ImportError:
+    from io import StringIO
+    from configparser import ConfigParser
 import json
-#import log
 import logging as log
 import os
 import sys
@@ -52,19 +55,22 @@ class ConfParser(BaseParser):
         """
         BaseParser.__init__(self, path)
         try:
-            confparser = ConfigParser.SafeConfigParser()
+            try:
+                confparser = ConfigParser.SafeConfigParser()
+            except:
+                confparser = ConfigParser()
             # Parse data previously to ignore tabs, spaces or others
             conf_data = StringIO("\n".join(l.strip() for l in open(self.path)))
             parse_ok = True
             try:
                 confparser.readfp(conf_data)
             # Error reading: eg. bad value substitution (bad format in strings)
-            except ConfigParser.InterpolationMissingOptionError, e:
+            except ConfigParser.InterpolationMissingOptionError as e:
                 confparser.read(conf_data)
                 parse_ok = False
             # Do some post-processing of the conf sections
             self.__process_conf_sections(confparser, parse_ok)
-        except Exception, e:
+        except Exception as e:
             exception_desc = "Could not parse configuration file '%s'. Details:\
                 %s" % (str(self.path), str(e))
             logger.exception(exception_desc)
@@ -76,7 +82,7 @@ class ConfParser(BaseParser):
         """
         Parses every setting defined in a config file.
 
-        @param confparser SafeConfigParser object
+        @param confparser ConfigParser object
         @throws Exception when configuration directive is wrongly processed
         """
         for section in confparser.sections():
@@ -123,7 +129,7 @@ class JSONParser(BaseParser):
         try:
             with open(self.path) as data_file:
                 self.settings = json.load(data_file)
-        except Exception, e:
+        except Exception as e:
             exception_desc = "Could not parse JSON configuration file '%s'. \
                 Details: %s" % (str(self.path), str(e))
             logger.exception(exception_desc)

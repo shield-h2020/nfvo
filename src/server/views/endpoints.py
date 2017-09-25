@@ -3,7 +3,6 @@
 
 from flask import Blueprint
 from server import endpoints as endpoints_s
-#from server.views import nfvo_views
 
 
 nfvo_views = Blueprint("nfvo_endpoint_views", __name__)
