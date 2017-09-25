@@ -11,21 +11,23 @@ from server import content
 from server import useragent
 
 
-NFVI = "/nfvi/"
-NFVI_C = "{}config/".format(NFVI)
-NFVI_C_NS = "{}nss".format(NFVI_C)
-NFVI_FLOW = "{}flowtable".format(NFVI)
-NFVI_NODES = "{}nodes".format(NFVI)
-NFVI_R = "{}running/".format(NFVI)
-NFVI_TOPO = "{}topology".format(NFVI)
+NFVI = "/nfvi"
+NFVI_FLOW = "{}/flowtable".format(NFVI)
+NFVI_NODES = "{}/nodes".format(NFVI)
+NFVI_TOPO = "{}/topology".format(NFVI)
+NS = "/ns"
+NS_C_NSS = "{}/config".format(NS)
+PKG = "/package"
+PKG_ONBOARD = "{}/onboard".format(PKG)
+PKG_REMOVE = "{}/remove/<vnsf_name>".format(PKG)
 ROOT = "/"
-VIM = "/vim/"
-VIM_IMAGE = "{}vnsf_image".format(VIM)
-VNSF = "/vnsf/"
-VNSF_ACTION_EXEC = "{}action".format(VNSF)
-VNSF_ACTION_STATUS = "{}<vnsf_id>/action/<action_id>".format(VNSF)
-VNSF_VNSF_TENANT = "{}vnsfs/<tenant_id>".format(NFVI_R)
-VNSF_VNSFS = "{}vnsfs".format(VNSF)
+VIM = "/vim"
+VIM_IMAGE = "{}/vnsf_image".format(VIM)
+VNSF = "/vnsf"
+VNSF_ACTION_EXEC = "{}/action".format(VNSF)
+VNSF_ACTION_STATUS = "{}/<vnsf_id>/action/<action_id>".format(VNSF)
+VNSF_R_VNSFS = "{}/running".format(VNSF)
+VNSF_VNSF_TENANT = "{}/<tenant_id>".format(VNSF_R_VNSFS)
 
 
 def api_endpoints():

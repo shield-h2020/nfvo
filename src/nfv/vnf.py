@@ -13,7 +13,6 @@ def get_vnfr_config():
     resp = requests.get(osm_eps.VNF_CATALOG_C,
         headers=osm_eps.get_default_headers(),
         verify=False)
-    print(resp.text)
     output = json.loads(resp.text)
     return output
 
@@ -59,7 +58,7 @@ def fill_vnf_action_request(vnfr_id=None, primitive=None, params=None):
     exec_tmpl["input"]["nsr_id_ref"] = nsr_id
     exec_tmpl["input"]["vnf-list"][0]["member_vnf_index_ref"] = vnf_idx
     exec_tmpl["input"]["vnf-list"][0]["vnf-primitive"][0]["index"] = vnf_prim_idx
-    output = post_action_to_vnf(exec_tmpl)
+    output = exec_action_on_vnf(exec_tmpl)
     # Keep track of remote action per vNSF
     #current_app.mongo.store_vnf_action(vnfr_id, primitive, description, params)
     current_app.mongo.store_vnf_action(vnfr_id, primitive, params)
@@ -75,7 +74,7 @@ def format_vnsf_catalog(catalog):
         vnsfs.append(vnsf_dict)
     return vnsfs
 
-def post_action_to_vnf(payload):
+def exec_action_on_vnf(payload):
     resp = requests.post(osm_eps.VNF_ACTION_EXEC,
         headers=osm_eps.post_default_headers(),
         data=json.dumps(payload),

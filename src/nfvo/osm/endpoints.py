@@ -1,16 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from server import NFVO_ENDPOINT
-from server import NFVO_PORT
+from nfvo.osm import NFVO_ENDPOINT
+from nfvo.osm import NFVO_PKG_ENDPOINT
+from nfvo.osm import NFVO_PORT
+from nfvo.osm import NFVO_PKG_PORT
 
 
 BASE = "https://{}:{}/{}"
+PKG_NS_REMOVE = BASE.format(NFVO_PKG_ENDPOINT, NFVO_PKG_PORT, "composer/api/catalog/nsd/{}?api_server=https://localhost")
+PKG_ONBOARD = BASE.format(NFVO_PKG_ENDPOINT, NFVO_PKG_PORT, "composer/upload?api_server=https://localhost")
+PKG_VNF_REMOVE = BASE.format(NFVO_PKG_ENDPOINT, NFVO_PKG_PORT, "composer/api/catalog/vnfd/{}?api_server=https://localhost")
+NS_CATALOG_C = BASE.format(NFVO_ENDPOINT, NFVO_PORT, "api/config/nsd-catalog/nsd")
+NS_CATALOG_O = BASE.format(NFVO_ENDPOINT, NFVO_PORT, "api/operational/nsd-catalog/nsd")
 VNF_ACTION_EXEC = BASE.format(NFVO_ENDPOINT, NFVO_PORT, "api/operations/exec-ns-service-primitive")
 VNF_CATALOG_C = BASE.format(NFVO_ENDPOINT, NFVO_PORT, "api/config/vnfr-catalog/vnfr")
 VNF_CATALOG_O = BASE.format(NFVO_ENDPOINT, NFVO_PORT, "api/operational/vnfr-catalog/vnfr")
-NS_CATALOG_C = BASE.format(NFVO_ENDPOINT, NFVO_PORT, "v1/api/config/nsd-catalog/nsd")
-NS_CATALOG_O = BASE.format(NFVO_ENDPOINT, NFVO_PORT, "api/operational/nsd-catalog/nsd")
 
 
 def get_default_headers():

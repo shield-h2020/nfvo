@@ -35,7 +35,7 @@ TODO
 
 # API Documentation
 
-The documentation follows the [OpenAPI Specification](https://swagger.io/specification/) (aka Swagger RESTful API Documentation Specification) Version 2.0 and is defined in the [api.yaml](src/server/api.yaml) file. Use [Swagger Editor](https://editor.swagger.io/) for a user-friendly view.
+The documentation follows the [OpenAPI Specification](https://swagger.io/specification/) (aka Swagger RESTful API Documentation Specification) Version 2.0 and is defined in the [endpoints.yaml](src/server/endpoints.yaml) file. To see documentation in a user-friendly way, point your browser to the root of the vNSFO API server or directly paste the contents into [Swagger Editor](https://editor.swagger.io/).
 
 # Testing
 

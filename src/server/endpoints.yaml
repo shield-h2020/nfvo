@@ -33,12 +33,22 @@ tags:
     externalDocs:
       description: D3.1
       url: 'https://www.shield-h2020.eu/documents/project-deliverables/SHIELD_D3.1_Specifications,_Design_and_Architecture_for_the_vNSF_Ecosystem_v1.0.pdf'
+  - name: ns
+    description: NS operations
+    externalDocs:
+      description: OSMr2 API
+      url: 'https://osm.etsi.org/wikipub/images/2/24/Osm-r1-so-rest-api-guide.pdf'
+  - name: package
+    description: Package operations
+    externalDocs:
+      description: ''
+      url: 'n/a'
   - name: vim
     description: VIM operations
     externalDocs:
       description: OSMr2 API
       url: 'https://osm.etsi.org/wikipub/images/2/24/Osm-r1-so-rest-api-guide.pdf'
-  - name: vnsfs
+  - name: vnsf
     description: vNSF operations
     externalDocs:
       description: OSMr2 API
@@ -52,7 +62,7 @@ paths:
     get:
       tags:
         - common
-      summary: Lists all the API methods
+      summary: Lists all API methods
       description: >-
         <p>All available REST methods are provided through this method.</p>
       operationId: getEntryPoints
@@ -65,12 +75,45 @@ paths:
             $ref: "#/definitions/EndPoints"
         <<: *API_RESPONSES
 
-
-  /nfvi/config/nss:
+  /nfvi/flowtable:
     get:
       tags:
         - nfvi
-      summary: Provides the available NSs
+      summary: Provides flow tables in network devices
+      description: >-
+        <p>TBD. Provides the contents of the flow tables of the SDN controller.</p>
+      operationId: getDevicesFlowtable
+      produces:
+        - application/json
+      responses: *API_RESPONSES
+  /nfvi/topology:
+    get:
+      tags:
+        - nfvi
+      summary: Provides network topology
+      description: >-
+        <p>TBD. Returns the topology of the network as known to the VIM.</p>
+      operationId: getNetworkTopology
+      produces:
+        - application/json
+      responses: *API_RESPONSES
+  /nfvi/nodes:
+    get:
+      tags:
+        - nfvi
+      summary: Provides physical nodes from NFVI
+      description: >-
+        <p>TBD. Provides the list of active physical nodes in the NFVI.</p>
+      operationId: getDeployedPhysicalNodes
+      produces:
+        - application/json
+      responses: *API_RESPONSES
+
+  /ns/config:
+    get:
+      tags:
+        - ns
+      summary: Provides available NSs
       description: >-
         <p>Returns the available NSs.</p>
       operationId: getAvailableNss
@@ -82,67 +125,44 @@ paths:
           schema:
             $ref: "#/definitions/ConfigNssOutput"
         <<: *API_RESPONSES
-  /nfvi/flowtable:
-    get:
+
+  /package/onboard:
+    post:
       tags:
-        - nfvi
-      summary: Provides the flow tables in the network devices
+        - package
+      summary: Onboards package into vNSFO
       description: >-
-        <p>TBD. Provides the contents of the flow tables of the SDN controller.</p>
-      operationId: getDevicesFlowtable
+        <p>Uploads the package for a NS or vNSF into the vNSFO.</p>
+      operationId: onboardPackage
+      consumes:
+        - application/json
       produces:
         - application/json
-      responses: *API_RESPONSES
-  /nfvi/topology:
-    get:
-      tags:
-        - nfvi
-      summary: Provides the network topology
-      description: >-
-        <p>TBD. Returns the topology of the network as known to the VIM.</p>
-      operationId: getNetworkTopology
-      produces:
-        - application/json
-      responses: *API_RESPONSES
-  /nfvi/nodes:
-    get:
-      tags:
-        - nfvi
-      summary: Provides the physical nodes in the NFVI
-      description: >-
-        <p>TBD. Provides the list of active physical nodes in the NFVI.</p>
-      operationId: getDeployedPhysicalNodes
-      produces:
-        - application/json
-      responses: *API_RESPONSES
-  /nfvi/running/vnsfs:
-    get:
-      tags:
-        - nfvi
-      summary: Provides the deployed vNSFs
-      description: >-
-        <p>Returns the deployed vNSFs.</p>
-      operationId: getDeployedVnsfs
-      produces:
-        - application/json
+      parameters:
+      - in: body
+        name: body
+        description: The body of the request
+        required: true
+        schema:
+          $ref: '#/definitions/PackageOnboardedInput'
       responses:
         200:
           description: "Request succeeded"
           schema:
-            $ref: "#/definitions/RunningVnsfOutput"
+            $ref: "#/definitions/PackageOnboardedOutput"
         <<: *API_RESPONSES
-  /nfvi/running/vnsfs/{tenant}:
-    get:
+  /package/remove/{vnsf_name}:
+    delete:
       tags:
-        - nfvi
-      summary: Provides the deployed vNSFs per tenant
+        - package
+      summary: Removes package from vNSFO
       description: >-
-        <p>TBD. Returns the deployed vNSFs per tenant.</p>
-      operationId: getDeployedVnsfsPerTenant
+        <p>Removes the package of a NS or vNSF from the vNSFO.</p>
+      operationId: removePackage
       produces:
         - application/json
       parameters:
-        - name: tenant
+        - name: vnsf_name
           in: path
           required: true
           type: string
@@ -174,11 +194,43 @@ paths:
             $ref: "#/definitions/VimRegisterImageOutput"
         <<: *API_RESPONSES
 
+  /vnsf/running:
+    get:
+      tags:
+        - vnsf
+      summary: Provides the running vNSFs
+      description: >-
+        <p>Returns the instantiated vNSFs.</p>
+      operationId: getDeployedVnsfs
+      produces:
+        - application/json
+      responses:
+        200:
+          description: "Request succeeded"
+          schema:
+            $ref: "#/definitions/RunningVnsfOutput"
+        <<: *API_RESPONSES
+  /vnsf/running/{tenant}:
+    get:
+      tags:
+        - vnsf
+      summary: Provides the deployed vNSFs per tenant
+      description: >-
+        <p>TBD. Returns the deployed vNSFs per tenant.</p>
+      operationId: getDeployedVnsfsPerTenant
+      produces:
+        - application/json
+      parameters:
+        - name: tenant
+          in: path
+          required: true
+          type: string
+      responses: *API_RESPONSES
   /vnsf/{vnsf}/action/{action}:
     get:
       tags:
-        - vnsfs
-      summary: Fetches the status of an executed pre-defined action into a specific vNSF
+        - vnsf
+      summary: Fetches the status of a previously executed action in a vNSF
       description: >-
         <p>TBD. Checks the status of the remote execution of data into a specific vNSF.</p>
       operationId: checkVnsfAction
@@ -200,7 +252,7 @@ paths:
   /vnsf/action:
     post:
       tags:
-        - vnsfs
+        - vnsf
       summary: Executes pre-defined action from a specific vNSF
       description: >-
         <p>Triggers the remote execution of data into a specific vNSF.</p>
@@ -266,6 +318,29 @@ definitions:
               items:
                 type: "string"
                 example: "GET"
+
+  PackageOnboardedInput:
+    type: "object"
+    required:
+      - path
+    properties:
+      path:
+        type: "string"
+        example: "/opt/osm_pkg/cirros_vnf.tar.gz"
+
+  PackageOnboardedOutput:
+    type: "object"
+    required:
+      - package
+      - transaction_id
+    properties:
+      package:
+        type: "string"
+        example: "/opt/osm_pkg/cirros_vnf.tar.gz"
+      transaction_id:
+        type: "string"
+        example: "fe54b446-0e8e-4041-9d00-c07387aa1804"
+
   RunningVnsfOutput:
     type: "array"
     items:
@@ -283,6 +358,7 @@ definitions:
         vnf_id:
           type: "string"
           example: "ed37f789-9ed8-43bc-8b5f-c4c1ca192363"
+
   VimRegisterImageInput:
     type: "object"
     required:
@@ -295,6 +371,7 @@ definitions:
       img_checksum:
         type: "string"
         example: "..."
+
   VimRegisterImageOutput:
     type: "object"
     required:
@@ -305,6 +382,7 @@ definitions:
         type: "string"
       img_checksum:
         type: "string"
+
   VnsfActionInput:
     type: "object"
     required:
@@ -321,6 +399,7 @@ definitions:
       params:
         type: "object"
         example: {"key": "value"}
+
   VnsfActionOutput:
     type: "object"
     required:
@@ -393,7 +472,7 @@ definitions:
                   vnfr-id-ref:
                     type: "string"
                     example: "afcb3492-f326-4979-acea-fcc47168ca12"
-  
+
 externalDocs:
   description: Find out more about the vNSFO API
   url: 'https://github.com/shield-h2020/vnsfo'
