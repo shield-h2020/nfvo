@@ -57,7 +57,7 @@ class DBManager():
         self._first_setup()
 
     def _first_setup(self):
-        db = self.__get_database()
+        db = self.__get_database(self.address)
         #db.add_user(self.user_id, self.user_password, **self.user_options)
         if not db:
             db.add_user(self.user_id, self.user_password, **self.user_options)
@@ -66,8 +66,10 @@ class DBManager():
             if not collection:
                 collection = db.create_collection(collection_name)
 
-    def __get_database(self):
-        self.client = pymongo.MongoClient(self.auth_db_address, self.port)
+    def __get_database(self, db_address=None):
+        if not db_address:
+            db_address = self.auth_db_address
+        self.client = pymongo.MongoClient(db_address, self.port)
         return getattr(self.client, self.db_name)
 
     def __get_table(self, table_name):
