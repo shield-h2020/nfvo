@@ -168,6 +168,22 @@ paths:
           type: string
       responses: *API_RESPONSES
 
+  /vim/list:
+    get:
+      tags:
+        - vim
+      summary: Provides the list of available VIMs
+      description: >-
+        <p>Returns the available VIMs.</p>
+      operationId: getAvailableVims
+      produces:
+        - application/json
+      responses:
+        200:
+          description: "Request succeeded"
+          schema:
+            $ref: "#/definitions/VimListOutput"
+        <<: *API_RESPONSES
   /vim/vnsf_image:
     post:
       tags:
@@ -287,10 +303,14 @@ definitions:
         ns:
           type: object
           required:
+            - config_status
             - name
             - ns_id
             - vendor_id
           properties:
+            config_status:
+              type: "string"
+              example: "configured"
             name:
               type: "string"
               example: "cirros_2vnf_nsd"
@@ -346,19 +366,45 @@ definitions:
     items:
       type: "object"
       properties:
-        name:
+        config_status:
           type: "string"
-          example: "mspl__mspl_vnf__2"
+          example: "configuring"
+        ip:
+          type: "string"
+          example: "172.16.13.126"
         ns_id:
           type: "string"
           example: "84e9676d-a237-4908-86e9-60eb976dae3c"
+        ns_name:
+          type: "string"
+          example: "mspl"
+        operational_status:
+          type: "string"
+          example: "running"
         vendor:
           type: "string"
           example: "SHIELD"
+        vim:
+          type: "string"
+          example: "openstack-vim1"
         vnf_id:
           type: "string"
           example: "ed37f789-9ed8-43bc-8b5f-c4c1ca192363"
+        vnf_name:
+          type: "string"
+          example: "mspl__mspl_vnf__2"
 
+  VimListOutput:
+    type: "array"
+    items:
+      type: object
+      properties:
+        name:
+          type: "string"
+          example: "openstack-vim1"
+        uuid:
+          type: "string"
+          example: "openstack-vim1"
   VimRegisterImageInput:
     type: "object"
     required:
