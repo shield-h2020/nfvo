@@ -18,6 +18,10 @@ nfvo_views = Blueprint("nfvo_vnf_views", __name__)
 def check_primitive_on_vnsf(vnsf_id, action_id):
     return jsonify({})
 
+@nfvo_views.route(endpoints.VNSF_C_VNSFS, methods=["GET"])
+def fetch_config_vnsfs():
+    return jsonify(vnf.fetch_config_vnsfs())
+
 @nfvo_views.route(endpoints.VNSF_R_VNSFS, methods=["GET"])
 def fetch_running_vnsfs():
     return jsonify(vnf.fetch_running_vnsfs())
