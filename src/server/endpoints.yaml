@@ -4,9 +4,9 @@ responses: &API_RESPONSES
   400: &HTTP_400_BAD_REQUEST
     description: Bad request. API specific parameters are incorrect or missing.
   404: &HTTP_404_NOT_FOUND
-    description: Not found. The requested resource doesn't exist.
+    description: Not found. The requested resource does not exist.
   418: &HTTP_418_I_AM_TEAPOT
-    description: Improper usage of the resource.
+    description: Improper usage of the resource (e.g., bad params).
 
 swagger: '2.0'
 
@@ -130,10 +130,34 @@ paths:
     post:
       tags:
         - package
-      summary: Onboards package into vNSFO
+      summary: Onboards a locally stored package into NFVO
       description: >-
-        <p>Uploads the package for a NS or vNSF into the vNSFO.</p>
-      operationId: onboardPackage
+        <p>Uploads a locally stored package for a NS or vNSF into the NFVO.</p>
+      operationId: onboardLocalPackage
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+      - name: package
+        in: formData
+        required: true
+        type: string
+      responses:
+        200:
+          description: "Request succeeded"
+          schema:
+            $ref: "#/definitions/PackageOnboardedOutput"
+        <<: *API_RESPONSES
+
+  /package/onboard/remote:
+    post:
+      tags:
+        - package
+      summary: Onboards a remotely stored package into NFVO
+      description: >-
+        <p>Uploads a remotely stored package for a NS or vNSF into the NFVO.</p>
+      operationId: onboardRemotePackage
       consumes:
         - application/json
       produces:
@@ -151,6 +175,7 @@ paths:
           schema:
             $ref: "#/definitions/PackageOnboardedOutput"
         <<: *API_RESPONSES
+
   /package/remove/{vnsf_name}:
     delete:
       tags:
@@ -166,7 +191,12 @@ paths:
           in: path
           required: true
           type: string
-      responses: *API_RESPONSES
+      responses:
+        200:
+          description: "Request succeeded"
+          schema:
+            $ref: "#/definitions/PackageRemovedOutput"
+        <<: *API_RESPONSES
 
   /vim/list:
     get:
@@ -360,6 +390,15 @@ definitions:
       transaction_id:
         type: "string"
         example: "fe54b446-0e8e-4041-9d00-c07387aa1804"
+
+  PackageRemovedOutput:
+    type: "object"
+    required:
+      - package
+    properties:
+      package:
+        type: "string"
+        example: "cirros_vnfd"
 
   RunningVnsfOutput:
     type: "array"
