@@ -5,6 +5,8 @@ from tempfile import mkdtemp
 import os
 
 def fetch_content(url):
+    if not url.startswith("http"):
+        return None
     tmp_folder = mkdtemp()
     tmp_file = url.split("/")[-1]
     tmp_path = os.path.join(tmp_folder, tmp_file)

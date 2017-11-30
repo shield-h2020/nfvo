@@ -2,37 +2,72 @@
 # -*- coding: utf-8 -*-
 
 from core import download
+from mimetypes import MimeTypes
 from nfvo.osm import endpoints as osm_eps
 from shutil import rmtree
+from werkzeug.datastructures import FileStorage
+from werkzeug.datastructures import ImmutableMultiDict
 
 import json
 import os
 import requests
+import shutil
 
+
+def post_content(bin_file):
+    data_file = ImmutableMultiDict([("package", bin_file)])
+    resp = requests.post(osm_eps.PKG_ONBOARD,
+            headers=osm_eps.get_default_headers(),
+            files=data_file,
+            verify=False)
+    output = json.loads(resp.text)
+    output.update({"package": bin_file.filename})
+    return output
 
 def onboard_package(pkg_path):
     """
-    Uploads a VNF or NS package to the NFVO.
+    Uploads a locally stored VNF or NS package to the NFVO.
+    Calling this method and POSTing a file from a remote server will
+    result into more time to transfer the package.
 
-    @param pkg_path Local or remote path to the package
+    @param pkg_path Local binary file
     @return output Structure with provided path and transaction ID
     """
-    pkg_path_or = pkg_path
-    # TODO: Check 'package-create' endpoint to fetch
-    # remote HTTP-hosted packages
-    if not os.path.exists(pkg_path):
-        pkg_path = download.fetch_content(pkg_path)
-    data = {"package": (os.path.split(pkg_path)[1],
-            open(pkg_path, "rb"))}
-    resp = requests.post(osm_eps.PKG_ONBOARD,
-            headers=osm_eps.get_default_headers(),
-            files=data,
-            verify=False)
-    output = json.loads(resp.text)
-    output["package"] = pkg_path_or
-    if pkg_path_or != pkg_path:
-        rmtree(os.path.dirname(pkg_path))
+    remove_after = False
+
+    fp = None
+    bin_file = None
+    output = None
+    if type(pkg_path) == FileStorage:
+        bin_file = pkg_path
+    else:
+        if not os.path.isfile(pkg_path):
+            remove_after = True
+        if os.path.isfile(pkg_path):
+            fp = open(pkg_path, "rb")
+            filename = os.path.basename(pkg_path)
+            mime = MimeTypes()
+            content_type = mime.guess_type(pkg_path)
+            bin_file = FileStorage(fp, filename, "package", content_type)
+    if bin_file is not None:
+        output = post_content(bin_file)
+    if fp is not None:
+        fp.close()
+    if remove_after:
+        pkg_dir = os.path.dirname(pkg_path)
+        shutil.rmtree(pkg_dir)
     return output
+
+def onboard_package_remote(pkg_path):
+    """
+    Uploads a remotely stored VNF or NS package to the NFVO.
+
+    @param pkg_path Remote path to the package
+    @return output Structure with provided path and transaction ID
+    """
+    if not os.path.isfile(pkg_path):
+        pkg_path = download.fetch_content(pkg_path)
+    return onboard_package(pkg_path)
 
 def remove_package(pkg_name):
     remove_url = osm_eps.PKG_VNF_REMOVE
@@ -43,4 +78,5 @@ def remove_package(pkg_name):
             headers=osm_eps.get_default_headers(),
             verify=False)
     output = json.loads(resp.text)
+    output.update({"package": pkg_name})
     return output

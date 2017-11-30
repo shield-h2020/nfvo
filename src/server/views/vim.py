@@ -27,7 +27,7 @@ def get_vim_list():
 @content.expect_json_content
 def register_vnf_image():
     try:
-        if content.data_not_in_request(request, ["img_url", "img_checksum"]):
+        if not content.data_in_request(request, ["img_url", "img_checksum"]):
             abort(418)
         output = vim_s.fill_vim_template(request.json.get("img_url"), request.json.get("img_checksum"))
         return jsonify(output)

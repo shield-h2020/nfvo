@@ -4,26 +4,32 @@
 from flask import current_app
 from flask import jsonify
 from flask import request
-#from flask import request_finished
 from flask import url_for
 from gui import swagger
 from server import content
 from server import useragent
 
 
+# Generic
+ROOT = "/"
+# Infrastructure
 NFVI = "/nfvi"
 NFVI_FLOW = "{}/flowtable".format(NFVI)
 NFVI_NODES = "{}/nodes".format(NFVI)
 NFVI_TOPO = "{}/topology".format(NFVI)
-NS = "/ns"
-NS_C_NSS = "{}/config".format(NS)
-PKG = "/package"
-PKG_ONBOARD = "{}/onboard".format(PKG)
-PKG_REMOVE = "{}/remove/<vnsf_name>".format(PKG)
-ROOT = "/"
+# Infrastructure manager
 VIM = "/vim"
 VIM_IMAGE = "{}/vnsf_image".format(VIM)
 VIM_LIST = "{}/list".format(VIM)
+# Network service
+NS = "/ns"
+NS_C_NSS = "{}/config".format(NS)
+# Package
+PKG = "/package"
+PKG_ONBOARD = "{}/onboard".format(PKG)
+PKG_ONBOARD_REMOTE = "{}/remote".format(PKG_ONBOARD)
+PKG_REMOVE = "{}/remove/<vnsf_name>".format(PKG)
+# Network function
 VNSF = "/vnsf"
 VNSF_ACTION_EXEC = "{}/action".format(VNSF)
 VNSF_ACTION_STATUS = "{}/<vnsf_id>/action/<action_id>".format(VNSF)

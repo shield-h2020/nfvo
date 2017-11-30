@@ -36,7 +36,7 @@ def exec_primitive_on_vnsf():
     try:
         if "application/json" not in request.headers.get("Content-Type", ""):
             abort(400)
-        if content.data_not_in_request(request, ["vnsf_id", "action", "params"]):
+        if not content.data_in_request(request, ["vnsf_id", "action", "params"]):
             abort(418)
         payload = vnf.submit_action_request(request.json.get("vnsf_id"), request.json.get("action"),
             request.json.get("params"))

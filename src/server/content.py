@@ -6,8 +6,10 @@ from flask import request
 from flask import Response
 
 
-def data_not_in_request(request, expected_data):
-    return any(map(lambda x: x not in request.json.keys(), expected_data))
+def data_in_request(request, expected_data):
+    if "application/json" in request.__dict__.get("environ").get("CONTENT_TYPE"):
+        return all(map(lambda x: x in request.json.keys(), expected_data))
+    return False
 
 def error_on_unallowed_method(output):
     resp = Response(str(output), status=405, mimetype="text/plain")
