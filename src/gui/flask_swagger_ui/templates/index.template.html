@@ -23,21 +23,54 @@
     }
 
     #swagger-header {
+        background: #99cede;
+        height: 4em;
         padding-bottom: .5em;
         padding-left: 3em;
         padding-top: .5em;
     }
-    #swagger-header {
-        background: #99cede;
+    #swagger-header .shield-title {
+	float: left;
+    }
+    #swagger-header .scheme-container {
+	float: right;
     }
     #swagger-header #shield-logo {
         width: 2.5em;
     }
     #swagger-header span {
-        color: #354862;
-        font-family: "Courier New", Courier, monospace;
-        font-size: 1.2em;
+        color: #2c608d;
+        font-family: Open Sans,sans-serif;
+        font-size: 2em;
+	font-weight: bold;
         padding-left: 2em;
+    }
+
+    #swagger-header small {
+        background: #1d456c;
+        border-radius: 57px;
+        display: inline-block;
+        font-size: 10px;
+        margin: 0 0 0 5px;
+        padding: 2px 4px;
+        position: relative;
+        top: -5px;
+        vertical-align: super;
+    }
+    #swagger-header pre {
+        color: #fff;
+        font-family: Titillium Web,sans-serif;
+        margin: 0;
+    }
+
+    .swagger-ui .scheme-container {
+        background: none !important;
+        box-shadow: none !important;
+        float: right;
+        margin-top: -11em !important;
+    }
+    h2.title, .base-url {
+        display: none;
     }
 
     body {
@@ -49,13 +82,18 @@
 
 <body>
 
+
 <div id="swagger-header">
-        <img id="shield-logo" alt="vNSFO REST API" src="../../dist/img/shield-logo.png">
+    <div class="shield-title">
+	<img id="shield-logo" alt="vNSFO REST API" src="../../dist/img/shield-logo.png">
         <span>{{app_name}}</span>
+	<small></small>
+    </div>
 </div>
 
 <div id="swagger-ui"></div>
 
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"> </script>
 <script src="../dist/swagger-ui-bundle.js"> </script>
 <script src="../dist/swagger-ui-standalone-preset.js"> </script>
 <script src="../dist/spec.js"></script>
@@ -98,6 +136,9 @@ window.onload = function() {
   {% endif %}
 
   window.ui = ui
+  // Change version location in layout
+  $("#swagger-header small").append($("pre.version"));
+  //$("#swagger-header").append($(".scheme-container"));
 }
 </script>
 </body>

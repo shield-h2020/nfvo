@@ -1,8 +1,21 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# Copyright 2017-present i2CAT
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 from flask import current_app
-from flask import jsonify
 from nfvi import vim
 from nfvo.osm import endpoints as osm_eps
 from templates import nfvo as nfvo_tmpl
@@ -12,10 +25,10 @@ import requests
 
 
 def get_vnfr_config():
-    resp = requests.get(osm_eps.VNF_CATALOG_C,
-        headers=osm_eps.get_default_headers(),
-        verify=False)
-#    output = json.loads(resp.text) if resp.text else {}
+    resp = requests.get(
+            osm_eps.VNF_CATALOG_C,
+            headers=osm_eps.get_default_headers(),
+            verify=False)
     # Yep, this could be insecure - but the output comes from NFVO
     catalog = eval(resp.text) if resp.text else []
     output = list()
@@ -23,8 +36,8 @@ def get_vnfr_config():
         for nd in n["descriptors"]:
             if "constituent-vnfd" not in nd.keys():
                 output.append({
-                    "charm": nd.get("vnf-configuration") \
-                                .get("juju").get("charm"),
+                    "charm": nd.get("vnf-configuration")
+                               .get("juju").get("charm"),
                     "description": nd.get("description"),
                     "ns_name": nd.get("name"),
                     "vendor": nd.get("vendor"),
@@ -32,21 +45,26 @@ def get_vnfr_config():
                 })
     return output
 
+
 # TODO: Parse outside
 def fetch_config_vnsfs():
     catalog = get_vnfr_config()
     return catalog
 
+
 def get_vnfr_running():
-    resp = requests.get(osm_eps.VNF_CATALOG_O,
-        headers=osm_eps.get_default_headers(),
-        verify=False)
+    resp = requests.get(
+            osm_eps.VNF_CATALOG_O,
+            headers=osm_eps.get_default_headers(),
+            verify=False)
     output = json.loads(resp.text) if resp.text else {}
     return output
+
 
 def fetch_running_vnsfs():
     catalog = get_vnfr_running()
     return format_vnsf_catalog(catalog)
+
 
 def fill_vnf_action_request(vnfr_id=None, primitive=None, params=None):
     exec_tmpl = json.loads(nfvo_tmpl.exec_action)
@@ -78,8 +96,10 @@ def fill_vnf_action_request(vnfr_id=None, primitive=None, params=None):
                     break
     exec_tmpl["input"]["nsr_id_ref"] = nsr_id
     exec_tmpl["input"]["vnf-list"][0]["member_vnf_index_ref"] = vnf_idx
-    exec_tmpl["input"]["vnf-list"][0]["vnf-primitive"][0]["index"] = vnf_prim_idx
+    exec_tmpl["input"]["vnf-list"][0]["vnf-primitive"][0]["index"] = \
+        vnf_prim_idx
     return exec_tmpl
+
 
 def fill_vnf_action_request_encoded(vnfr_id=None, primitive=None, params=None):
     exec_tmpl = nfvo_tmpl.exec_action_encoded.strip()
@@ -105,20 +125,27 @@ def fill_vnf_action_request_encoded(vnfr_id=None, primitive=None, params=None):
     for key, val in params.items():
         exec_tmpl_param = nfvo_tmpl.exec_action_vnf_encoded.strip()
         val = val.replace("\"", '\\"')
-        exec_tmpl_vnf += exec_tmpl_param.format(idx = i,
-#            param_name = key, param_value = """{}""".format(val))
-            param_name = key, param_value = val)
+        exec_tmpl_vnf += exec_tmpl_param.format(
+                idx=i,
+                param_name=key,
+                param_value=val)
         i += 1
 
     # Data from the vNSF to be replaced in the template of the action
-    values = {"name": "", "action_data": "{action_data}",
-        "ns_id": nsr_id, "vnf_id": vnfr_id,
-        "vnf_index": vnf_idx, "action_name": primitive,
-        "action_idx": vnf_prim_idx}
+    values = {
+            "name": "",
+            "action_data": "{action_data}",
+            "ns_id": nsr_id,
+            "vnf_id": vnfr_id,
+            "vnf_index": vnf_idx,
+            "action_name": primitive,
+            "action_idx": vnf_prim_idx
+            }
 
     exec_tmpl = exec_tmpl.format(**values)
-    exec_tmpl = exec_tmpl.format(action_data = exec_tmpl_vnf)
+    exec_tmpl = exec_tmpl.format(action_data=exec_tmpl_vnf)
     return exec_tmpl
+
 
 def format_vnsf_catalog(catalog):
     vnsfs = []
@@ -147,24 +174,28 @@ def format_vnsf_catalog(catalog):
         vnsfs.append(vnsf_dict)
     return vnsfs
 
+
 # Temporary new parameter
 def exec_action_on_vnf(payload, vnfr_id=None):
     # JSON
-#    resp = requests.post(osm_eps.VNF_ACTION_EXEC,
-#        headers=osm_eps.post_default_headers(),
-#        data=json.dumps(payload),
-#        verify=False)
+    # resp = requests.post(
+    #        osm_eps.VNF_ACTION_EXEC,
+    #        headers=osm_eps.post_default_headers(),
+    #        data=json.dumps(payload),
+    #        verify=False)
 
     # Encoded
-#    payload = payload.replace('\\"', '"').strip()
-    resp = requests.post(osm_eps.VNF_ACTION_L_EXEC,
-        headers=osm_eps.post_encoded_headers(),
-        data=payload,
-        verify=False)
+    # payload = payload.replace('\\"', '"').strip()
+    resp = requests.post(
+            osm_eps.VNF_ACTION_L_EXEC,
+            headers=osm_eps.post_encoded_headers(),
+            data=payload,
+            verify=False)
 
-#    output = json.loads(resp.text)
+    # output = json.loads(resp.text)
     output = resp.text
     return output
+
 
 def submit_action_request(vnfr_id=None, action=None, params=list()):
     params_exist = all(map(lambda x: x is not None, [vnfr_id, action, params]))
@@ -174,6 +205,5 @@ def submit_action_request(vnfr_id=None, action=None, params=list()):
     output = exec_action_on_vnf(exec_tmpl, vnfr_id)
     # Keep track of remote action per vNSF
     if action is not None:
-        #current_app.mongo.store_vnf_action(vnfr_id, action, description, params)
         current_app.mongo.store_vnf_action(vnfr_id, action, params)
     return output

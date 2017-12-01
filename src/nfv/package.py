@@ -1,10 +1,23 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+# Copyright 2017-present i2CAT
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 from core import download
 from mimetypes import MimeTypes
 from nfvo.osm import endpoints as osm_eps
-from shutil import rmtree
 from werkzeug.datastructures import FileStorage
 from werkzeug.datastructures import ImmutableMultiDict
 
@@ -16,13 +29,15 @@ import shutil
 
 def post_content(bin_file):
     data_file = ImmutableMultiDict([("package", bin_file)])
-    resp = requests.post(osm_eps.PKG_ONBOARD,
+    resp = requests.post(
+            osm_eps.PKG_ONBOARD,
             headers=osm_eps.get_default_headers(),
             files=data_file,
             verify=False)
     output = json.loads(resp.text)
     output.update({"package": bin_file.filename})
     return output
+
 
 def onboard_package(pkg_path):
     """
@@ -58,6 +73,7 @@ def onboard_package(pkg_path):
         shutil.rmtree(pkg_dir)
     return output
 
+
 def onboard_package_remote(pkg_path):
     """
     Uploads a remotely stored VNF or NS package to the NFVO.
@@ -69,12 +85,14 @@ def onboard_package_remote(pkg_path):
         pkg_path = download.fetch_content(pkg_path)
     return onboard_package(pkg_path)
 
+
 def remove_package(pkg_name):
     remove_url = osm_eps.PKG_VNF_REMOVE
     if "_ns" in pkg_name:
         remove_url = osm_eps.PKG_NS_REMOVE
     remove_url = remove_url.format(pkg_name)
-    resp = requests.delete(remove_url,
+    resp = requests.delete(
+            remove_url,
             headers=osm_eps.get_default_headers(),
             verify=False)
     output = json.loads(resp.text)

@@ -1,5 +1,19 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+# Copyright 2017-present i2CAT
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 try:
     from StringIO import StringIO
@@ -36,7 +50,8 @@ class BaseParser:
         @return value for desired key
         """
         value = self.__dict__.get(key, None)
-        if any(map(lambda x: key.endswith(x), [".conf", ".json"])) and not value:
+        if any(map(lambda x: key.endswith(x), [".conf", ".json"])) \
+                and not value:
             exc_det = "Error retrieving configuration. Missing " + \
                 "file {}/{}".format(self.path, key)
             logger.critical(exc_det)
@@ -57,7 +72,7 @@ class ConfParser(BaseParser):
         try:
             try:
                 confparser = ConfigParser.SafeConfigParser()
-            except:
+            except AttributeError:
                 confparser = ConfigParser()
             # Parse data previously to ignore tabs, spaces or others
             conf_data = StringIO("\n".join(l.strip() for l in open(self.path)))
@@ -89,7 +104,7 @@ class ConfParser(BaseParser):
             self.settings[section] = {}
             try:
                 confparser_items = confparser.items(section)
-            except:
+            except Exception:
                 confparser_items = confparser._sections.items()
                 parse_ok = False
             for (key, val) in confparser_items:
@@ -97,7 +112,7 @@ class ConfParser(BaseParser):
                     if key == "topics":
                         try:
                             val = [v.strip() for v in val.split(",")]
-                        except:
+                        except Exception:
                             exception_desc = "Could not process topics: \
                                 %s" % str(val)
                             logger.exception(exception_desc)
