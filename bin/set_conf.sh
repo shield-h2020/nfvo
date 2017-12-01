@@ -22,7 +22,8 @@ conf_path=${full_path}/../conf/
 
 get_lxc_ip() {
   [ -z $1 ] && return
-  lxc_ip=$(lxc list | grep $name | awk '{print $6}')
+  name=$1
+  lxc_ip=$(lxc list | grep "$name" | awk '{print $6}')
   [ -z $lxc_ip ] && lxc_ip="127.0.0.1"
   echo $lxc_ip
 }
