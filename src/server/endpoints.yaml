@@ -196,14 +196,14 @@ paths:
             $ref: "#/definitions/PackageRemovedOutput"
         <<: *API_RESPONSES
 
-  /vim/list:
+  /vim:
     get:
       tags:
         - vim
-      summary: Provides the list of available VIMs
+      summary: Provides the list of registered VIMs
       description: >-
-        Returns the available VIMs.
-      operationId: getAvailableVims
+        Returns the list of registered VIMs.
+      operationId: getRegisteredVims
       produces:
         - application/json
       responses:
@@ -212,25 +212,42 @@ paths:
           schema:
             $ref: "#/definitions/VimListOutput"
         <<: *API_RESPONSES
-  /vim/vnsf_image:
+  /vim/image:
+    get:
+      tags:
+        - vim
+      summary: Provides the list of available VDUs
+      description: >-
+        Returns the list of available VDUs.
+      operationId: getAvailableVimImages
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/VimListImageOutput"
+        <<: *API_RESPONSES
     post:
       tags:
         - vim
-      summary: Registers vNSF image into the VIM
+      summary: Registers a VDU into a specific VIM
       description: >-
         TBD. Uploads the image of a vNSF into the VIM.
       operationId: registerVnsfImage
       consumes:
-        - application/json
+        - multipart/form-data
       produces:
         - application/json
       parameters:
-      - in: body
-        name: body
-        description: The body of the request
+      - name: image
+        in: formData
         required: true
-        schema:
-          $ref: "#/definitions/VimRegisterImageInput"
+        type: string
+      - name: vim
+        in: formData
+        required: true
+        type: string
       responses:
         200:
           description: Request succeeded
@@ -442,6 +459,101 @@ definitions:
         uuid:
           type: string
           example: openstack-vim1
+
+# {
+#   "osm": {
+#     "openstack-i2cat": [
+#       {
+#         "checksum": "010286a5f8ccbe057a81d6fdda8b2747",
+#         "container_format": "bare",
+#         "created_at": "2017-09-15T08:19:35Z",
+#         "disk_format": "raw",
+#         "file": "/v2/images/36ba15af-a67a-4da4-aebe-29585fbbdb2d/file",
+#         "id": "36ba15af-a67a-4da4-aebe-29585fbbdb2d",
+#         "min_disk": 0,
+#         "min_ram": 0,
+#         "name": "vIDS_v1_0",
+#         "owner": "8cacf6f614b4445ea12ae7fe105697f0",
+#         "protected": false,
+#         "schema": "/v2/schemas/image",
+#         "size": 2650079232,
+#         "status": "active",
+#         "tags": [],
+#         "updated_at": "2017-09-15T08:40:38Z",
+#         "virtual_size": null,
+#         "visibility": "public"
+#       },
+
+  VimListImageOutput:
+    type: object
+    required:
+      - tenant
+    properties:
+      tenant:
+        type: object
+        required:
+          - datacenter
+        properties:
+          datacenter:
+            type: array
+            items:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: active
+                created_at:
+                  type: string
+                  example: "2017-01-01T00:00:01Z"
+                name:
+                  type: string
+                  example: cirros
+                tags:
+                  type: string
+                  example: []
+                container_format:
+                  type: string
+                  example: bare
+                min_ram:
+                  type: integer
+                  example: 0
+                disk_format:
+                  type: string
+                  example: qcow2
+                updated_at:
+                  type: string
+                  example: "2017-05-29T11:26:44Z"
+                visibility:
+                  type: string
+                  example: public
+                owner:
+                  type: string
+                  example: 40e29a687c564179a96b10c744f01dbf
+                schema:
+                  type: string
+                  example: /v2/schemas/image
+                protected:
+                  type: boolean
+                  example: false
+                file:
+                  type: string
+                  example: /v2/images/4acfc0ea-80f1-4731-9314-7c0e7557f911/file
+                checksum:
+                  type: string
+                  example: f8ab98ff5e73ebab884d80c9dc9c7290
+                min_disk:
+                  type: integer
+                  example: 0
+                virtual_size:
+                  type: string
+                  example: null
+                id:
+                  type: string
+                  example: 4acfc0ea-80f1-4731-9314-7c0e7557f911
+                size:
+                  type: integer
+                  example: 13267968
+
   VimRegisterImageInput:
     type: object
     required:

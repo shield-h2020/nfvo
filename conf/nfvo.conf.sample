@@ -5,3 +5,7 @@
 [package]
     host = {{package_host}}
     port = 8443
+
+[ro]
+    host = {{ro_host}}
+    port = 9090

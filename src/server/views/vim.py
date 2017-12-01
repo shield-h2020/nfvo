@@ -37,6 +37,16 @@ def get_vim_list():
         return "Error: %s" % str(e)
 
 
+@nfvo_views.route(endpoints.VIM_IMAGE, methods=["GET"])
+@content.expect_json_content
+def get_vim_images():
+    try:
+        output = vim_s.get_vim_img_list()
+        return jsonify(output)
+    except Exception as e:
+        return "Error: %s" % str(e)
+
+
 @nfvo_views.route(endpoints.VIM_IMAGE, methods=["POST"])
 @content.expect_json_content
 def register_vnf_image():

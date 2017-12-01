@@ -30,7 +30,7 @@ def get_vim_name_by_uuid(vim_list, uuid):
 
 def get_vim_list():
     resp = requests.get(
-            osm_eps.VIM_LIST_O,
+            osm_eps.VIM_DC,
             headers=osm_eps.get_default_headers(),
             verify=False)
     output = json.loads(resp.text)
@@ -38,4 +38,34 @@ def get_vim_list():
                    .get("rw-launchpad:datacenters")[0] \
                    .get("ro-accounts")[0] \
                    .get("datacenters")
+    return output
+
+
+def get_vim_img_list():
+    tenant_list = get_vim_tenant_list()
+    output = {}
+    for tenant in tenant_list["tenants"]:
+        tenant_uuid = tenant.get("uuid")
+        tenant_name = get_vim_name_by_uuid(tenant_list["tenants"], tenant_uuid)
+        output[tenant_name] = {}
+        dc_list = get_vim_list()
+        for datacenter in dc_list:
+            dc_uuid = datacenter.get("uuid")
+            dc_name = get_vim_name_by_uuid(dc_list, dc_uuid)
+            vim_img_list_ep = osm_eps.VIM_IMG.format(tenant_uuid, dc_uuid)
+            resp = requests.get(
+                    vim_img_list_ep,
+                    verify=False)
+            imgs = json.loads(resp.text)
+            imgs = filter(lambda x: x.get("visibility") == "public",
+                          imgs.get("images"))
+            output[tenant_name][dc_name] = imgs
+    return output
+
+
+def get_vim_tenant_list():
+    resp = requests.get(
+            osm_eps.VIM_TENANT,
+            verify=False)
+    output = json.loads(resp.text)
     return output
