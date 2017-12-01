@@ -11,7 +11,7 @@ responses: &API_RESPONSES
 swagger: "2.0"
 
 info:
-  description: This API provides interaction between OSM and the SHIELD components. Some of the functionality provided are the proxying of MSPL for configuration towards specific vNSFs.
+  description: This API provides interaction between the SHIELD platform and OSM and the SHIELD components. Usage examples; manage and configure vNSFs or check available VIMs.
   version: 0.1.0
   title: vNSFO API
   termsOfService: ""
