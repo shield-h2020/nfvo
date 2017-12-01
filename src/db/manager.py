@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 # Copyright 2017-present i2CAT
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,7 +18,6 @@
 from bson import json_util
 from core.config import FullConfParser
 
-import ast
 import json
 import logging
 import pymongo
@@ -45,19 +44,22 @@ class DBManager():
         self.user_id = self.db_db.get("user")
         self.user_password = self.db_db.get("password")
         self.user_options = {"roles": [
-            { "role": "readWrite", "db": self.db_name },
-            { "role": "dbAdmin", "db": self.db_name }
+            {"role": "readWrite", "db": self.db_name},
+            {"role": "dbAdmin", "db": self.db_name}
         ]}
         self.address = "mongodb://{}:{}".format(self.host, self.port)
-        self.auth_db_address = "mongodb://{}:{}@{}:{}/{}".format(self.user_id,
-            self.user_password,
-            self.host, self.port, self.db_name)
+        self.auth_db_address = "mongodb://{}:{}@{}:{}/{}".format(
+                self.user_id,
+                self.user_password,
+                self.host,
+                self.port,
+                self.db_name)
         self.collections = [
-        "resource.vnsf",
-        "resource.vnsf.action",
-        "topology.physical",
-        "topology.slice",
-        "topology.slice.sdn"
+                "resource.vnsf",
+                "resource.vnsf.action",
+                "topology.physical",
+                "topology.slice",
+                "topology.slice.sdn"
         ]
         self.client = pymongo.MongoClient(self.address, self.port)
         self._first_setup()
@@ -128,10 +130,11 @@ class DBManager():
                 entry = {"_vnsfr_id": vnsfr_id,
                          "primitive": primitive,
                          "params": params,
-                         "date": current_time }
+                         "date": current_time}
                 return table.insert(entry)
-        except:
-            e = "Cannot store MSPL information for vNSF with ID: {}".format(vnsfr_id)
+        except Exception:
+            e = "Cannot store MSPL information for vNSF with ID: {}".\
+                    format(vnsfr_id)
             raise Exception(e)
         finally:
             self.__mutex.release()

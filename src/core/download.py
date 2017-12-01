@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 # Copyright 2017-present i2CAT
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,7 @@
 from tempfile import mkdtemp
 import os
 
+
 def fetch_content(url):
     if not url.startswith("http"):
         return None
@@ -27,7 +28,7 @@ def fetch_content(url):
     try:
         import urllib
         data = urllib.urlretrieve(url, tmp_path)
-    except:
+    except AttributeError:
         import urllib.request
         data = urllib.request.urlopen(url).read()
         f = open(tmp_path, "wb")
