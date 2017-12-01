@@ -20,8 +20,10 @@ from core.config import FullConfParser
 
 NFVO_ENDPOINT = "10.101.10.100"
 NFVO_PORT = "8008"
-NFVO_PKG_ENDPOINT = "10.101.10.100"
+NFVO_PKG_ENDPOINT = NFVO_ENDPOINT
 NFVO_PKG_PORT = "8443"
+NFVO_RO_ENDPOINT = NFVO_ENDPOINT
+NFVO_RO_PORT = "9090"
 
 
 def load_config():
@@ -35,10 +37,16 @@ def load_config():
     nfvo_package = nfvo_category.get("package")
     nfvo_pkg_host = nfvo_package.get("host", NFVO_PKG_ENDPOINT)
     nfvo_pkg_port = nfvo_package.get("port", NFVO_PKG_PORT)
+    # RO data
+    nfvo_ro = nfvo_category.get("ro")
+    nfvo_ro_host = nfvo_ro.get("host", NFVO_RO_ENDPOINT)
+    nfvo_ro_port = nfvo_ro.get("port", NFVO_RO_PORT)
     return {"nfvo_host": nfvo_host,
             "nfvo_port": nfvo_port,
             "nfvo_pkg_host": nfvo_pkg_host,
-            "nfvo_pkg_port": nfvo_pkg_port}
+            "nfvo_pkg_port": nfvo_pkg_port,
+            "nfvo_ro_host": nfvo_ro_host,
+            "nfvo_ro_port": nfvo_ro_port}
 
 
 cfg = load_config()
@@ -46,3 +54,5 @@ NFVO_ENDPOINT = cfg.get("nfvo_host")
 NFVO_PORT = cfg.get("nfvo_port")
 NFVO_PKG_ENDPOINT = cfg.get("nfvo_pkg_host")
 NFVO_PKG_PORT = cfg.get("nfvo_pkg_port")
+NFVO_RO_ENDPOINT = cfg.get("nfvo_ro_host")
+NFVO_RO_PORT = cfg.get("nfvo_ro_port")

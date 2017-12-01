@@ -33,8 +33,8 @@ NFVI_NODES = "{}/nodes".format(NFVI)
 NFVI_TOPO = "{}/topology".format(NFVI)
 # Infrastructure manager
 VIM = "/vim"
-VIM_IMAGE = "{}/vnsf_image".format(VIM)
-VIM_LIST = "{}/list".format(VIM)
+VIM_IMAGE = "{}/image".format(VIM)
+VIM_LIST = VIM
 # Network service
 NS = "/ns"
 NS_C_NSS = "{}/config".format(NS)

@@ -20,6 +20,13 @@ source utils.sh
 full_path=$(dirname $(realpath $0))
 conf_path=${full_path}/../conf/
 
+get_lxc_ip() {
+  [ -z $1 ] && return
+  lxc_ip=$(lxc list | grep $name | awk '{print $6}')
+  [ -z $lxc_ip ] && lxc_ip="127.0.0.1"
+  echo $lxc_ip
+}
+
 # Copy sample configuration files
 for sample in ${conf_path}*.conf.sample; do
   final=${sample%\.*}
@@ -27,14 +34,14 @@ for sample in ${conf_path}*.conf.sample; do
     cp -p $sample $final
     if [[ "${final}" == *"nfvo.conf" ]] ; then
       #vm_ip=$(ip route get 8.8.8.8 | awk '/8.8.8.8/ {print $NF}')
-      soub_ip=$(lxc list | grep SO-ub | awk '{print $6}')
-      if [ -z $soub_ip ]; then
-        soub_ip="127.0.0.1"
-      fi
+      soub_ip=$(get_lxc_ip "SO-ub")
+      ro_ip=$(get_lxc_ip "RO")
       # Update IP for NFVO (general)
       sed -i "s/{{general_host}}/$soub_ip/g" ${final}
       # Update IP for NFVO (packages)
       sed -i "s/{{package_host}}/$soub_ip/g" ${final}
+      # Update IP for RO
+      sed -i "s/{{ro_host}}/$ro_ip/g" ${final}
     fi
   fi
 done
