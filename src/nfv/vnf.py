@@ -1,5 +1,19 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+# Copyright 2017-present i2CAT
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 from flask import current_app
 from flask import jsonify
@@ -15,7 +29,6 @@ def get_vnfr_config():
     resp = requests.get(osm_eps.VNF_CATALOG_C,
         headers=osm_eps.get_default_headers(),
         verify=False)
-#    output = json.loads(resp.text) if resp.text else {}
     # Yep, this could be insecure - but the output comes from NFVO
     catalog = eval(resp.text) if resp.text else []
     output = list()
@@ -106,7 +119,6 @@ def fill_vnf_action_request_encoded(vnfr_id=None, primitive=None, params=None):
         exec_tmpl_param = nfvo_tmpl.exec_action_vnf_encoded.strip()
         val = val.replace("\"", '\\"')
         exec_tmpl_vnf += exec_tmpl_param.format(idx = i,
-#            param_name = key, param_value = """{}""".format(val))
             param_name = key, param_value = val)
         i += 1
 

@@ -1,5 +1,19 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*
+# -*- coding: utf-8 -*-
+
+# Copyright 2017-present i2CAT
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 
 from bson import json_util
 from core.config import FullConfParser
@@ -16,8 +30,7 @@ logger = logging.getLogger("db-manager")
 
 class DBManager():
     """
-    This object is a wrapper for MongoClient to communicate to the RO
-    (local) mongo-db
+    Wrapper for MongoClient to communicate to the RO (local) mongo-db
     """
 
     def __init__(self):
@@ -31,13 +44,6 @@ class DBManager():
         self.db_name = self.db_db.get("name")
         self.user_id = self.db_db.get("user")
         self.user_password = self.db_db.get("password")
-        #general_section = self.config.get("general")
-        #self.db_name = ast.literal_eval(general_section.get("db_name"))
-        #self.host = "127.0.0.1"
-        #self.port = 27017
-        #self.db_name = "shield-nfvo"
-        #self.user_id = "user"
-        #self.user_password = "user"
         self.user_options = {"roles": [
             { "role": "readWrite", "db": self.db_name },
             { "role": "dbAdmin", "db": self.db_name }
@@ -58,7 +64,6 @@ class DBManager():
 
     def _first_setup(self):
         db = self.__get_database(self.address)
-        #db.add_user(self.user_id, self.user_password, **self.user_options)
         if not db:
             db.add_user(self.user_id, self.user_password, **self.user_options)
         for collection_name in self.collections:
@@ -105,7 +110,6 @@ class DBManager():
     def __to_json(data):
         return json.dumps(data, default=json_util.default)
 
-#    def store_vnf_action(self, vnsfr_id, primitive, description, params):
     def store_vnf_action(self, vnsfr_id, primitive, params):
         """
         Track remote action executed per vNSF.
@@ -117,14 +121,12 @@ class DBManager():
             row = table.find_one({"_vnsfr_id": vnsfr_id})
             if row:
                 row["primitive"] = primitive
-#                row["description"] = description
                 row["params"] = params
                 row["date"] = current_time
                 return table.save(row)
             else:
                 entry = {"_vnsfr_id": vnsfr_id,
                          "primitive": primitive,
-#                         "description": description,
                          "params": params,
                          "date": current_time }
                 return table.insert(entry)
@@ -142,10 +144,3 @@ class DBManager():
 
         finally:
             self.__mutex.release()
-
-
-if __name__ == "__main__":
-    db_manager = DBManager()
-    db_manager._first_setup()
-    db_manager.store_mspl("vnsf__1", "<xml>data</xml>")
-    db_manager.store_mspl("vnsf__1", "<xml>data 2</xml>")

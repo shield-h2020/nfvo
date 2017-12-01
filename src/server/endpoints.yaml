@@ -8,20 +8,18 @@ responses: &API_RESPONSES
   418: &HTTP_418_I_AM_TEAPOT
     description: Improper usage of the resource (e.g., bad params).
 
-swagger: '2.0'
+swagger: "2.0"
 
 info:
-  description: 'This API provides interaction between OSM and the SHIELD components. Some of the functionality provided are the proxying of MSPL for configuration towards specific vNSFs.</p>'
+  description: This API provides interaction between OSM and the SHIELD components. Some of the functionality provided are the proxying of MSPL for configuration towards specific vNSFs.
   version: 0.1.0
   title: vNSFO API
-  termsOfService: ''
+  termsOfService: ""
   contact:
     email: carolina.fernandez@i2cat.net
   license:
-    name: License - TBD
-    url: 'http://TBD'
-
-host: TBD
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
 
 basePath: /
 
@@ -32,27 +30,27 @@ tags:
     description: Deployment data
     externalDocs:
       description: D3.1
-      url: 'https://www.shield-h2020.eu/documents/project-deliverables/SHIELD_D3.1_Specifications,_Design_and_Architecture_for_the_vNSF_Ecosystem_v1.0.pdf'
+      url: https://www.shield-h2020.eu/documents/project-deliverables/SHIELD_D3.1_Specifications,_Design_and_Architecture_for_the_vNSF_Ecosystem_v1.0.pdf
   - name: ns
     description: NS operations
     externalDocs:
       description: OSMr2 API
-      url: 'https://osm.etsi.org/wikipub/images/2/24/Osm-r1-so-rest-api-guide.pdf'
+      url: https://osm.etsi.org/wikipub/images/2/24/Osm-r1-so-rest-api-guide.pdf
   - name: package
     description: Package operations
     externalDocs:
-      description: ''
-      url: 'n/a'
+      description: ""
+      url: n/a
   - name: vim
     description: VIM operations
     externalDocs:
       description: OSMr2 API
-      url: 'https://osm.etsi.org/wikipub/images/2/24/Osm-r1-so-rest-api-guide.pdf'
+      url: https://osm.etsi.org/wikipub/images/2/24/Osm-r1-so-rest-api-guide.pdf
   - name: vnsf
     description: vNSF operations
     externalDocs:
       description: OSMr2 API
-      url: 'https://osm.etsi.org/wikipub/images/2/24/Osm-r1-so-rest-api-guide.pdf'
+      url: https://osm.etsi.org/wikipub/images/2/24/Osm-r1-so-rest-api-guide.pdf
 
 schemes:
   - https
@@ -64,13 +62,13 @@ paths:
         - common
       summary: Lists all API methods
       description: >-
-        <p>All available REST methods are provided through this method.</p>
+        All available REST methods are provided through this method.
       operationId: getEntryPoints
       produces:
         - application/json
       responses:
         200:
-          description: "Request succeeded"
+          description: Request succeeded
           schema:
             $ref: "#/definitions/EndPoints"
         <<: *API_RESPONSES
@@ -81,7 +79,7 @@ paths:
         - nfvi
       summary: Provides flow tables in network devices
       description: >-
-        <p>TBD. Provides the contents of the flow tables of the SDN controller.</p>
+        TBD. Provides the contents of the flow tables of the SDN controller.
       operationId: getDevicesFlowtable
       produces:
         - application/json
@@ -92,7 +90,7 @@ paths:
         - nfvi
       summary: Provides network topology
       description: >-
-        <p>TBD. Returns the topology of the network as known to the VIM.</p>
+        TBD. Returns the topology of the network as known to the VIM.
       operationId: getNetworkTopology
       produces:
         - application/json
@@ -103,7 +101,7 @@ paths:
         - nfvi
       summary: Provides physical nodes from NFVI
       description: >-
-        <p>TBD. Provides the list of active physical nodes in the NFVI.</p>
+        TBD. Provides the list of active physical nodes in the NFVI.
       operationId: getDeployedPhysicalNodes
       produces:
         - application/json
@@ -115,13 +113,13 @@ paths:
         - ns
       summary: Provides available NSs
       description: >-
-        <p>Returns the available NSs.</p>
+        Returns the available NSs.
       operationId: getAvailableNss
       produces:
         - application/json
       responses:
         200:
-          description: "Request succeeded"
+          description: Request succeeded
           schema:
             $ref: "#/definitions/ConfigNssOutput"
         <<: *API_RESPONSES
@@ -132,7 +130,7 @@ paths:
         - package
       summary: Onboards a locally stored package into NFVO
       description: >-
-        <p>Uploads a locally stored package for a NS or vNSF into the NFVO.</p>
+        Uploads a locally stored package for a NS or vNSF into the NFVO.
       operationId: onboardLocalPackage
       consumes:
         - multipart/form-data
@@ -145,7 +143,7 @@ paths:
         type: string
       responses:
         200:
-          description: "Request succeeded"
+          description: Request succeeded
           schema:
             $ref: "#/definitions/PackageOnboardedOutput"
         <<: *API_RESPONSES
@@ -156,7 +154,7 @@ paths:
         - package
       summary: Onboards a remotely stored package into NFVO
       description: >-
-        <p>Uploads a remotely stored package for a NS or vNSF into the NFVO.</p>
+        Uploads a remotely stored package for a NS or vNSF into the NFVO.
       operationId: onboardRemotePackage
       consumes:
         - application/json
@@ -168,10 +166,10 @@ paths:
         description: The body of the request
         required: true
         schema:
-          $ref: '#/definitions/PackageOnboardedInput'
+          $ref: "#/definitions/PackageOnboardedInput"
       responses:
         200:
-          description: "Request succeeded"
+          description: Request succeeded
           schema:
             $ref: "#/definitions/PackageOnboardedOutput"
         <<: *API_RESPONSES
@@ -182,7 +180,7 @@ paths:
         - package
       summary: Removes package from vNSFO
       description: >-
-        <p>Removes the package of a NS or vNSF from the vNSFO.</p>
+        Removes the package of a NS or vNSF from the vNSFO.
       operationId: removePackage
       produces:
         - application/json
@@ -193,7 +191,7 @@ paths:
           type: string
       responses:
         200:
-          description: "Request succeeded"
+          description: Request succeeded
           schema:
             $ref: "#/definitions/PackageRemovedOutput"
         <<: *API_RESPONSES
@@ -204,13 +202,13 @@ paths:
         - vim
       summary: Provides the list of available VIMs
       description: >-
-        <p>Returns the available VIMs.</p>
+        Returns the available VIMs.
       operationId: getAvailableVims
       produces:
         - application/json
       responses:
         200:
-          description: "Request succeeded"
+          description: Request succeeded
           schema:
             $ref: "#/definitions/VimListOutput"
         <<: *API_RESPONSES
@@ -220,7 +218,7 @@ paths:
         - vim
       summary: Registers vNSF image into the VIM
       description: >-
-        <p>TBD. Uploads the image of a vNSF into the VIM.</p>
+        TBD. Uploads the image of a vNSF into the VIM.
       operationId: registerVnsfImage
       consumes:
         - application/json
@@ -232,10 +230,10 @@ paths:
         description: The body of the request
         required: true
         schema:
-          $ref: '#/definitions/VimRegisterImageInput'
+          $ref: "#/definitions/VimRegisterImageInput"
       responses:
         200:
-          description: "Request succeeded"
+          description: Request succeeded
           schema:
             $ref: "#/definitions/VimRegisterImageOutput"
         <<: *API_RESPONSES
@@ -246,13 +244,13 @@ paths:
         - vnsf
       summary: Provides the running vNSFs
       description: >-
-        <p>Returns the instantiated vNSFs.</p>
+        Returns the instantiated vNSFs.
       operationId: getDeployedVnsfs
       produces:
         - application/json
       responses:
         200:
-          description: "Request succeeded"
+          description: Request succeeded
           schema:
             $ref: "#/definitions/RunningVnsfOutput"
         <<: *API_RESPONSES
@@ -262,7 +260,7 @@ paths:
         - vnsf
       summary: Provides the deployed vNSFs per tenant
       description: >-
-        <p>TBD. Returns the deployed vNSFs per tenant.</p>
+        TBD. Returns the deployed vNSFs per tenant.
       operationId: getDeployedVnsfsPerTenant
       produces:
         - application/json
@@ -278,7 +276,7 @@ paths:
         - vnsf
       summary: Fetches the status of a previously executed action in a vNSF
       description: >-
-        <p>TBD. Checks the status of the remote execution of data into a specific vNSF.</p>
+        TBD. Checks the status of the remote execution of data into a specific vNSF.
       operationId: checkVnsfAction
       produces:
         - application/json
@@ -301,7 +299,7 @@ paths:
         - vnsf
       summary: Executes pre-defined action from a specific vNSF
       description: >-
-        <p>Triggers the remote execution of data into a specific vNSF.</p>
+        Triggers the remote execution of data into a specific vNSF.
       operationId: executeVnsfAction
       consumes:
         - application/json
@@ -313,10 +311,10 @@ paths:
         description: The body of the request
         required: true
         schema:
-          $ref: '#/definitions/VnsfActionInput'
+          $ref: "#/definitions/VnsfActionInput"
       responses:
         200:
-          description: "Request succeeded"
+          description: Request succeeded
           schema:
             $ref: "#/definitions/VnsfActionOutput"
         <<: *API_RESPONSES
@@ -324,11 +322,11 @@ paths:
 
 definitions:
   ConfigNssOutput:
-    type: "array"
+    type: array
     items:
-      type: "object"
+      type: object
       required:
-        - "ns"
+        - ns
       properties:
         ns:
           type: object
@@ -339,225 +337,225 @@ definitions:
             - vendor_id
           properties:
             config_status:
-              type: "string"
-              example: "configured"
+              type: string
+              example: configured
             name:
-              type: "string"
-              example: "cirros_2vnf_nsd"
+              type: string
+              example: cirros_2vnf_nsd
             ns_id:
-              type: "string"
-              example: "cirros_2vnf_nsd"
+              type: string
+              example: cirros_2vnf_nsd
             vendor_id:
-              type: "string"
-              example: "OSM"
+              type: string
+              example: OSM
   EndPoints:
-    type: "object"
+    type: object
     required:
-      - "endpoints"
+      - endpoints
     properties:
       endpoints:
-        type: "array"
+        type: array
         items:
-          type: "object"
+          type: object
           properties:
             endpoint:
-              type: "string"
-              example: "/"
+              type: string
+              example: /
             methods:
-              type: "array"
+              type: array
               items:
-                type: "string"
-                example: "GET"
+                type: string
+                example: GET
 
   PackageOnboardedInput:
-    type: "object"
+    type: object
     required:
       - path
     properties:
       path:
-        type: "string"
-        example: "/opt/osm_pkg/cirros_vnf.tar.gz"
+        type: string
+        example: /opt/osm_pkg/cirros_vnf.tar.gz
 
   PackageOnboardedOutput:
-    type: "object"
+    type: object
     required:
       - package
       - transaction_id
     properties:
       package:
-        type: "string"
-        example: "/opt/osm_pkg/cirros_vnf.tar.gz"
+        type: string
+        example: /opt/osm_pkg/cirros_vnf.tar.gz
       transaction_id:
-        type: "string"
-        example: "fe54b446-0e8e-4041-9d00-c07387aa1804"
+        type: string
+        example: fe54b446-0e8e-4041-9d00-c07387aa1804
 
   PackageRemovedOutput:
-    type: "object"
+    type: object
     required:
       - package
     properties:
       package:
-        type: "string"
-        example: "cirros_vnfd"
+        type: string
+        example: cirros_vnfd
 
   RunningVnsfOutput:
-    type: "array"
+    type: array
     items:
-      type: "object"
+      type: object
       properties:
         config_status:
-          type: "string"
-          example: "configuring"
+          type: string
+          example: configuring
         ip:
-          type: "string"
-          example: "172.16.13.126"
+          type: string
+          example: 172.16.13.126
         ns_id:
-          type: "string"
-          example: "84e9676d-a237-4908-86e9-60eb976dae3c"
+          type: string
+          example: 84e9676d-a237-4908-86e9-60eb976dae3c
         ns_name:
-          type: "string"
-          example: "mspl"
+          type: string
+          example: mspl
         operational_status:
-          type: "string"
-          example: "running"
+          type: string
+          example: running
         vendor:
-          type: "string"
-          example: "SHIELD"
+          type: string
+          example: SHIELD
         vim:
-          type: "string"
-          example: "openstack-vim1"
+          type: string
+          example: openstack-vim1
         vnf_id:
-          type: "string"
-          example: "ed37f789-9ed8-43bc-8b5f-c4c1ca192363"
+          type: string
+          example: ed37f789-9ed8-43bc-8b5f-c4c1ca192363
         vnf_name:
-          type: "string"
-          example: "mspl__mspl_vnf__2"
+          type: string
+          example: mspl__mspl_vnf__2
 
   VimListOutput:
-    type: "array"
+    type: array
     items:
       type: object
       properties:
         name:
-          type: "string"
-          example: "openstack-vim1"
+          type: string
+          example: openstack-vim1
         uuid:
-          type: "string"
-          example: "openstack-vim1"
+          type: string
+          example: openstack-vim1
   VimRegisterImageInput:
-    type: "object"
+    type: object
     required:
       - img_url
       - img_checksum
     properties:
       img_url:
-        type: "string"
-        example: "..."
+        type: string
+        example: ...
       img_checksum:
-        type: "string"
-        example: "..."
+        type: string
+        example: ...
 
   VimRegisterImageOutput:
-    type: "object"
+    type: object
     required:
-      - "img_url"
-      - "img_checksum"
+      - img_url
+      - img_checksum
     properties:
       img_url:
-        type: "string"
+        type: string
       img_checksum:
-        type: "string"
+        type: string
 
   VnsfActionInput:
-    type: "object"
+    type: object
     required:
       - vnsf_id
       - action
       - params
     properties:
       vnsf_id:
-        type: "string"
-        example: "afcb3492-f326-4979-acea-fcc47168ca12"
+        type: string
+        example: afcb3492-f326-4979-acea-fcc47168ca12
       action:
-        type: "string"
-        example: "set-policies"
+        type: string
+        example: set-policies
       params:
-        type: "object"
+        type: object
         example: {"key": "value"}
 
   VnsfActionOutput:
-    type: "object"
+    type: object
     required:
-      - "output"
+      - output
     properties:
       output:
-        type: "object"
+        type: object
         properties:
           create-time:
-            type: "string"
-            example: "1505647110"
+            type: string
+            example: 1505647110
           job-id:
-            type: "string"
-            example: "1"
+            type: string
+            example: 1
           name:
-            type: "string"
+            type: string
           nsr_id_ref:
-            type: "string"
-            example: "e3c04a54-2a4b-4bd7-84d0-f0c024857380"
+            type: string
+            example: e3c04a54-2a4b-4bd7-84d0-f0c024857380
           triggered-by:
-            type: "string"
-            example: "ns-primitive"
+            type: string
+            example: ns-primitive
           vnf-out-list:
-            type: "object"
+            type: object
             required:
-              - "member_vnf_index_ref"
-              - "vnf-out-primitive"
+              - member_vnf_index_ref
+              - vnf-out-primitive
             properties:
               member_vnf_index_ref:
-                type: "string"
-                example: "1"
+                type: string
+                example: 1
               vnf-out-primitive:
-                type: "object"
+                type: object
                 required:
-                  - "execution-error-details"
-                  - "execution-id"
-                  - "execution-status"
-                  - "index"
-                  - "name"
-                  - "parameter"
-                  - "vnfr-id-ref"
+                  - execution-error-details
+                  - execution-id
+                  - execution-status
+                  - index
+                  - name
+                  - parameter
+                  - vnfr-id-ref
                 properties:
                   execution-error-details:
-                    type: "string"
+                    type: string
                     example: ""
                   execution-id:
-                    type: "string"
-                    example: "action-2ac6e694-b347-411a-839d-fca863b2ea1a"
+                    type: string
+                    example: action-2ac6e694-b347-411a-839d-fca863b2ea1a
                   execution-status:
-                    type: "string"
-                    example: "pending"
+                    type: string
+                    example: pending
                   index:
-                    type: "string"
-                    example: "0"
+                    type: string
+                    example: 0
                   name:
-                    type: "string"
-                    example: "set-policies"
+                    type: string
+                    example: set-policies
                   parameter:
-                    type: "object"
+                    type: object
                     required:
-                      - "name"
-                      - "value"
+                      - name
+                      - value
                     properties:
                       name:
-                        type: "string"
-                        example: "policies"
+                        type: string
+                        example: policies
                       value:
-                        type: "string"
+                        type: string
                         example: "<xml>data</xml>"
                   vnfr-id-ref:
-                    type: "string"
-                    example: "afcb3492-f326-4979-acea-fcc47168ca12"
+                    type: string
+                    example: afcb3492-f326-4979-acea-fcc47168ca12
 
 externalDocs:
   description: Find out more about the vNSFO API
-  url: 'https://github.com/shield-h2020/vnsfo'
+  url: https://github.com/shield-h2020/nfvo
