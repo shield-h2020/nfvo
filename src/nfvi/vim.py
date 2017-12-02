@@ -15,6 +15,8 @@
 # limitations under the License.
 
 
+from nfvi.openstack.connector import OpenStackConnector
+from nfvi.openstack.glance import OpenStackGlance
 from nfvo.osm import endpoints as osm_eps
 
 import json
@@ -68,4 +70,23 @@ def get_vim_tenant_list():
             osm_eps.VIM_TENANT,
             verify=False)
     output = json.loads(resp.text)
+    return output
+
+
+def register_vdu(dc_uuid, vdu_name, vdu_img):
+    os_details = {"osm":
+                  {"datacenter": dc_uuid}}
+    os_conn = OpenStackConnector(**os_details)
+    glance_client = OpenStackGlance(os_conn)
+    status, glance_image = glance_client.upload_image(vdu_name, vdu_img)
+    status = "{}registered".format(
+            "" if status == "success" else "not ")
+    glance_image_d = {}
+    if glance_image is not None:
+        glance_image_d = {
+                "name": glance_image.name, "uuid": glance_image.id,
+                "checksum": glance_image.checksum,
+                "container_format": glance_image.container_format,
+                "disk_format": glance_image.disk_format}
+    output = {"status": status, "image": glance_image_d}
     return output

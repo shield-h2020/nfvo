@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-from flask import abort
+from core.exception import Exception
 from flask import Blueprint
 from flask import jsonify
 from flask import request
@@ -49,13 +49,16 @@ def get_vim_images():
 
 @nfvo_views.route(endpoints.VIM_IMAGE, methods=["POST"])
 @content.expect_json_content
-def register_vnf_image():
+def register_vnf_image(vim_id):
+    if "multipart/form-data" not in request.headers.get("Content-Type", ""):
+        Exception.invalid_content_type("Expected: 'multipart/form-data'")
+    if not(len(request.files) > 0 and "image" in request.files.keys()):
+        Exception.improper_usage("Missing file")
     try:
-        if not content.data_in_request(request, ["img_url", "img_checksum"]):
-            abort(418)
-        output = vim_s.fill_vim_template(
-                request.json.get("img_url"),
-                request.json.get("img_checksum"))
+        img_bin = request.files.get("image")
+        img_name = img_bin.filename
+        # img_name = img_name[0:img_name.index(".")-1]
+        output = vim_s.register_vdu(vim_id, img_name, img_bin.stream)
         return jsonify(output)
     except Exception as e:
         return "Error: %s" % str(e)
