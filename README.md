@@ -16,13 +16,17 @@ The orchestrator is a central element which covers the deployment of the Virtual
 
 ## First set-up
 
-If HTTPS and/or client certificate is enabled, PKI data must be generated first:
+If HTTPS and/or client certificate is enabled, PKI data must be generated first.
 ```
 ./bin/gen_creds.sh
 ```
-Similarly, configuration data must be copied from the provided samples:
+Similarly, configuration data must be copied from the provided samples. This will fill with the proper IPs. **Note** that the vNSFO must run in the same host as OSM.
 ```
 ./bin/set_conf.sh
+```
+The dependencies can be installed through a script.
+```
+./bin/deploy.sh
 ```
 
 ## Docker
@@ -35,7 +39,8 @@ TODO
 
 # API Documentation
 
-The documentation follows the [OpenAPI Specification](https://swagger.io/specification/) (aka Swagger RESTful API Documentation Specification) Version 2.0 and is defined in the [endpoints.yaml](src/server/endpoints.yaml) file. To see documentation in a user-friendly way, point your browser to the root of the vNSFO API server or directly paste the contents into [Swagger Editor](https://editor.swagger.io/).
+The documentation follows the [OpenAPI Specification](https://swagger.io/specification/) (aka Swagger RESTful API Documentation Specification) version 2.0.
+It is defined in the [endpoints.yaml](src/server/endpoints.yaml) file; and can be consulted in a user-friendly way by pointing your browser to the root of the vNSFO API server or directly paste the contents into [Swagger Editor](https://editor.swagger.io/).
 
 # Testing
 
