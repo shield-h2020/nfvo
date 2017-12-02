@@ -47,7 +47,7 @@ def get_vim_images():
         return "Error: %s" % str(e)
 
 
-@nfvo_views.route(endpoints.VIM_IMAGE, methods=["POST"])
+@nfvo_views.route(endpoints.VIM_IMAGE_UPLOAD, methods=["POST"])
 @content.expect_json_content
 def register_vnf_image(vim_id):
     if "multipart/form-data" not in request.headers.get("Content-Type", ""):
