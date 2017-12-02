@@ -1,0 +1,9 @@
+python2.7
+mongodb-clients
+mongodb-server
+python-glanceclient
+python-keystoneclient
+python-neutronclient
+python-novaclient
+python-requests
+python-yaml

@@ -32,14 +32,11 @@ nfvo_views = Blueprint("nfvo_pkg_views", __name__)
 def onboard_package():
     if "multipart/form-data" not in request.headers.get("Content-Type", ""):
         Exception.invalid_content_type("Expected: 'multipart/form-data'")
-    if "multipart/form-data" not in request.headers\
-            .get("Content-Type", "") and \
-            request.files is None:
+    form_param = "package"
+    if not(len(request.files) > 0 and form_param in request.files.keys()):
         Exception.improper_usage("Missing file")
     try:
-        data = request.files
-        if data is not None:
-            pkg_bin = data.get("package")
+        pkg_bin = request.files.get(form_param)
         output = pkg.onboard_package(pkg_bin)
         return jsonify(output)
     except Exception as e:
@@ -52,13 +49,10 @@ def onboard_package_remote():
     if "application/json" not in request.headers.get("Content-Type", ""):
         Exception.invalid_content_type(
                 "Expected: 'application/json' or 'multipart/form-data'")
-    if "application/json" in request.headers.get("Content-Type", "") and \
-            not content.data_in_request(request, ["path"]):
+    if not content.data_in_request(request, ["path"]):
         Exception.improper_usage("Missing argument: 'path'")
     try:
-        file_path = None
-        if content.data_in_request(request, ["path"]):
-            file_path = request.json.get("path")
+        file_path = request.json.get("path")
         output = pkg.onboard_package_remote(file_path)
         return jsonify(output)
     except Exception as e:
