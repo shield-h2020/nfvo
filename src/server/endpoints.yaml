@@ -228,23 +228,24 @@ paths:
           schema:
             $ref: "#/definitions/VimListImageOutput"
         <<: *API_RESPONSES
+  /vim/image/{vim_id}:
     post:
       tags:
         - vim
-      summary: Registers a VDU into a specific VIM
+      summary: Registers a locally stored VDU image into a specific VIM
       description: >-
-        TBD. Uploads the image of a vNSF into the VIM.
+        Uploads a locally stored image of a vNSF into a specific VIM.
       operationId: registerVnsfImage
       consumes:
         - multipart/form-data
       produces:
         - application/json
       parameters:
-      - name: image
-        in: formData
+      - name: vim_id
+        in: path
         required: true
         type: string
-      - name: vim
+      - name: image
         in: formData
         required: true
         type: string
@@ -458,31 +459,7 @@ definitions:
           example: openstack-vim1
         uuid:
           type: string
-          example: openstack-vim1
-
-# {
-#   "osm": {
-#     "openstack-i2cat": [
-#       {
-#         "checksum": "010286a5f8ccbe057a81d6fdda8b2747",
-#         "container_format": "bare",
-#         "created_at": "2017-09-15T08:19:35Z",
-#         "disk_format": "raw",
-#         "file": "/v2/images/36ba15af-a67a-4da4-aebe-29585fbbdb2d/file",
-#         "id": "36ba15af-a67a-4da4-aebe-29585fbbdb2d",
-#         "min_disk": 0,
-#         "min_ram": 0,
-#         "name": "vIDS_v1_0",
-#         "owner": "8cacf6f614b4445ea12ae7fe105697f0",
-#         "protected": false,
-#         "schema": "/v2/schemas/image",
-#         "size": 2650079232,
-#         "status": "active",
-#         "tags": [],
-#         "updated_at": "2017-09-15T08:40:38Z",
-#         "virtual_size": null,
-#         "visibility": "public"
-#       },
+          example: a9442c66-9df8-01ca-a34c-9b363e37fb4e
 
   VimListImageOutput:
     type: object
@@ -554,29 +531,39 @@ definitions:
                   type: integer
                   example: 13267968
 
-  VimRegisterImageInput:
-    type: object
-    required:
-      - img_url
-      - img_checksum
-    properties:
-      img_url:
-        type: string
-        example: ...
-      img_checksum:
-        type: string
-        example: ...
-
   VimRegisterImageOutput:
     type: object
     required:
-      - img_url
-      - img_checksum
+      - image
+      - status
     properties:
-      img_url:
+      image:
+        type: object
+        required:
+        - checksum
+        - container_format
+        - disk_format
+        - name
+        - uuid
+        properties:
+          checksum:
+            type: string
+            example: a6ffaa77f949a9e4ebb082c6147187cf
+          container_format:
+            type: string
+            example: bare
+          disk_format:
+            type: string
+            example: qcow2
+          name:
+            type: string
+            example: Fedora-x86_64-20-20131211.1-sda-ping.qcow2
+          uuid:
+            type: string
+            example: 20996986-0ee2-4eda-ad72-918997ba00b3
+      status:
         type: string
-      img_checksum:
-        type: string
+        example: registered
 
   VnsfActionInput:
     type: object
