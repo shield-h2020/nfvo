@@ -1,8 +1,13 @@
-Crypto==1.4.1
+# Deployment
 #docker==2.5.1
 #docker-compose==1.16.1
+# Source
+Crypto==1.4.1
 Flask==0.12.2
 paramiko==1.16.0
 pymongo==3.5.1
 PyYAML==3.12
 requests==2.9.1
+Werkzeug==0.12.2
+# Tests
+schema-0.6.6
