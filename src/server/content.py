@@ -20,10 +20,10 @@ from flask import request
 from flask import Response
 
 
-def data_in_request(request, expected_data):
+def data_in_request(request_content, expected):
     if "application/json" in request.__dict__\
             .get("environ").get("CONTENT_TYPE"):
-        return all(map(lambda x: x in request.json.keys(), expected_data))
+        return all(map(lambda x: x in request_content.json.keys(), expected))
     return False
 
 

@@ -15,11 +15,8 @@
 # limitations under the License.
 
 
-from core.config import FullConfParser
-from db.manager import DBManager
-from flask import Flask
-from flask import g
 from gui.swagger import swagger_views as v_gui
+from server.http.server_cfg import ServerConfig
 from server.views.endpoints import nfvo_views as v_endpoints
 from server.views.infra import nfvo_views as v_nfvi
 from server.views.ns import nfvo_views as v_ns
@@ -28,73 +25,25 @@ from server.views.vim import nfvo_views as v_vim
 from server.views.vnf import nfvo_views as v_vnsf
 from werkzeug import serving
 
-import ast
 import logging as log
 import os
 import ssl
 import sys
 
 logger = log.getLogger("httpserver")
-API_HOST = "0.0.0.0"
-API_PORT = "8000"
-API_DEBUG = True
-HTTPS_ENABLED = True
-API_VERIFY_CLIENT = False
 
 
 class Server(object):
     """
-    Encapsules a flask server instance to expose a REST API.
+    Encapsulates a Flask server instance to expose a REST API.
     """
 
     def __init__(self):
         """
         Constructor for the server wrapper.
         """
-        # Imports the named package, in this case this file
-        self.__load_config()
-        self._app = Flask(
-                __name__.split(".")[-1],
-                template_folder=self.template_folder)
-        self._app.mongo = DBManager()
-        # self._app.nfvo_host = self.nfvo_host
-        # self._app.nfvo_port = self.nfvo_port
-        # Added in order to be able to execute "before_request" method
-        app = self._app
-
-        @app.before_request
-        def before_request():
-            # "Attach" objects within the "g" object.
-            # This is passed to each view method
-            g.mongo = self._app.mongo
-
-    def __load_config(self):
-        self.config = FullConfParser()
-        # Imports API-related info
-        self.api_category = self.config.get("api.conf")
-        # General API data
-        self.api_general = self.api_category.get("general")
-        self.host = self.api_general.get("host", API_HOST)
-        self.port = self.api_general.get("port", API_PORT)
-        self.debug = ast.literal_eval(
-                self.api_general.get("debug")) or API_DEBUG
-        # Verification and certificates
-        self.api_sec = self.api_category.get("security")
-        self.https_enabled = ast.literal_eval(
-                self.api_sec.get("https_enabled")) \
-            or HTTPS_ENABLED
-        self.verify_users = ast.literal_eval(
-                self.api_sec.get("verify_client_cert")) \
-            or API_VERIFY_CLIENT
-        # GUI data
-        self.template_folder = os.path.normpath(
-            os.path.join(os.path.dirname(__file__),
-                         "../gui", "flask_swagger_ui/templates"))
-        # General NFVO data
-        # self.nfvo_category = self.config.get("nfvo.conf")
-        # self.nfvo_general = self.nfvo_category.get("general")
-        # self.nfvo_host = self.nfvo_general.get("host")
-        # self.nfvo_port = self.nfvo_general.get("port")
+        cfg = ServerConfig()
+        self.__dict__.update(cfg.__dict__)
 
     @property
     def app(self):
@@ -116,7 +65,7 @@ class Server(object):
         self._app.register_blueprint(v_vim)
         self._app.register_blueprint(v_vnsf)
 
-    def runServer(self, services=[]):
+    def run(self):
         """
         Starts up the server. It (will) support different config options
         via the config plugin.
@@ -129,7 +78,7 @@ class Server(object):
                 # Set up a TLS context
                 context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
                 certs_path = os.path.normpath(os.path.join(
-                    os.path.dirname(__file__), "../../", "cert"))
+                    os.path.dirname(__file__), "../../../", "cert"))
                 context_crt = os.path.join(certs_path, "server.crt")
                 context_key = os.path.join(certs_path, "server.key")
                 try:
