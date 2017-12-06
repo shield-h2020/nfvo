@@ -21,7 +21,7 @@ from flask import jsonify
 from flask import request
 from nfvi import vim as vim_s
 from server import content
-from server import endpoints
+from server.endpoints import VnsfoEndpoints as endpoints
 
 
 nfvo_views = Blueprint("nfvo_vim_views", __name__)

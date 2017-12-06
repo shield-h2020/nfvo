@@ -15,13 +15,10 @@
 # limitations under the License.
 
 
-# from flask import abort
 from flask import Blueprint
 from flask import jsonify
-# from flask import request
 from nfv import ns
-# from server import content
-from server import endpoints
+from server.endpoints import VnsfoEndpoints as endpoints
 
 
 nfvo_views = Blueprint("nfvo_ns_views", __name__)

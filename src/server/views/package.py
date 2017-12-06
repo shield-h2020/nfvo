@@ -21,7 +21,7 @@ from flask import jsonify
 from flask import request
 from nfv import package as pkg
 from server import content
-from server import endpoints
+from server.endpoints import VnsfoEndpoints as endpoints
 
 
 nfvo_views = Blueprint("nfvo_pkg_views", __name__)

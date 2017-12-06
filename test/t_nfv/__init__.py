@@ -15,7 +15,8 @@
 # limitations under the License.
 
 
-from src.server.http.server_cfg import ServerConfig
+import os
+import sys
 
-server_cfg = ServerConfig()
-api_url = "https://{0}:{1}".format(server_cfg.host, server_cfg.port)
+sys.path.append(os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "../..")))

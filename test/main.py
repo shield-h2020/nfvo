@@ -16,14 +16,19 @@
 # limitations under the License.
 
 
-from common.test_endpoints import TestCommonEndpoints
-from nfv.test_nfv import TestNfvVnf
 import unittest
+
+from t_nfv.test_nfv import TestNfvVnf
+from t_server.test_endpoints import TestCommonEndpoints
 
 
 class TestSuite:
     def __init__(self):
-        tests = [TestCommonEndpoints, TestNfvVnf]
+        tests = []
+        tests += [
+            TestCommonEndpoints,
+            TestNfvVnf,
+        ]
         loader = unittest.TestLoader()
         suites_list = []
         suites_list += [loader.loadTestsFromTestCase(t) for t in tests]

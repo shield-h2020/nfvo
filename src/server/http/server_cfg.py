@@ -57,6 +57,9 @@ class ServerConfig(object):
             g.mongo = self._app.mongo
 
     def __import_config(self):
+        """
+        Fill properties fom configuration files.
+        """
         self.config = FullConfParser()
         # Imports API-related info
         self.api_category = self.config.get("api.conf")

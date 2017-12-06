@@ -51,6 +51,21 @@ def expect_json_content(func):
     return wrapper
 
 
+def on_mock(output):
+    def on_mock_outer(func):
+        """
+        Return specific output when mocked, otherwise run function as usual.
+        """
+        @wraps(func)
+        def on_mock_inner(*args, **kwargs):
+            if "mock" in kwargs:
+                mock = kwargs.pop("mock", False)
+                return str(output if mock else {})
+            return func(*args, **kwargs)
+        return on_mock_inner
+    return on_mock_outer
+
+
 def filter_actions(actions):
     filtered = filter(
             lambda x: x in ["GET", "POST", "PUT", "PATCH", "DELETE"],

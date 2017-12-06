@@ -14,8 +14,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from src.server.http.server_cfg import ServerConfig
-
-server_cfg = ServerConfig()
-api_url = "https://{0}:{1}".format(server_cfg.host, server_cfg.port)

@@ -21,7 +21,7 @@ from flask import jsonify
 from flask import request
 from nfv import vnf
 from server import content
-from server import endpoints
+from server.endpoints import VnsfoEndpoints as endpoints
 
 
 nfvo_views = Blueprint("nfvo_vnf_views", __name__)
@@ -35,7 +35,7 @@ def check_primitive_on_vnsf(vnsf_id, action_id):
 
 @nfvo_views.route(endpoints.VNSF_C_VNSFS, methods=["GET"])
 def fetch_config_vnsfs():
-    return jsonify(vnf.fetch_config_vnsfs())
+    return jsonify(vnf.get_vnfr_config())
 
 
 @nfvo_views.route(endpoints.VNSF_R_VNSFS, methods=["GET"])
