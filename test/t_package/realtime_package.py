@@ -15,13 +15,14 @@
 # limitations under the License.
 
 
-from common.test_utils import TestUtils
-from src.core.http_code import HttpCode
-from src.server.endpoints import VnsfoEndpoints as endpoints_s
-from src.server.mocks.package import MockPackage as package_m
-
 import os
 import unittest
+
+from common.test_utils import TestUtils
+
+from src.server.endpoints import VnsfoEndpoints as endpoints_s
+from src.server.http.http_code import HttpCode
+from src.server.mocks.package import MockPackage as package_m
 
 
 class TestPackageRealtime(unittest.TestCase):

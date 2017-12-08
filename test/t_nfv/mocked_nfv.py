@@ -15,13 +15,14 @@
 # limitations under the License.
 
 
+import unittest
+
 from common.test_utils import TestUtils
-from src.core.http_code import HttpCode
+
 from src.nfv import vnf as vnf_s
 from src.server.endpoints import VnsfoEndpoints as endpoints_s
+from src.server.http.http_code import HttpCode
 from src.server.mocks.vnf import MockVnfs as vnfs_m
-
-import unittest
 
 
 class TestNfvVnfMocked(unittest.TestCase):

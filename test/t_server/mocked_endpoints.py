@@ -15,11 +15,13 @@
 # limitations under the License.
 
 
+import unittest
+
 from common.test_utils import TestUtils
 from server.endpoints import VnsfoEndpoints as endpoints_s
 from server.mocks.endpoints import MockEndpoints as endpoints_m
-from src.core.http_code import HttpCode
-import unittest
+
+from src.server.http.http_code import HttpCode
 
 
 class TestServerEndpointsMocked(unittest.TestCase):

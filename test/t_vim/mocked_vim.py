@@ -15,14 +15,15 @@
 # limitations under the License.
 
 
-from common.test_utils import TestUtils
-from src.core.http_code import HttpCode
-from src.nfvi import vim as vim_s
-from src.server.endpoints import VnsfoEndpoints as endpoints_s
-from src.server.mocks.vim import MockVim as vim_m
-
 import unittest
 import uuid
+
+from common.test_utils import TestUtils
+
+from src.nfvi import vim as vim_s
+from src.server.endpoints import VnsfoEndpoints as endpoints_s
+from src.server.http.http_code import HttpCode
+from src.server.mocks.vim import MockVim as vim_m
 
 
 class TestVimMocked(unittest.TestCase):

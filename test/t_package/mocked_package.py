@@ -15,13 +15,14 @@
 # limitations under the License.
 
 
+import unittest
+
 from common.test_utils import TestUtils
-from src.core.http_code import HttpCode
+
 from src.nfv import package as package_s
 from src.server.endpoints import VnsfoEndpoints as endpoints_s
+from src.server.http.http_code import HttpCode
 from src.server.mocks.package import MockPackage as package_m
-
-import unittest
 
 
 class TestPackageMocked(unittest.TestCase):

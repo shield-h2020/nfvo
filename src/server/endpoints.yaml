@@ -16,14 +16,16 @@
 responses: &API_RESPONSES
   200: &HTTP_200_OK
     description: Request succeeded.
+  202: &HTTP_202_ACCEPTED
+    description: Request accepted. The request is under processing.
   415: &HTTP_415_UNSUPPORTED_MEDIA_TYPE
     description: Wrong media type. The server refuses to service because the payload is wrongly formatted.
-  404: &HTTP_404_NOT_FOUND
-    description: Not found. The requested resource does not exist.
   418: &HTTP_418_I_AM_TEAPOT
     description: Improper usage of the resource (e.g., bad params).
-  400: &HTTP_500_INTERNAL_SERVER_ERROR
+  500: &HTTP_500_INTERNAL_SERVER_ERROR
     description: Internal error. The server is prevented from fulfilling the request.
+  501: &HTTP_NOT_IMPLEMENTED
+    description: Not implemented. Method does not currently provide any logic.
 
 swagger: "2.0"
 

@@ -53,7 +53,7 @@ curl -ik https://127.0.0.1:8448
 
 ### NS
 
-#### Provide avialable NSs
+#### Provide available NSs
 
 ```
 curl -ik https://127.0.0.1:8448/ns/running
