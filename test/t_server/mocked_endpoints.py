@@ -22,14 +22,15 @@ from src.core.http_code import HttpCode
 import unittest
 
 
-class TestServerEndpointsRealtime(unittest.TestCase):
+class TestServerEndpointsMocked(unittest.TestCase):
 
     def setUp(self):
         self.get_endpoints = endpoints_s.ROOT
         self.utils = TestUtils()
 
-    def test_api_endpoints(self):
+    def test_mocked_api_endpoints(self):
         url = self.get_endpoints
         exp_code = HttpCode.OK
+        exp_out = endpoints_s.get_endpoints(**{"mock": True})
         schema = endpoints_m().get_api_endpoints_schema()
-        self.utils.test_get(url, schema, {}, exp_code)
+        self.utils.test_mocked_get(url, schema, {}, exp_code, exp_out)

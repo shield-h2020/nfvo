@@ -50,8 +50,9 @@ def get_vim_images():
 @nfvo_views.route(endpoints.VIM_IMAGE_UPLOAD, methods=["POST"])
 @content.expect_json_content
 def register_vnf_image(vim_id):
-    if "multipart/form-data" not in request.headers.get("Content-Type", ""):
-        Exception.invalid_content_type("Expected: 'multipart/form-data'")
+    exp_ct = "multipart/form-data"
+    if exp_ct not in request.headers.get("Content-Type", ""):
+        Exception.invalid_content_type("Expected: \"{}\"".format(exp_ct))
     if not(len(request.files) > 0 and "image" in request.files.keys()):
         Exception.improper_usage("Missing file")
     try:

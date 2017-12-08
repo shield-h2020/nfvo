@@ -17,14 +17,13 @@
 
 from common.test_utils import TestUtils
 from src.core.http_code import HttpCode
-from src.nfv import vnf as vnf_s
 from src.server.endpoints import VnsfoEndpoints as endpoints_s
 from src.server.mocks.vnf import MockVnfs as vnfs_m
 
 import unittest
 
 
-class TestNfvVnfMocked(unittest.TestCase):
+class TestNfvVnfRealtime(unittest.TestCase):
 
     def setUp(self):
         self.exec_action_on_vnf = endpoints_s.VNSF_ACTION_EXEC
@@ -32,24 +31,26 @@ class TestNfvVnfMocked(unittest.TestCase):
         self.vnsf_running_list = endpoints_s.VNSF_R_VNSFS
         self.utils = TestUtils()
 
-    def test_mocked_vnsf_running_list(self):
+    # @unittest.skip(TestUtils.ignore_realtime)
+    # @unittest.expectedFailure
+    def test_vnsf_running_list(self):
         url = self.vnsf_running_list
         exp_code = HttpCode.OK
-        exp_out = vnf_s.get_vnfr_running(**{"mock": True})
+        headers = {}
         schema = vnfs_m().get_vnfr_running_schema()
-        self.utils.test_mocked_get(url, schema, {}, exp_code, exp_out)
+        self.utils.test_get(url, schema, headers, exp_code)
 
-    def test_mocked_get_vnfr_config_schema(self):
+    def testget_vnfr_config_schema(self):
         url = self.get_vnfr_config
         exp_code = HttpCode.OK
-        exp_out = vnf_s.get_vnfr_config(**{"mock": True})
+        headers = {}
         schema = vnfs_m().get_vnfr_config_schema()
-        self.utils.test_mocked_get(url, schema, {}, exp_code, exp_out)
+        self.utils.test_get(url, schema, headers, exp_code)
 
-    def test_mocked_exec_action_on_vnf(self):
+    def test_exec_action_on_vnf(self):
         url = self.exec_action_on_vnf
         exp_code = HttpCode.OK
-        exp_out = vnf_s.exec_action_on_vnf(**{"mock": True})
+        headers = {}
         data = {}
         schema = vnfs_m().exec_action_on_vnf_schema()
-        self.utils.test_mocked_post(url, schema, data, {}, exp_code, exp_out)
+        self.utils.test_post(url, schema, data, headers, exp_code)

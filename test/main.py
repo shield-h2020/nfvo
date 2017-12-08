@@ -16,25 +16,61 @@
 # limitations under the License.
 
 
+import argparse
 import unittest
 
-from t_nfv.test_nfv import TestNfvVnf
-from t_server.test_endpoints import TestCommonEndpoints
+from t_nfv.mocked_nfv import TestNfvVnfMocked
+from t_nfv.realtime_nfv import TestNfvVnfRealtime
+from t_server.mocked_endpoints import TestServerEndpointsMocked
+from t_server.realtime_endpoints import TestServerEndpointsRealtime
 
 
 class TestSuite:
-    def __init__(self):
+
+    def __init__(self, args):
+        mocked, realtime = args.mock, args.real_time
         tests = []
-        tests += [
-            TestCommonEndpoints,
-            TestNfvVnf,
-        ]
+        tests_mocked = self.__define_tests_mocked()
+        tests_realtime = self.__define_tests_realtime()
+        if mocked:
+            tests += tests_mocked
+        elif realtime:
+            tests += tests_realtime
+        else:
+            tests += [tests_mocked, tests_realtime]
+
         loader = unittest.TestLoader()
         suites_list = []
         suites_list += [loader.loadTestsFromTestCase(t) for t in tests]
-        big_suite = unittest.TestSuite(suites_list)
+        self.suite = unittest.TestSuite(suites_list)
+
+    def __define_tests_realtime(self):
+        return [
+            TestNfvVnfRealtime,
+            TestServerEndpointsRealtime,
+        ]
+
+    def __define_tests_mocked(self):
+        return [
+            TestNfvVnfMocked,
+            TestServerEndpointsMocked,
+        ]
+
+    def run(self):
         runner = unittest.TextTestRunner(verbosity=2)
-        runner.run(big_suite)
+        runner.run(self.suite)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run unit tests")
+    parser.add_argument("-m", "--mock", action="store_true",
+                        help="Run mocked tests only")
+    parser.add_argument("-r", "--real-time", action="store_true",
+                        help="Run real-time tests only")
+    return parser
+
 
 if __name__ == "__main__":
-    TestSuite()
+    parser = parse_args()
+    test_suite = TestSuite(parser.parse_args())
+    test_suite.run()

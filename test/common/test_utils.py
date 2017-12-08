@@ -16,15 +16,19 @@
 
 
 from common.rest_cfg import api_url
+from json.decoder import JSONDecodeError
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from unittest import TestCase
 
+import ast
 import json
 import requests
 import requests_mock
 
 
 class TestUtils:
+
+    ignore_realtime = "Real-time test"
 
     def __init__(self):
         self.url_base = api_url
@@ -35,7 +39,7 @@ class TestUtils:
         # Ignore warning messages on insecure requests
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-    def format_endpoint(self, endpoint):
+    def __format_endpoint(self, endpoint):
         if not endpoint.startswith("http"):
             url = "{0}{1}".format(self.url_base, endpoint)
         else:
@@ -43,7 +47,13 @@ class TestUtils:
         url = url[:-1] if url.endswith("/") else url
         return url
 
-    def check_output(self, response, schema, exp_code, exp_out):
+    def __set_url_headers(self, url, headers):
+        url = self.__format_endpoint(url)
+        headers_inner = {"User-Agent": "curl"}
+        headers_inner.update(headers)
+        return [url, headers_inner]
+
+    def __check_output(self, response, schema, exp_code=None, exp_out=None):
         if exp_code is None:
             exp_code = response.status_code
         # Check proper code returned
@@ -51,47 +61,60 @@ class TestUtils:
         if exp_out is None:
             # Avoid simple commas, json will not load properly
             exp_out = response.content.decode("utf-8")
+        error = False
         if isinstance(exp_out, str):
-            exp_out = exp_out.replace("'", "\"")
-            exp_out = json.loads(exp_out)
-        # Check proper content returned
-        val_con = getattr(schema, "validate")(exp_out)
-        self.test.assertEqual(exp_out, val_con,
-                              "Unexpected output structure")
+            try:
+                exp_out = exp_out.replace("'", "\"")
+                exp_out = json.loads(exp_out)
+            except JSONDecodeError:
+                try:
+                    exp_out = ast.literal_eval(exp_out)
+                except:
+                    error = True
+        if not error:
+            # Check proper content returned
+            val_con = getattr(schema, "validate")(exp_out)
+            self.test.assertEqual(exp_out, val_con,
+                                  "Unexpected output structure")
 
-    def test_get(self, url, schema, exp_code=None, exp_out=None):
-        url = self.format_endpoint(url)
+    def test_get(self, url, schema, headers={}, exp_code=None, exp_out=None):
+        url, headers_inner = self.__set_url_headers(url, headers)
         response = requests.get(
             url,
-            headers={"User-Agent": "curl"},
+            headers=headers_inner,
             verify=False)
-        self.check_output(response, schema, exp_code, exp_out)
+        self.__check_output(response, schema, exp_code, exp_out)
 
-    def test_mocked_get(self, url, schema, exp_code, exp_out):
-        url = self.format_endpoint(url)
+    def test_mocked_get(self, url, schema, headers, exp_code, exp_out):
+        url, headers_inner = self.__set_url_headers(url, headers)
         self.adapter.register_uri(
-            "GET", url, status_code=200,
+            "GET", url, status_code=exp_code,
+            request_headers=headers_inner,
             text=str(exp_out)
         )
         with requests_mock.mock(real_http=True) as m:
             m.get(url, text=str(exp_out))
-            self.test_get(url, schema, exp_code, exp_out)
+            self.test_get(url, schema, headers_inner, exp_code, exp_out)
 
-    def test_post(self, url, schema, data, exp_code=None, exp_out=None):
-        url = self.format_endpoint(url)
+    def test_post(self, url, schema, data, headers={},
+                  exp_code=None, exp_out=None):
+        url, headers_inner = self.__set_url_headers(url, headers)
         response = requests.post(
             url,
-            headers={"User-Agent": "curl"},
+            headers=headers_inner,
             data=data,
+            files=data,
             verify=False)
-        self.check_output(response, schema, exp_code, exp_out)
+        self.__check_output(response, schema, exp_code, exp_out)
 
-    def test_mocked_post(self, url, schema, data, exp_code, exp_out):
-        url = self.format_endpoint(url)
+    def test_mocked_post(self, url, schema, data, headers, exp_code, exp_out):
+        url, headers_inner = self.__set_url_headers(url, headers)
         self.adapter.register_uri(
-            "POST", url, status_code=200,
+            "POST", url, status_code=exp_code,
+            request_headers=headers_inner,
             text=str(exp_out)
         )
         with requests_mock.mock(real_http=True) as m:
             m.post(url, text=str(exp_out))
-            self.test_post(url, schema, data, exp_code, exp_out)
+            self.test_post(url, schema, data, headers_inner,
+                           exp_code, exp_out)
