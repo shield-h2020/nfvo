@@ -89,7 +89,6 @@ class ConfParser(BaseParser):
             exception_desc = "Could not parse configuration file '%s'. Details:\
                 %s" % (str(self.path), str(e))
             logger.exception(exception_desc)
-            print(exception_desc)
             sys.exit(exception_desc)
         self.__dict__.update(self.settings)
 

@@ -16,14 +16,14 @@
 
 
 from flask import Blueprint
-from flask import jsonify
 from nfv import ns
 from server.endpoints import VnsfoEndpoints as endpoints
-
+from server.http.http_code import HttpCode
+from server.http.http_response import HttpResponse
 
 nfvo_views = Blueprint("nfvo_ns_views", __name__)
 
 
 @nfvo_views.route(endpoints.NS_C_NSS, methods=["GET"])
 def fetch_config_nss():
-    return jsonify(ns.fetch_config_nss())
+    return HttpResponse.json(HttpCode.OK, ns.fetch_config_nss())

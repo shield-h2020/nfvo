@@ -17,13 +17,15 @@ responses: &API_RESPONSES
   200: &HTTP_200_OK
     description: Request succeeded.
   202: &HTTP_202_ACCEPTED
-    description: Request accepted. The request is under processing.
+    description: Request accepted. Request is under processing.
+  404: &HTTP_400_NOT_FOUND
+    description: Not found. Method does not exist in this API.
   415: &HTTP_415_UNSUPPORTED_MEDIA_TYPE
-    description: Wrong media type. The server refuses to service because the payload is wrongly formatted.
+    description: Wrong media type. Server refuses to service because the payload is wrongly formatted.
   418: &HTTP_418_I_AM_TEAPOT
-    description: Improper usage of the resource (e.g., bad params).
+    description: Request not accepted. Improper usage of the resource.
   500: &HTTP_500_INTERNAL_SERVER_ERROR
-    description: Internal error. The server is prevented from fulfilling the request.
+    description: Internal error. Server is prevented from fulfilling the request.
   501: &HTTP_NOT_IMPLEMENTED
     description: Not implemented. Method does not currently provide any logic.
 
@@ -161,8 +163,8 @@ paths:
         required: true
         type: string
       responses:
-        200:
-          description: Request succeeded
+        202:
+          description: Request accepted
           schema:
             $ref: "#/definitions/PackageOnboardedOutput"
         <<: *API_RESPONSES
@@ -187,8 +189,8 @@ paths:
         schema:
           $ref: "#/definitions/PackageOnboardedInput"
       responses:
-        200:
-          description: Request succeeded
+        202:
+          description: Request accepted
           schema:
             $ref: "#/definitions/PackageOnboardedOutput"
         <<: *API_RESPONSES
@@ -209,8 +211,8 @@ paths:
           required: true
           type: string
       responses:
-        200:
-          description: Request succeeded
+        202:
+          description: Request accepted
           schema:
             $ref: "#/definitions/PackageRemovedOutput"
         <<: *API_RESPONSES
@@ -269,8 +271,8 @@ paths:
         required: true
         type: string
       responses:
-        200:
-          description: Request succeeded
+        202:
+          description: Request accepted
           schema:
             $ref: "#/definitions/VimRegisterImageOutput"
         <<: *API_RESPONSES
@@ -350,8 +352,8 @@ paths:
         schema:
           $ref: "#/definitions/VnsfActionInput"
       responses:
-        200:
-          description: Request succeeded
+        202:
+          description: Request accepted
           schema:
             $ref: "#/definitions/VnsfActionOutput"
         <<: *API_RESPONSES
