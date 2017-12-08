@@ -15,6 +15,7 @@
 # limitations under the License.
 
 
+from core import regex
 from schema import And
 from schema import Schema
 from schema import Use
@@ -34,13 +35,13 @@ class MockVnfs:
         self.exec_action_on_vnf_mock = {}
 
     def get_vnfr_config_schema(self):
-        schema_conf = self.get_vnfr_config_mock
-        schema_conf[0]["charm"] = And(Use(str))
-        schema_conf[0]["description"] = And(Use(str))
-        schema_conf[0]["ns_name"] = And(Use(str))
-        schema_conf[0]["vendor"] = And(Use(str))
-        schema_conf[0]["version"] = And(Use(str))
-        schema = schema_conf
+        schema = self.get_vnfr_config_mock
+        for schema_conf in schema:
+            schema_conf["charm"] = And(Use(str))
+            schema_conf["description"] = And(Use(str))
+            schema_conf["ns_name"] = And(Use(str))
+            schema_conf["vendor"] = And(Use(str))
+            schema_conf["version"] = And(Use(str))
         return Schema(schema)
 
     def get_vnfr_running_schema(self):

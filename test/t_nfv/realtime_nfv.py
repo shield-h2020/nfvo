@@ -20,6 +20,7 @@ from src.core.http_code import HttpCode
 from src.server.endpoints import VnsfoEndpoints as endpoints_s
 from src.server.mocks.vnf import MockVnfs as vnfs_m
 
+import os
 import unittest
 
 
@@ -31,8 +32,6 @@ class TestNfvVnfRealtime(unittest.TestCase):
         self.vnsf_running_list = endpoints_s.VNSF_R_VNSFS
         self.utils = TestUtils()
 
-    # @unittest.skip(TestUtils.ignore_realtime)
-    # @unittest.expectedFailure
     def test_vnsf_running_list(self):
         url = self.vnsf_running_list
         exp_code = HttpCode.OK
@@ -40,17 +39,36 @@ class TestNfvVnfRealtime(unittest.TestCase):
         schema = vnfs_m().get_vnfr_running_schema()
         self.utils.test_get(url, schema, headers, exp_code)
 
-    def testget_vnfr_config_schema(self):
+    def test_get_vnfr_config_schema(self):
         url = self.get_vnfr_config
         exp_code = HttpCode.OK
         headers = {}
         schema = vnfs_m().get_vnfr_config_schema()
         self.utils.test_get(url, schema, headers, exp_code)
 
+    @unittest.skip(TestUtils.ignore_hazard)
     def test_exec_action_on_vnf(self):
         url = self.exec_action_on_vnf
         exp_code = HttpCode.OK
         headers = {}
         data = {}
+        schema = vnfs_m().exec_action_on_vnf_schema()
+        self.utils.test_post(url, schema, data, headers, exp_code)
+
+    def test_exec_action_on_vnf_invalid_header(self):
+        url = self.exec_action_on_vnf
+        exp_code = HttpCode.UNSUP_MEDIA
+        headers = {"Content-Type": "invalid/content"}
+        data = {}
+        schema = vnfs_m().exec_action_on_vnf_schema()
+        self.utils.test_post(url, schema, data, headers, exp_code)
+
+    def test_exec_action_on_vnf_invalid_data(self):
+        url = self.exec_action_on_vnf
+        exp_code = HttpCode.TEAPOT
+        headers = {"Content-Type": "application/json"}
+        # Sample file (not even a package)
+        file_loc = os.path.abspath(__file__)
+        data = {"invalid_key": file_loc}
         schema = vnfs_m().exec_action_on_vnf_schema()
         self.utils.test_post(url, schema, data, headers, exp_code)

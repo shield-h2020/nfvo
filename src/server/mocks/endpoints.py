@@ -15,6 +15,7 @@
 # limitations under the License.
 
 
+from core import regex
 from schema import And
 from schema import Schema
 from schema import Use
@@ -25,19 +26,24 @@ class MockEndpoints:
     def __init__(self):
         self.get_api_endpoints_mock = {
             "endpoints":
-                [{
-                    "methods": ["GET"],
-                    "endpoint": "/",
-                }]
+                [
+                    {
+                        "methods": ["GET"],
+                        "endpoint": "/",
+                    },
+                    {
+                        "methods": ["POST"],
+                        "endpoint": "/path/to/post/<vnf_id>",
+                    },
+                ]
         }
 
     def get_api_endpoints_schema(self):
         schema = self.get_api_endpoints_mock
-        schema_ep = schema.get("endpoints")[0]
-        schema_ep["methods"] = [
-            And(str, Use(str.upper), lambda s: s in (
-                "GET", "POST", "DELETE", "PUT"))
-        ]
-        schema_ep["endpoint"] = \
-            And(Use(str))
+        for schema_ep in schema.get("endpoints"):
+            schema_ep["methods"][0] =\
+                And(str, Use(str.upper), lambda s: s in (
+                    "GET", "POST", "DELETE", "PUT"))
+            schema_ep["endpoint"] = \
+                And(Use(str), lambda n: regex.unix_path(n) is not None)
         return Schema(schema)

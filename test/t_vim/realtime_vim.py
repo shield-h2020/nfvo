@@ -47,8 +47,7 @@ class TestVimRealtime(unittest.TestCase):
         schema = vim_m().get_vim_img_list_schema()
         self.utils.test_get(url, schema, data, exp_code)
 
-    # @unittest.skip(TestUtils.ignore_realtime)
-    @unittest.expectedFailure
+    @unittest.skip(TestUtils.ignore_hazard)
     def test_register_vdu(self):
         url = self.register_vdu.replace("<vim_id>", str(uuid.uuid4()))
         exp_code = HttpCode.OK
@@ -73,7 +72,9 @@ class TestVimRealtime(unittest.TestCase):
         url = self.register_vdu.replace("<vim_id>", str(uuid.uuid4()))
         exp_code = HttpCode.TEAPOT
         # Content-Type automatically set by requests (along with boundary)
-        headers = {}
-        data = {"invalid_key": ""}
+        headers = {"Content-Type": "multipart/form-data"}
+        # Sample file (not even an image)
+        file_loc = os.path.abspath(__file__)
+        data = {"invalid_key": file_loc}
         schema = vim_m().register_vdu_schema()
         self.utils.test_post(url, schema, data, headers, exp_code)

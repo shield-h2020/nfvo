@@ -116,5 +116,12 @@ curl -ki -H 'Content-Type: application/json' -X POST https://127.0.0.1:8448/vnsf
 
 # Testing
 
-TODO
+Run either mocked or real-time/live tests, or all of them.
+
+```
+cd test
+python main.py -m
+python main.py -r
+python main.py
+```
 
