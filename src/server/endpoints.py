@@ -16,7 +16,6 @@
 
 
 from flask import current_app
-from flask import jsonify
 from flask import request
 from flask import url_for
 from gui import swagger
@@ -66,16 +65,13 @@ class VnsfoEndpoints:
         2) Every other client will return the Swagger docs
         """
         if "curl" in useragent.get_user_agent(request):
-            endpoints = self.get_endpoints(current_app)
-            output = self.get_api_endpoints_mock
-            output["endpoints"] = endpoints
-            return jsonify(output)
+            return self.get_endpoints(current_app)
         else:
             return swagger.generate_swagger_docs()
 
     @content.on_mock(endpoints_m().get_api_endpoints_mock)
     def get_endpoints(self, app):
-        links = []
+        links = {"endpoints": []}
         for rule in app.url_map.iter_rules():
             if "static" in rule.endpoint:
                 break
@@ -83,7 +79,7 @@ class VnsfoEndpoints:
                 url = url_for(rule.endpoint, **(rule.defaults or {}))
             else:
                 url = rule.rule
-            links.append({
+            links.get("endpoints").append({
                 "endpoint": url,
                 "methods": content.filter_actions(rule.methods)})
         return links

@@ -30,7 +30,7 @@ nfvo_views = Blueprint("nfvo_vnf_views", __name__)
 @nfvo_views.route(endpoints.VNSF_ACTION_STATUS, methods=["GET"])
 @content.expect_json_content
 def check_primitive_on_vnsf(vnsf_id, action_id):
-    return jsonify({})
+    Exception.not_implemented()
 
 
 @nfvo_views.route(endpoints.VNSF_C_VNSFS, methods=["GET"])
@@ -45,7 +45,7 @@ def fetch_running_vnsfs():
 
 @nfvo_views.route(endpoints.VNSF_VNSF_TENANT, methods=["GET"])
 def fetch_running_vnsfs_per_tenant(tenant_id):
-    return jsonify({})
+    Exception.not_implemented()
 
 
 @nfvo_views.route(endpoints.VNSF_ACTION_EXEC, methods=["POST"])
