@@ -36,22 +36,13 @@ class TestPackageRealtime(unittest.TestCase):
     def test_onboard_package(self):
         url = self.onboard_package
         exp_code = HttpCode.OK
-        headers = {}
-        data = {}
-        schema = package_m().onboard_package_schema()
-        self.utils.test_post(url, schema, data, headers, exp_code)
-
-    @unittest.skip(TestUtils.ignore_hazard)
-    def test_onboard_package(self):
-        url = self.onboard_package
-        exp_code = HttpCode.OK
         # Content-Type automatically set by requests (along with boundary)
         # headers = {"Content-Type": "multipart/form-data"}
         headers = {}
         # Sample file (not even a package)
         file_loc = os.path.abspath(__file__)
         data = {"package": file_loc}
-        schema = package_m().onboard_package_remote_schema()
+        schema = package_m().onboard_package_schema()
         self.utils.test_post(url, schema, data, headers, exp_code)
 
     @unittest.skip(TestUtils.ignore_hazard)

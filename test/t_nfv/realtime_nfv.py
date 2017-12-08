@@ -39,7 +39,7 @@ class TestNfvVnfRealtime(unittest.TestCase):
         schema = vnfs_m().get_vnfr_running_schema()
         self.utils.test_get(url, schema, headers, exp_code)
 
-    def test_get_vnfr_config_schema(self):
+    def test_get_vnfr_config(self):
         url = self.get_vnfr_config
         exp_code = HttpCode.OK
         headers = {}

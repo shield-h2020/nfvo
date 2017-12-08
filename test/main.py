@@ -19,6 +19,7 @@
 import argparse
 import unittest
 
+from t_core.regex import TestRegex
 from t_nfv.mocked_nfv import TestNfvVnfMocked
 from t_nfv.realtime_nfv import TestNfvVnfRealtime
 from t_ns.mocked_ns import TestNfvNsMocked
@@ -58,6 +59,7 @@ class TestSuite:
             TestNfvNsRealtime,
             TestNfvVnfRealtime,
             TestPackageRealtime,
+            TestRegex,
             TestServerEndpointsRealtime,
             TestVimRealtime,
         ]

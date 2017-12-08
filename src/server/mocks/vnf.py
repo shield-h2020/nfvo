@@ -15,7 +15,6 @@
 # limitations under the License.
 
 
-from core import regex
 from schema import And
 from schema import Schema
 from schema import Use

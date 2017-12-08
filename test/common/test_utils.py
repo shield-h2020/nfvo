@@ -70,7 +70,7 @@ class TestUtils:
             except JSONDecodeError:
                 try:
                     exp_out = ast.literal_eval(exp_out)
-                except:
+                except Exception:
                     error = True
         if not error:
             # Check proper content returned

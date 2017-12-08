@@ -39,7 +39,7 @@ class TestNfvVnfMocked(unittest.TestCase):
         schema = vnfs_m().get_vnfr_running_schema()
         self.utils.test_mocked_get(url, schema, {}, exp_code, exp_out)
 
-    def test_mocked_get_vnfr_config_schema(self):
+    def test_mocked_get_vnfr_config(self):
         url = self.get_vnfr_config
         exp_code = HttpCode.OK
         exp_out = vnf_s.get_vnfr_config(**{"mock": True})
