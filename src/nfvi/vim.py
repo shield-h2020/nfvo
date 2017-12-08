@@ -18,6 +18,8 @@
 from nfvi.openstack.connector import OpenStackConnector
 from nfvi.openstack.glance import OpenStackGlance
 from nfvo.osm import endpoints as osm_eps
+from server import content
+from server.mocks.vim import MockVim as vim_m
 
 import json
 import requests
@@ -30,6 +32,7 @@ def get_vim_name_by_uuid(vim_list, uuid):
     return ""
 
 
+@content.on_mock(vim_m().get_vim_list_mock)
 def get_vim_list():
     resp = requests.get(
             osm_eps.VIM_DC,
@@ -43,6 +46,7 @@ def get_vim_list():
     return output
 
 
+@content.on_mock(vim_m().get_vim_img_list_mock)
 def get_vim_img_list():
     tenant_list = get_vim_tenant_list()
     output = {}
@@ -73,6 +77,7 @@ def get_vim_tenant_list():
     return output
 
 
+@content.on_mock(vim_m().register_vdu_mock)
 def register_vdu(dc_uuid, vdu_name, vdu_img):
     os_details = {"osm":
                   {"datacenter": dc_uuid}}

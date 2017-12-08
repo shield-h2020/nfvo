@@ -23,6 +23,8 @@ from t_nfv.mocked_nfv import TestNfvVnfMocked
 from t_nfv.realtime_nfv import TestNfvVnfRealtime
 from t_server.mocked_endpoints import TestServerEndpointsMocked
 from t_server.realtime_endpoints import TestServerEndpointsRealtime
+from t_vim.mocked_vim import TestVimMocked
+from t_vim.realtime_vim import TestVimRealtime
 
 
 class TestSuite:
@@ -48,12 +50,14 @@ class TestSuite:
         return [
             TestNfvVnfRealtime,
             TestServerEndpointsRealtime,
+            TestVimRealtime,
         ]
 
     def __define_tests_mocked(self):
         return [
             TestNfvVnfMocked,
             TestServerEndpointsMocked,
+            TestVimMocked,
         ]
 
     def run(self):
