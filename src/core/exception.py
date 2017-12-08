@@ -15,17 +15,22 @@
 # limitations under the License.
 
 
+from core.http_code import HttpCode
+from enum import Enum
 from flask import Response
 from werkzeug.exceptions import HTTPException
 
 
-class ExceptionCode:
-
-    CODE_BAD_REQUEST = 400
-    CODE_TEAPOT = 418
+class ExceptionCode(Enum):
 
     IMPROPER_USAGE = "Improper usage"
     INVALID_CONTENT_TYPE = "Invalid Content-Type"
+
+    def __get__(self, *args, **kwargs):
+        return self.value
+
+    def __str__(self):
+        return str(self.value)
 
 
 class Exception:
@@ -42,12 +47,12 @@ class Exception:
     @staticmethod
     def improper_usage(error_msg):
         return Exception.abort(
-                ExceptionCode.CODE_TEAPOT, ExceptionCode.IMPROPER_USAGE,
+                HttpCode.TEAPOT, ExceptionCode.IMPROPER_USAGE,
                 error_msg)
 
     @staticmethod
     def invalid_content_type(error_msg):
         return Exception.abort(
-                ExceptionCode.CODE_BAD_REQUEST,
+                HttpCode.UNSUP_MEDIA,
                 ExceptionCode.INVALID_CONTENT_TYPE,
                 error_msg)

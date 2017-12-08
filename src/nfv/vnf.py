@@ -173,7 +173,6 @@ def format_vnsf_catalog(catalog):
     return vnsfs
 
 
-# Temporary new parameter
 @content.on_mock(vnfs_m().exec_action_on_vnf_mock)
 def exec_action_on_vnf(payload):
     # JSON

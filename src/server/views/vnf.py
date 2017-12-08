@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-from flask import abort
+from core.exception import Exception
 from flask import Blueprint
 from flask import jsonify
 from flask import request
@@ -51,17 +51,16 @@ def fetch_running_vnsfs_per_tenant(tenant_id):
 @nfvo_views.route(endpoints.VNSF_ACTION_EXEC, methods=["POST"])
 @content.expect_json_content
 def exec_primitive_on_vnsf():
-    try:
-        if "application/json" not in request.headers.get("Content-Type", ""):
-            abort(400)
-        if not content.data_in_request(
-                request, ["vnsf_id", "action", "params"]):
-            abort(418)
-        payload = vnf.submit_action_request(
-                request.json.get("vnsf_id"),
-                request.json.get("action"),
-                request.json.get("params"))
-        output = payload
-        return jsonify(output)
-    except Exception as e:
-        return "Error: %s" % str(e)
+    exp_ct = "application/json"
+    if exp_ct not in request.headers.get("Content-Type", ""):
+        Exception.invalid_content_type("Expected: \"{}\"".format(exp_ct))
+    exp_params = ["vnsf_id", "action", "params"]
+    if not content.data_in_request(
+            request, exp_params):
+        Exception.improper_usage("Missing parameters: \"{}\""
+                                 .format(exp_params))
+    # Extract params, respecting the specific ordering
+    payload = vnf.submit_action_request(
+        *[request.json.get(x) for x in exp_params])
+    output = payload
+    return jsonify(output)
