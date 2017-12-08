@@ -17,12 +17,12 @@
 
 from core.exception import Exception
 from flask import Blueprint
-from flask import jsonify
 from flask import request
 from nfv import package as pkg
-from server import content
-from server import endpoints
-
+from server.http import content
+from server.http.http_code import HttpCode
+from server.http.http_response import HttpResponse
+from server.endpoints import VnsfoEndpoints as endpoints
 
 nfvo_views = Blueprint("nfvo_pkg_views", __name__)
 
@@ -30,37 +30,29 @@ nfvo_views = Blueprint("nfvo_pkg_views", __name__)
 @nfvo_views.route(endpoints.PKG_ONBOARD, methods=["POST"])
 @content.expect_json_content
 def onboard_package():
-    if "multipart/form-data" not in request.headers.get("Content-Type", ""):
-        Exception.invalid_content_type("Expected: 'multipart/form-data'")
+    exp_ct = "multipart/form-data"
+    if exp_ct not in request.headers.get("Content-Type", ""):
+        Exception.invalid_content_type("Expected: {}".format(exp_ct))
     form_param = "package"
     if not(len(request.files) > 0 and form_param in request.files.keys()):
         Exception.improper_usage("Missing file")
-    try:
-        pkg_bin = request.files.get(form_param)
-        output = pkg.onboard_package(pkg_bin)
-        return jsonify(output)
-    except Exception as e:
-        return "Error: %s" % str(e)
+    pkg_bin = request.files.get(form_param)
+    return HttpResponse.json(HttpCode.ACCEPTED, pkg.onboard_package(pkg_bin))
 
 
 @nfvo_views.route(endpoints.PKG_ONBOARD_REMOTE, methods=["POST"])
 @content.expect_json_content
 def onboard_package_remote():
-    if "application/json" not in request.headers.get("Content-Type", ""):
-        Exception.invalid_content_type(
-                "Expected: 'application/json' or 'multipart/form-data'")
+    exp_ct = "application/json"
+    if exp_ct not in request.headers.get("Content-Type", ""):
+        Exception.invalid_content_type("Expected: {}".format(exp_ct))
     if not content.data_in_request(request, ["path"]):
-        Exception.improper_usage("Missing argument: 'path'")
-    try:
-        file_path = request.json.get("path")
-        output = pkg.onboard_package_remote(file_path)
-        return jsonify(output)
-    except Exception as e:
-        return "Error: %s" % str(e)
+        Exception.improper_usage("Missing argument: path")
+    file_path = request.json.get("path")
+    return HttpResponse.json(HttpCode.ACCEPTED,
+                             pkg.onboard_package_remote(file_path))
 
 
 @nfvo_views.route(endpoints.PKG_REMOVE, methods=["DELETE"])
 def remove_package(vnsf_name):
-    payload = pkg.remove_package(vnsf_name)
-    output = payload
-    return jsonify(output)
+    return HttpResponse.json(HttpCode.ACCEPTED, pkg.remove_package(vnsf_name))

@@ -16,22 +16,21 @@
 # limitations under the License.
 
 
-from server.http_server import Server
 import sys
 
+from server.http.server import Server
 
-def main(argv=None):
-    if not argv:
-        argv = sys.argv
+
+def main():
     try:
-        Server().runServer()
+        Server().run()
     except KeyboardInterrupt:
         return True
     except Exception as e:
-        sys.stderr.write("Got an exception: %s\n" % str(e))
+        sys.stderr.write("Exception running server: {}\n".format(e))
         return False
     return True
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

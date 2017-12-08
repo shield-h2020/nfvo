@@ -24,15 +24,15 @@ get_lxc_ip() {
   [ -z $1 ] && return
   name=$1
   lxc_ip=$(lxc list | grep "$name" | awk '{print $6}')
-  [ -z $lxc_ip ] && lxc_ip="127.0.0.1"
-  echo $lxc_ip
+  [ -z ${lxc_ip} ] && lxc_ip="127.0.0.1"
+  echo ${lxc_ip}
 }
 
 # Copy sample configuration files
 for sample in ${conf_path}*.conf.sample; do
   final=${sample%\.*}
-  if [ ! -f $final ]; then
-    cp -p $sample $final
+  if [ ! -f ${final} ]; then
+    cp -p ${sample} ${final}
     if [[ "${final}" == *"nfvo.conf" ]] ; then
       #vm_ip=$(ip route get 8.8.8.8 | awk '/8.8.8.8/ {print $NF}')
       soub_ip=$(get_lxc_ip "SO-ub")

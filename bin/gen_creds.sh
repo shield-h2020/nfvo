@@ -19,7 +19,7 @@ source utils.sh
 
 full_path=$(dirname $(realpath $0))
 cert_path=${full_path}/../cert/
-mkdir -p $cert_path
+mkdir -p ${cert_path}
 
 # Generate server certificate and key for HTTPS connections
 if [ ! -f ${cert_path}server.crt ] || [ ! -f ${cert_path}server.key ]; then

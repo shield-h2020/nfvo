@@ -18,12 +18,15 @@
 from flask import current_app
 from nfvi import vim
 from nfvo.osm import endpoints as osm_eps
+from server.http import content
+from server.mocks.vnf import MockVnfs as vnfs_m
 from templates import nfvo as nfvo_tmpl
 
 import json
 import requests
 
 
+@content.on_mock(vnfs_m().get_vnfr_config_mock)
 def get_vnfr_config():
     resp = requests.get(
             osm_eps.VNF_CATALOG_C,
@@ -46,12 +49,7 @@ def get_vnfr_config():
     return output
 
 
-# TODO: Parse outside
-def fetch_config_vnsfs():
-    catalog = get_vnfr_config()
-    return catalog
-
-
+@content.on_mock(vnfs_m().get_vnfr_running_mock)
 def get_vnfr_running():
     resp = requests.get(
             osm_eps.VNF_CATALOG_O,
@@ -175,8 +173,8 @@ def format_vnsf_catalog(catalog):
     return vnsfs
 
 
-# Temporary new parameter
-def exec_action_on_vnf(payload, vnfr_id=None):
+@content.on_mock(vnfs_m().exec_action_on_vnf_mock)
+def exec_action_on_vnf(payload):
     # JSON
     # resp = requests.post(
     #        osm_eps.VNF_ACTION_EXEC,

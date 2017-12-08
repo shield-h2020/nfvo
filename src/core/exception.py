@@ -15,39 +15,85 @@
 # limitations under the License.
 
 
-from flask import Response
+from flask import jsonify
+from server.http.http_code import HttpCode
+from server.http.http_response import HttpResponse
+from enum import Enum
 from werkzeug.exceptions import HTTPException
 
 
-class ExceptionCode:
+class ExceptionCode(Enum):
 
-    CODE_BAD_REQUEST = 400
-    CODE_TEAPOT = 418
-
+    BAD_REQUEST = "Bad request"
     IMPROPER_USAGE = "Improper usage"
+    INTERNAL_ERROR = "Internal server error"
     INVALID_CONTENT_TYPE = "Invalid Content-Type"
+    NOT_FOUND = "Method not found"
+    NOT_IMPLEMENTED = "Method not implemented"
+
+    def __get__(self, *args, **kwargs):
+        return self.value
+
+    def __str__(self):
+        return str(self.value)
 
 
 class Exception:
 
     @staticmethod
     def abort(error_code, error_msg, error_det=None):
-        error_details = "Error: {}".format(error_code)
-        if error_det is not None:
-            error_details = "{}\t{}: {}".format(
-                    error_details, error_msg, error_det)
-        response = Response(response=error_details, status=error_code)
+        response = Exception.inform(error_code, error_msg, error_det)
         raise HTTPException(response=response)
 
     @staticmethod
-    def improper_usage(error_msg):
-        return Exception.abort(
-                ExceptionCode.CODE_TEAPOT, ExceptionCode.IMPROPER_USAGE,
-                error_msg)
+    def inform(error_code, error_msg, error_det=None):
+        error_details = "{0}: {1}".format(error_code, error_msg)
+        error = {"error": error_details}
+        if error_det is not None:
+            error.update({"reason": str(error_det)})
+        error = jsonify(error).response
+        if len(error) > 0:
+            error = error[0]
+        return HttpResponse.json(error_code, error)
 
     @staticmethod
-    def invalid_content_type(error_msg):
+    def bad_request(error_msg=None):
+        return Exception.inform(
+            HttpCode.BAD_REQUEST,
+            ExceptionCode.BAD_REQUEST,
+            error_msg)
+
+    @staticmethod
+    def improper_usage(error_msg=None):
         return Exception.abort(
-                ExceptionCode.CODE_BAD_REQUEST,
-                ExceptionCode.INVALID_CONTENT_TYPE,
-                error_msg)
+            HttpCode.TEAPOT,
+            ExceptionCode.IMPROPER_USAGE,
+            error_msg)
+
+    @staticmethod
+    def internal_error(error_msg=None):
+        return Exception.inform(
+            HttpCode.INTERNAL_ERROR,
+            ExceptionCode.INTERNAL_ERROR,
+            error_msg)
+
+    @staticmethod
+    def invalid_content_type(error_msg=None):
+        return Exception.abort(
+            HttpCode.UNSUP_MEDIA,
+            ExceptionCode.INVALID_CONTENT_TYPE,
+            error_msg)
+
+    @staticmethod
+    def not_implemented(error_msg=None):
+        return Exception.abort(
+            HttpCode.NOT_IMPL,
+            ExceptionCode.NOT_IMPLEMENTED,
+            error_msg)
+
+    @staticmethod
+    def not_found(error_msg=None):
+        return Exception.inform(
+            HttpCode.NOT_FOUND,
+            ExceptionCode.NOT_FOUND,
+            error_msg)

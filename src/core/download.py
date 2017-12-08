@@ -31,7 +31,7 @@ def fetch_content(url):
     except AttributeError:
         import urllib.request
         data = urllib.request.urlopen(url).read()
-        f = open(tmp_path, "wb")
-        f.write(data)
-        f.close()
+    f = open(tmp_path, "wb")
+    f.write(data)
+    f.close()
     return tmp_path

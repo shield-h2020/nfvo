@@ -1,9 +1,10 @@
-python2.7
+python3
+python3-pip
 mongodb-clients
 mongodb-server
-python-glanceclient
-python-keystoneclient
-python-neutronclient
-python-novaclient
-python-requests
-python-yaml
+python3-glanceclient
+python3-keystoneclient
+python3-neutronclient
+python3-novaclient
+python3-requests
+python3-yaml

@@ -14,13 +14,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import Blueprint
-from server import endpoints as endpoints_s
 
+from flask import Blueprint
+from server.http.http_code import HttpCode
+from server.http.http_response import HttpResponse
+from server.endpoints import VnsfoEndpoints as endpoints_s
 
 nfvo_views = Blueprint("nfvo_endpoint_views", __name__)
 
 
 @nfvo_views.route(endpoints_s.ROOT, methods=["GET"])
 def endpoints():
-    return endpoints_s.api_endpoints()
+    ep_content = endpoints_s().api_endpoints()
+    if "<html" in ep_content:
+        return ep_content
+    return HttpResponse.json(HttpCode.OK, ep_content)

@@ -20,5 +20,6 @@ source utils.sh
 full_path=$(dirname $(realpath $0))
 req_path=${full_path}/..
 
-cat $req_path/requirements-apt.txt | xargs sudo apt install -y
-pip install -r $req_path/requirements-pip.txt
+cat ${req_path}/requirements-apt.txt | xargs sudo apt install -y
+sudo pip3 install -r ${req_path}/requirements-pip.txt
+sudo pip3 install --upgrade pip

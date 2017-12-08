@@ -17,11 +17,14 @@
 
 from nfv import vnf
 from nfvo.osm import endpoints as osm_eps
+from server.http import content
+from server.mocks.ns import MockNs as ns_m
 
 import json
 import requests
 
 
+@content.on_mock(ns_m().get_nsr_config_mock)
 def get_nsr_config():
     resp = requests.get(
             osm_eps.NS_CATALOG_C,

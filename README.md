@@ -24,10 +24,6 @@ Similarly, configuration data must be copied from the provided samples. This wil
 ./bin/set_conf.sh
 ```
 
-## Docker
-
-TBD
-
 # Deployment
 
 TODO
@@ -53,10 +49,10 @@ curl -ik https://127.0.0.1:8448
 
 ### NS
 
-#### Provide avialable NSs
+#### Provide available NSs
 
 ```
-curl -ik https://127.0.0.1:8448/ns/running
+curl -ik https://127.0.0.1:8448/ns/config
 ```
 
 ### Package
@@ -64,14 +60,17 @@ curl -ik https://127.0.0.1:8448/ns/running
 #### Onboards a locally stored package into NFVO
 
 ```
-curl -ik https://127.0.0.1:8448/package/onboard -X POST -F "package=@/tmp/cirros_vnf.tar.gz"
+curl -ik https://127.0.0.1:8448/package/onboard -X POST \
+     -H "Content-Type: multipart/form-data" \
+     -F "package=@/tmp/cirros_vnf.tar.gz"
 ```
 
 #### Onboards a remotely stored package into NFVO
 
 ```
-curl -ik https://127.0.0.1:8448/package/onboard/remote -H "Content-Type: application/json" -X POST -d '{"path": "https://osm-download.etsi.org/ftp/examples/cirros_2vnf_ns/cirros_vnf.tar.gz"}'
-
+curl -ik https://127.0.0.1:8448/package/onboard/remote -X POST \
+     -H "Content-Type: application/json" \
+     -d '{"path": "https://osm-download.etsi.org/ftp/examples/cirros_2vnf_ns/cirros_vnf.tar.gz"}'
 ```
 
 #### Remove package from vNSFO
@@ -98,7 +97,9 @@ curl -ik https://127.0.0.1:8448/vim/image
 
 ```
 vim_id="356fc757-c0c1-4b9e-b0db-d5cb46edd658"
-curl -ik -H "Content-Type: multipart/form-data" -F "image=@/tmp/Fedora-x86_64-20-20131211.1-sda-ping.qcow2" -X POST https://127.0.0.1:8448/vim/image/$vim_id
+curl -ik https://127.0.0.1:8448/vim/image/${vim_id} -X POST \
+     -H "Content-Type: multipart/form-data" \
+     -F "image=@/tmp/Fedora-x86_64-20-20131211.1-sda-ping.qcow2"
 ```
 
 ### vNSF
@@ -111,10 +112,18 @@ curl -ik https://127.0.0.1:8448/vnsf/running
 
 #### Execute pre-defined action from a specific vNSF
 ```
-curl -ki -H 'Content-Type: application/json' -X POST https://127.0.0.1:8448/vnsf/action -d '{ "action": "set-policies", "params": { "policies": "<mspl-set xmlns=\"http://security.polito.it/shield/mspl\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://security.polito.it/shield/mspl mspl.xsd\"><it-resource id=\"2145d576-1b91-4cb1-9b76-77f2aeab21cd\"><configuration xsi:type=\"filtering-configuration\"><default-action>drop</default-action><resolution-strategy>FMR</resolution-strategy><rule><priority>101</priority><action>drop</action><condition><packet-filter-condition><direction>inbound</direction><direction>inbound</direction><source-address>10.30.0.190</source-address><protocol>UDP</protocol></packet-filter-condition><traffic-flow-condition><rate-limit>36kbit</rate-limit></traffic-flow-condition></condition></rule></configuration></it-resource></mspl-set>" } }'
+curl -ki https://127.0.0.1:8448/vnsf/action -X POST \
+     -H 'Content-Type: application/json' \
+     -d '{ "vnsf_id": "2145d576-1b91-4cb1-9b76-77f2aeab21cd", "action": "set-policies", "params": { "policies": "<mspl-set xmlns=\"http://security.polito.it/shield/mspl\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://security.polito.it/shield/mspl mspl.xsd\"><it-resource id=\"2145d576-1b91-4cb1-9b76-77f2aeab21cd\"><configuration xsi:type=\"filtering-configuration\"><default-action>drop</default-action><resolution-strategy>FMR</resolution-strategy><rule><priority>101</priority><action>drop</action><condition><packet-filter-condition><direction>inbound</direction><direction>inbound</direction><source-address>10.30.0.190</source-address><protocol>UDP</protocol></packet-filter-condition><traffic-flow-condition><rate-limit>36kbit</rate-limit></traffic-flow-condition></condition></rule></configuration></it-resource></mspl-set>" } }'
 ```
 
 # Testing
 
-TODO
+Run all tests, or either mocked or real-time/live tests.
 
+```
+cd test
+python main.py
+python main.py -m
+python main.py -r
+```

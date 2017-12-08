@@ -20,10 +20,10 @@ from flask import request
 from flask import Response
 
 
-def data_in_request(request, expected_data):
-    if "application/json" in request.__dict__\
-            .get("environ").get("CONTENT_TYPE"):
-        return all(map(lambda x: x in request.json.keys(), expected_data))
+def data_in_request(request, expected):
+    if request.is_json and "application/json" in \
+            request.__dict__.get("environ").get("CONTENT_TYPE"):
+        return all(map(lambda x: x in request.json.keys(), expected))
     return False
 
 
@@ -49,6 +49,21 @@ def expect_json_content(func):
         else:
             return error_on_unallowed_method("Content-Type not expected")
     return wrapper
+
+
+def on_mock(output):
+    def on_mock_outer(func):
+        """
+        Return specific output when mocked, otherwise run function as usual.
+        """
+        @wraps(func)
+        def on_mock_inner(*args, **kwargs):
+            if "mock" in kwargs:
+                mock = kwargs.pop("mock", False)
+                return str(output if mock else {})
+            return func(*args, **kwargs)
+        return on_mock_inner
+    return on_mock_outer
 
 
 def filter_actions(actions):
