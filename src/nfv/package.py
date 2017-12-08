@@ -18,7 +18,7 @@
 from core import download
 from mimetypes import MimeTypes
 from nfvo.osm import endpoints as osm_eps
-from server import content
+from server.http import content
 from server.mocks.package import MockPackage as package_m
 from werkzeug.datastructures import FileStorage
 from werkzeug.datastructures import ImmutableMultiDict

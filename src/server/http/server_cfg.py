@@ -58,13 +58,17 @@ class ServerConfig(object):
             # This is passed to each view method
             g.mongo = self._app.mongo
 
-        @app.errorhandler(HttpCode.INTERNAL_ERROR)
-        def internal_error(error):
-            return Exception.internal_error(error)
+        @app.errorhandler(HttpCode.BAD_REQUEST)
+        def bad_request(error):
+            return Exception.bad_request(error)
 
         @app.errorhandler(HttpCode.NOT_FOUND)
         def not_found(error):
             return Exception.not_found(error)
+
+        @app.errorhandler(HttpCode.INTERNAL_ERROR)
+        def internal_error(error):
+            return Exception.internal_error(error)
 
     def __import_config(self):
         """

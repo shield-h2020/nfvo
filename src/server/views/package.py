@@ -19,7 +19,7 @@ from core.exception import Exception
 from flask import Blueprint
 from flask import request
 from nfv import package as pkg
-from server import content
+from server.http import content
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
 from server.endpoints import VnsfoEndpoints as endpoints
@@ -32,7 +32,7 @@ nfvo_views = Blueprint("nfvo_pkg_views", __name__)
 def onboard_package():
     exp_ct = "multipart/form-data"
     if exp_ct not in request.headers.get("Content-Type", ""):
-        Exception.invalid_content_type("Expected: \"{}\"".format(exp_ct))
+        Exception.invalid_content_type("Expected: {}".format(exp_ct))
     form_param = "package"
     if not(len(request.files) > 0 and form_param in request.files.keys()):
         Exception.improper_usage("Missing file")
@@ -45,9 +45,9 @@ def onboard_package():
 def onboard_package_remote():
     exp_ct = "application/json"
     if exp_ct not in request.headers.get("Content-Type", ""):
-        Exception.invalid_content_type("Expected: \"{}\"".format(exp_ct))
+        Exception.invalid_content_type("Expected: {}".format(exp_ct))
     if not content.data_in_request(request, ["path"]):
-        Exception.improper_usage("Missing argument: 'path'")
+        Exception.improper_usage("Missing argument: path")
     file_path = request.json.get("path")
     return HttpResponse.json(HttpCode.ACCEPTED,
                              pkg.onboard_package_remote(file_path))

@@ -19,8 +19,8 @@ from core.exception import Exception
 from flask import Blueprint
 from flask import request
 from nfvi import vim as vim_s
-from server import content
 from server.endpoints import VnsfoEndpoints as endpoints
+from server.http import content
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
 
@@ -44,7 +44,7 @@ def get_vim_images():
 def register_vnf_image(vim_id):
     exp_ct = "multipart/form-data"
     if exp_ct not in request.headers.get("Content-Type", ""):
-        Exception.invalid_content_type("Expected: \"{}\"".format(exp_ct))
+        Exception.invalid_content_type("Expected: {}".format(exp_ct))
     if not(len(request.files) > 0 and "image" in request.files.keys()):
         Exception.improper_usage("Missing file")
     img_bin = request.files.get("image")

@@ -67,6 +67,10 @@ class TestUtils:
             try:
                 exp_out = exp_out.replace("'", "\"")
                 exp_out = json.loads(exp_out)
+                # Detect error output
+                if not isinstance(exp_out, list):
+                    error = "error" in exp_out.keys()
+            # Detect decoding error
             except JSONDecodeError:
                 try:
                     exp_out = ast.literal_eval(exp_out)

@@ -19,9 +19,9 @@ from flask import current_app
 from flask import request
 from flask import url_for
 from gui import swagger
-from server import content
+from server.http import content
+from server.http import useragent
 from server.mocks.endpoints import MockEndpoints as endpoints_m
-from server import useragent
 
 
 class VnsfoEndpoints:

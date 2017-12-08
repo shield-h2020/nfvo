@@ -58,12 +58,8 @@ def generate_swagger_docs(base_url="/", api_url=""):
         "layout": "StandaloneLayout",
         "validatorUrl": "null"
     }
-    fields = {
-        # Some fields are used directly in template
-        "base_url": base_url,
-        "app_name": "SHIELD vNSFO REST API",
-        # Others serialized into json string for inclusion in the .js file
-        "config_json": json.dumps(default_config),
-    }
-    fields["config_json"] = json.dumps(default_config)
+    # Some fields are used directly in template (base_url, app_name)
+    # Others serialized into json string for inclusion in the .js file
+    fields = {"base_url": base_url, "app_name": "SHIELD vNSFO REST API",
+              "config_json": json.dumps(default_config)}
     return render_template("index.template.html", **fields)

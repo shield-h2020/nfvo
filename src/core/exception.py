@@ -24,6 +24,7 @@ from werkzeug.exceptions import HTTPException
 
 class ExceptionCode(Enum):
 
+    BAD_REQUEST = "Bad request"
     IMPROPER_USAGE = "Improper usage"
     INTERNAL_ERROR = "Internal server error"
     INVALID_CONTENT_TYPE = "Invalid Content-Type"
@@ -54,6 +55,13 @@ class Exception:
         if len(error) > 0:
             error = error[0]
         return HttpResponse.json(error_code, error)
+
+    @staticmethod
+    def bad_request(error_msg=None):
+        return Exception.inform(
+            HttpCode.BAD_REQUEST,
+            ExceptionCode.BAD_REQUEST,
+            error_msg)
 
     @staticmethod
     def improper_usage(error_msg=None):

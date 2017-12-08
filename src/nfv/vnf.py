@@ -18,7 +18,7 @@
 from flask import current_app
 from nfvi import vim
 from nfvo.osm import endpoints as osm_eps
-from server import content
+from server.http import content
 from server.mocks.vnf import MockVnfs as vnfs_m
 from templates import nfvo as nfvo_tmpl
 

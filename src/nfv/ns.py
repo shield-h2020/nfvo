@@ -17,7 +17,7 @@
 
 from nfv import vnf
 from nfvo.osm import endpoints as osm_eps
-from server import content
+from server.http import content
 from server.mocks.ns import MockNs as ns_m
 
 import json

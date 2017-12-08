@@ -25,4 +25,7 @@ nfvo_views = Blueprint("nfvo_endpoint_views", __name__)
 
 @nfvo_views.route(endpoints_s.ROOT, methods=["GET"])
 def endpoints():
-    return HttpResponse.json(HttpCode.OK, endpoints_s().api_endpoints())
+    ep_content = endpoints_s().api_endpoints()
+    if "<html" in ep_content:
+        return ep_content
+    return HttpResponse.json(HttpCode.OK, ep_content)

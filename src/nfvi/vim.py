@@ -18,7 +18,7 @@
 from nfvi.openstack.connector import OpenStackConnector
 from nfvi.openstack.glance import OpenStackGlance
 from nfvo.osm import endpoints as osm_eps
-from server import content
+from server.http import content
 from server.mocks.vim import MockVim as vim_m
 
 import json

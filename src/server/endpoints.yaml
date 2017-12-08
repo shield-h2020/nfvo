@@ -18,7 +18,9 @@ responses: &API_RESPONSES
     description: Request succeeded.
   202: &HTTP_202_ACCEPTED
     description: Request accepted. Request is under processing.
-  404: &HTTP_400_NOT_FOUND
+  400: &HTTP_400_BAD_REQUEST
+    description: BAd request. Request cannot be processed.
+  404: &HTTP_404_NOT_FOUND
     description: Not found. Method does not exist in this API.
   415: &HTTP_415_UNSUPPORTED_MEDIA_TYPE
     description: Wrong media type. Server refuses to service because the payload is wrongly formatted.
@@ -26,7 +28,7 @@ responses: &API_RESPONSES
     description: Request not accepted. Improper usage of the resource.
   500: &HTTP_500_INTERNAL_SERVER_ERROR
     description: Internal error. Server is prevented from fulfilling the request.
-  501: &HTTP_NOT_IMPLEMENTED
+  501: &HTTP_501_NOT_IMPLEMENTED
     description: Not implemented. Method does not currently provide any logic.
 
 swagger: "2.0"

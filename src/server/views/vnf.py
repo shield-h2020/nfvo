@@ -19,7 +19,7 @@ from core.exception import Exception
 from flask import Blueprint
 from flask import request
 from nfv import vnf
-from server import content
+from server.http import content
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
 from server.endpoints import VnsfoEndpoints as endpoints
@@ -53,11 +53,11 @@ def fetch_running_vnsfs_per_tenant(tenant_id):
 def exec_primitive_on_vnsf():
     exp_ct = "application/json"
     if exp_ct not in request.headers.get("Content-Type", ""):
-        Exception.invalid_content_type("Expected: \"{}\"".format(exp_ct))
+        Exception.invalid_content_type("Expected: {}".format(exp_ct))
     exp_params = ["vnsf_id", "action", "params"]
     if not content.data_in_request(
             request, exp_params):
-        Exception.improper_usage("Missing parameters: \"{}\""
+        Exception.improper_usage("Missing parameters: any of {}"
                                  .format(exp_params))
     # Extract params, respecting the specific ordering
     payload = vnf.submit_action_request(
