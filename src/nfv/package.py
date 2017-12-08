@@ -18,6 +18,8 @@
 from core import download
 from mimetypes import MimeTypes
 from nfvo.osm import endpoints as osm_eps
+from server import content
+from server.mocks.package import MockPackage as package_m
 from werkzeug.datastructures import FileStorage
 from werkzeug.datastructures import ImmutableMultiDict
 
@@ -39,6 +41,7 @@ def post_content(bin_file):
     return output
 
 
+@content.on_mock(package_m().onboard_package_mock)
 def onboard_package(pkg_path):
     """
     Uploads a locally stored VNF or NS package to the NFVO.
@@ -74,6 +77,7 @@ def onboard_package(pkg_path):
     return output
 
 
+@content.on_mock(package_m().onboard_package_remote_mock)
 def onboard_package_remote(pkg_path):
     """
     Uploads a remotely stored VNF or NS package to the NFVO.
@@ -86,6 +90,7 @@ def onboard_package_remote(pkg_path):
     return onboard_package(pkg_path)
 
 
+@content.on_mock(package_m().remove_package_mock)
 def remove_package(pkg_name):
     remove_url = osm_eps.PKG_VNF_REMOVE
     if "_ns" in pkg_name:

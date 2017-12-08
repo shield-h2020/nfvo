@@ -29,6 +29,7 @@ import requests_mock
 class TestUtils:
 
     ignore_realtime = "Real-time test"
+    ignore_hazard = "Do not run remotely"
 
     def __init__(self):
         self.url_base = api_url
@@ -102,8 +103,9 @@ class TestUtils:
         response = requests.post(
             url,
             headers=headers_inner,
-            data=data,
-            files=data,
+            # data=data if "json" not in headers_inner else {},
+            json=data if "json" in headers_inner else {},
+            files=data if "multipart" in headers_inner else {},
             verify=False)
         self.__check_output(response, schema, exp_code, exp_out)
 
@@ -118,3 +120,23 @@ class TestUtils:
             m.post(url, text=str(exp_out))
             self.test_post(url, schema, data, headers_inner,
                            exp_code, exp_out)
+
+    def test_delete(self, url, schema, headers={},
+                    exp_code=None, exp_out=None):
+        url, headers_inner = self.__set_url_headers(url, headers)
+        response = requests.delete(
+            url,
+            headers=headers_inner,
+            verify=False)
+        self.__check_output(response, schema, exp_code, exp_out)
+
+    def test_mocked_delete(self, url, schema, headers, exp_code, exp_out):
+        url, headers_inner = self.__set_url_headers(url, headers)
+        self.adapter.register_uri(
+            "DELETE", url, status_code=exp_code,
+            request_headers=headers_inner,
+            text=str(exp_out)
+        )
+        with requests_mock.mock(real_http=True) as m:
+            m.delete(url, text=str(exp_out))
+            self.test_delete(url, schema, headers_inner, exp_code, exp_out)

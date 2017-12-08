@@ -21,6 +21,10 @@ import unittest
 
 from t_nfv.mocked_nfv import TestNfvVnfMocked
 from t_nfv.realtime_nfv import TestNfvVnfRealtime
+from t_ns.mocked_ns import TestNfvNsMocked
+from t_ns.realtime_ns import TestNfvNsRealtime
+from t_package.mocked_package import TestPackageMocked
+from t_package.realtime_package import TestPackageRealtime
 from t_server.mocked_endpoints import TestServerEndpointsMocked
 from t_server.realtime_endpoints import TestServerEndpointsRealtime
 from t_vim.mocked_vim import TestVimMocked
@@ -30,16 +34,19 @@ from t_vim.realtime_vim import TestVimRealtime
 class TestSuite:
 
     def __init__(self, args):
-        mocked, realtime = args.mock, args.real_time
+        arg_values = [args.__dict__.get(x) for x in args.__dict__.keys()]
         tests = []
         tests_mocked = self.__define_tests_mocked()
         tests_realtime = self.__define_tests_realtime()
-        if mocked:
-            tests += tests_mocked
-        elif realtime:
-            tests += tests_realtime
+        if any(arg_values):
+            mocked, realtime = args.mock, args.real_time
+            if mocked:
+                tests += tests_mocked
+            elif realtime:
+                tests += tests_realtime
         else:
-            tests += [tests_mocked, tests_realtime]
+            tests += tests_mocked
+            tests += tests_realtime
 
         loader = unittest.TestLoader()
         suites_list = []
@@ -48,14 +55,18 @@ class TestSuite:
 
     def __define_tests_realtime(self):
         return [
+            TestNfvNsRealtime,
             TestNfvVnfRealtime,
+            TestPackageRealtime,
             TestServerEndpointsRealtime,
             TestVimRealtime,
         ]
 
     def __define_tests_mocked(self):
         return [
+            TestNfvNsMocked,
             TestNfvVnfMocked,
+            TestPackageMocked,
             TestServerEndpointsMocked,
             TestVimMocked,
         ]

@@ -30,8 +30,9 @@ nfvo_views = Blueprint("nfvo_pkg_views", __name__)
 @nfvo_views.route(endpoints.PKG_ONBOARD, methods=["POST"])
 @content.expect_json_content
 def onboard_package():
-    if "multipart/form-data" not in request.headers.get("Content-Type", ""):
-        Exception.invalid_content_type("Expected: 'multipart/form-data'")
+    exp_ct = "multipart/form-data"
+    if exp_ct not in request.headers.get("Content-Type", ""):
+        Exception.invalid_content_type("Expected: \"{}\"".format(exp_ct))
     form_param = "package"
     if not(len(request.files) > 0 and form_param in request.files.keys()):
         Exception.improper_usage("Missing file")
@@ -46,9 +47,9 @@ def onboard_package():
 @nfvo_views.route(endpoints.PKG_ONBOARD_REMOTE, methods=["POST"])
 @content.expect_json_content
 def onboard_package_remote():
-    if "application/json" not in request.headers.get("Content-Type", ""):
-        Exception.invalid_content_type(
-                "Expected: 'application/json' or 'multipart/form-data'")
+    exp_ct = "application/json"
+    if exp_ct not in request.headers.get("Content-Type", ""):
+        Exception.invalid_content_type("Expected: \"{}\"".format(exp_ct))
     if not content.data_in_request(request, ["path"]):
         Exception.improper_usage("Missing argument: 'path'")
     try:
