@@ -1,0 +1,26 @@
+version:             "3"
+
+services:
+
+    # MongoDB
+    ${CNTR_DB}:
+        image: mongo
+        env_file:          ${ENV_FILE}
+        build:
+            context:       .
+            dockerfile:    ${DOCKER_FILE_DB}
+
+    # vNSFO
+    ${CNTR_NFVO}:
+        env_file:        ${ENV_FILE}
+        build:
+          context:       .
+          dockerfile:    ${DOCKER_FILE_NFVO}
+        depends_on:
+            - "${CNTR_DB}"
+        ports:
+            - "${API_PORT}:${API_PORT}"
+        # Mount current downloaded folder in another location
+        volumes:
+            - ${SRC_PATH}:${DST_PATH}
+        command:         python3 ${DST_PATH}/src/main.py

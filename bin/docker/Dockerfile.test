@@ -1,0 +1,14 @@
+#
+# vNSFO Tests
+#
+
+FROM ubuntu:16.04
+
+LABEL project="shield-nfvo"
+
+WORKDIR /opt/shield/nfvo
+
+# Dependencies
+RUN apt-get update -y
+
+ENTRYPOINT ["/bin/bash", "/usr/share/dev/nfvo/bin/docker/setup-nfvo.sh"]

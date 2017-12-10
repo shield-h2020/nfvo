@@ -1,0 +1,14 @@
+#
+# vNSFO Tests
+#
+
+FROM ubuntu:16.04
+
+LABEL project="${CNTR_PROJECT}"
+
+WORKDIR ${SRC_PATH}
+
+# Dependencies
+RUN apt-get update -y
+
+ENTRYPOINT ["/bin/bash", "${DST_PATH}/bin/docker/setup-nfvo.sh"]

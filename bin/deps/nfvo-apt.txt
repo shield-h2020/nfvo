@@ -1,3 +1,6 @@
+apt-transport-https
+ca-certificates
+curl
 python3
 python3-pip
 mongodb-clients
@@ -8,3 +11,4 @@ python3-neutronclient
 python3-novaclient
 python3-requests
 python3-yaml
+software-properties-common
