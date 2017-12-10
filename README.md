@@ -26,7 +26,31 @@ Similarly, configuration data must be copied from the provided samples. This wil
 
 # Deployment
 
-TODO
+## Normal run
+
+Directly execute the main script:
+```
+python3 src/main.py
+```
+
+## Docker way
+
+First, log in as super user.
+
+Run the main script under `bin/docker`:
+```
+cd bin/docker
+# Pick one of the following
+# Both run the whole environment; yet the 2nd will run tests as well
+./run.sh
+./run.sh --test
+```
+
+To tear down all related containers:
+```
+cd bin/docker
+./run.sh --teardown
+```
 
 # API
 

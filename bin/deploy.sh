@@ -18,8 +18,20 @@
 source utils.sh
 
 full_path=$(dirname $(realpath $0))
-req_path=${full_path}/..
+req_path=${full_path}/deps
 
-cat ${req_path}/requirements-apt.txt | xargs sudo apt install -y
-sudo pip3 install -r ${req_path}/requirements-pip.txt
+# APT requirements
+sudo apt-get install curl
+cat ${req_path}/db-apt.txt | xargs sudo apt-get install -y
+cat ${req_path}/nfvo-apt.txt | xargs sudo apt-get install -y
+cat ${req_path}/test-apt.txt | xargs sudo apt-get install -y
+
+# Pip requirements
+sudo pip3 install -r ${req_path}/nfvo-pip.txt
+sudo pip3 install -r ${req_path}/test-pip.txt
 sudo pip3 install --upgrade pip
+
+# Generate server credentials
+./gen_creds.sh
+# Set-up conf files
+./set_conf.sh
