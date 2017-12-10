@@ -140,14 +140,16 @@ setup() {
 
 # ===
 
-# Install dependencies
-deps
-
-# Set-up env (pre-requirements)
-setup
-
 # Parse options provided to script
 parse_options "$@"
+
+if [[ $p_teardown != true ]]; then
+    # Install dependencies
+    deps
+
+    # Set-up env (pre-requirements)
+    setup
+fi
 
 # The environment variables start off with the one from the production environment and get replaced from there
 ENV_FILE_FULL=$(mktemp /tmp/XXXXXXX)
@@ -195,7 +197,7 @@ envsubst < ${DOCKER_FILE_TEMPLATE_DB} > ${DOCKER_FILE_DB}
 
 COMPOSE_FILES="-f ${DOCKER_COMPOSE_FILE}"
 
-if [ $p_test = true ]; then
+if [[ $p_test = true ]]; then
     DOCKER_COMPOSE_FILE_TEST="${DOCKER_COMPOSE_FILE_TEST_TEMPLATE%.*}"
     DOCKER_FILE_TEST="${DOCKER_FILE_TEMPLATE_TEST%.*}"
     envsubst < ${DOCKER_COMPOSE_FILE_TEST_TEMPLATE} > ${DOCKER_COMPOSE_FILE_TEST}
@@ -219,7 +221,7 @@ ${DOCKER_COMPOSE} ${COMPOSE_FILES} up ${COMPOSE_FLAGS}
 
 echo "Containers set-up finished successfully"
 
-if [ $p_test = true ]; then
+if [[ $p_test = true ]]; then
     REPORT_PATH=$(mktemp -d /tmp/nfvo-test_XXXXXXX)
     REPORT_FULL_PATH=$REPORT_PATH/report.log
     max=50
