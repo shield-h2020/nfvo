@@ -16,14 +16,15 @@
 
 
 from flask import Blueprint
-from nfv import ns
+from nfv.ns import VnsfoNs as ns_s
 from server.endpoints import VnsfoEndpoints as endpoints
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
 
 nfvo_views = Blueprint("nfvo_ns_views", __name__)
+nfvo_ns = ns_s()
 
 
 @nfvo_views.route(endpoints.NS_C_NSS, methods=["GET"])
 def fetch_config_nss():
-    return HttpResponse.json(HttpCode.OK, ns.fetch_config_nss())
+    return HttpResponse.json(HttpCode.OK, nfvo_ns.fetch_config_nss())

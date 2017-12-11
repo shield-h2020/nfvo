@@ -15,25 +15,25 @@
 # limitations under the License.
 
 
-import unittest
-
 from common.test_utils import TestUtils
-
-from src.nfv import ns as ns_s
+from src.nfv.ns import VnsfoNs as nfvo_ns
 from src.server.endpoints import VnsfoEndpoints as endpoints_s
 from src.server.http.http_code import HttpCode
 from src.server.mocks.ns import MockNs as ns_m
+
+import unittest
 
 
 class TestNfvNsMocked(unittest.TestCase):
 
     def setUp(self):
         self.get_nsr_config = endpoints_s.NS_C_NSS
+        self.nfvo_ns = nfvo_ns()
         self.utils = TestUtils()
 
     def test_mocked_get_nsr_config(self):
         url = self.get_nsr_config
         exp_code = HttpCode.OK
-        exp_out = ns_s.get_nsr_config(**{"mock": True})
+        exp_out = self.nfvo_ns.get_nsr_config(**{"mock": True})
         schema = ns_m().get_nsr_config_schema()
         self.utils.test_mocked_get(url, schema, {}, exp_code, exp_out)
