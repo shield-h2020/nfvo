@@ -23,6 +23,10 @@ import uuid
 
 class TestRegex(unittest.TestCase):
 
+    def test_uuid1(self):
+        uuid_sample = str(uuid.uuid1())
+        self.assertNotEquals(None, regex_r.uuid(uuid_sample, 1))
+
     def test_uuid4(self):
         uuid_sample = str(uuid.uuid4())
         self.assertNotEquals(None, regex_r.uuid4(uuid_sample))

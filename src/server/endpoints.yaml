@@ -571,6 +571,25 @@ definitions:
             type: array
             items:
               type: object
+              required:
+              - status
+              - created_at
+              - name
+              - tags
+              - container_format
+              - min_ram
+              - disk_format
+              - updated_at
+              - visibility
+              - owner
+              - schema
+              - protected
+              - file
+              - checksum
+              - min_disk
+              - virtual_size
+              - id
+              - size
               properties:
                 status:
                   type: string
@@ -626,6 +645,36 @@ definitions:
                 size:
                   type: integer
                   example: 13267968
+                base_image_ref:
+                  type: string
+                  example: 1f8af108-895c-49c7-b9ee-585d11f7737b
+                boot_roles:
+                  type: string
+                  example: heat_stack_owner,admin
+                image_location:
+                  type: string
+                  example: snapshot
+                image_state:
+                  type: string
+                  example: available
+                image_type:
+                  type: string
+                  example: snapshot
+                instance_uuid:
+                  type: string
+                  example: 6a552265-d279-438c-8dfd-18d0a4886977
+                kernel_id:
+                  type: string
+                  example: db411b71-b04a-4d3f-b138-67eec62d935e
+                owner_id:
+                  type: string
+                  example: 5cc21dbee0cc4078a3b912817fa31294
+                ramdisk_id:
+                  type: string
+                  example: 8282a5df-2d9e-4e0f-b4f1-7553caba8089
+                user_id:
+                  type: string
+                  example: 37f7f0d35abe4348873d4c78fd2a1a42
 
   VimRegisterImageOutput:
     type: object
