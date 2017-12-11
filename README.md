@@ -128,6 +128,12 @@ curl -ik https://127.0.0.1:8448/vim/image/${vim_id} -X POST \
 
 ### vNSF
 
+#### Provide available vNSFs
+
+```
+curl -ik https://127.0.0.1:8448/vnsf/config
+```
+
 #### Provide the running vNSFs
 
 ```
@@ -147,7 +153,7 @@ Run all tests, or either mocked or real-time/live tests.
 
 ```
 cd test
-python main.py
-python main.py -m
-python main.py -r
+python3 main.py
+python3 main.py -m
+python3 main.py -r
 ```

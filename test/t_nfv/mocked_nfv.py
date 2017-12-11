@@ -15,14 +15,13 @@
 # limitations under the License.
 
 
-import unittest
-
 from common.test_utils import TestUtils
-
-from src.nfv import vnf as vnf_s
+from src.nfv.vnf import VnsfoVnsf as vim_s
 from src.server.endpoints import VnsfoEndpoints as endpoints_s
 from src.server.http.http_code import HttpCode
-from src.server.mocks.vnf import MockVnfs as vnfs_m
+from src.server.mocks.vnf import MockVnsf as vnfs_m
+
+import unittest
 
 
 class TestNfvVnfMocked(unittest.TestCase):
@@ -30,27 +29,28 @@ class TestNfvVnfMocked(unittest.TestCase):
     def setUp(self):
         self.exec_action_on_vnf = endpoints_s.VNSF_ACTION_EXEC
         self.get_vnfr_config = endpoints_s.VNSF_C_VNSFS
-        self.vnsf_running_list = endpoints_s.VNSF_R_VNSFS
+        self.get_vnfr_running = endpoints_s.VNSF_R_VNSFS
+        self.nfvo_vnsf = vim_s()
         self.utils = TestUtils()
-
-    def test_mocked_vnsf_running_list(self):
-        url = self.vnsf_running_list
-        exp_code = HttpCode.OK
-        exp_out = vnf_s.get_vnfr_running(**{"mock": True})
-        schema = vnfs_m().get_vnfr_running_schema()
-        self.utils.test_mocked_get(url, schema, {}, exp_code, exp_out)
 
     def test_mocked_get_vnfr_config(self):
         url = self.get_vnfr_config
         exp_code = HttpCode.OK
-        exp_out = vnf_s.get_vnfr_config(**{"mock": True})
+        exp_out = self.nfvo_vnsf.get_vnfr_config(**{"mock": True})
         schema = vnfs_m().get_vnfr_config_schema()
+        self.utils.test_mocked_get(url, schema, {}, exp_code, exp_out)
+
+    def test_mocked_get_vnfr_running(self):
+        url = self.get_vnfr_running
+        exp_code = HttpCode.OK
+        exp_out = self.nfvo_vnsf.get_vnfr_running(**{"mock": True})
+        schema = vnfs_m().get_vnfr_running_schema()
         self.utils.test_mocked_get(url, schema, {}, exp_code, exp_out)
 
     def test_mocked_exec_action_on_vnf(self):
         url = self.exec_action_on_vnf
         exp_code = HttpCode.OK
-        exp_out = vnf_s.exec_action_on_vnf(**{"mock": True})
+        exp_out = self.nfvo_vnsf.exec_action_on_vnf(**{"mock": True})
         data = {}
         schema = vnfs_m().exec_action_on_vnf_schema()
         self.utils.test_mocked_post(url, schema, data, {}, exp_code, exp_out)

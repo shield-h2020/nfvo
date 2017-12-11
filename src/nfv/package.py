@@ -18,6 +18,7 @@
 from core import download
 from mimetypes import MimeTypes
 from nfvo.osm import endpoints as osm_eps
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from server.http import content
 from server.mocks.package import MockPackage as package_m
 from werkzeug.datastructures import FileStorage
@@ -31,6 +32,7 @@ import shutil
 
 def post_content(bin_file):
     data_file = ImmutableMultiDict([("package", bin_file)])
+    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     resp = requests.post(
             osm_eps.PKG_ONBOARD,
             headers=osm_eps.get_default_headers(),
@@ -96,6 +98,7 @@ def remove_package(pkg_name):
     if "_ns" in pkg_name:
         remove_url = osm_eps.PKG_NS_REMOVE
     remove_url = remove_url.format(pkg_name)
+    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     resp = requests.delete(
             remove_url,
             headers=osm_eps.get_default_headers(),

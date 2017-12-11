@@ -15,15 +15,14 @@
 # limitations under the License.
 
 
-import os
-import unittest
-import uuid
-
 from common.test_utils import TestUtils
-
 from src.server.endpoints import VnsfoEndpoints as endpoints_s
 from src.server.http.http_code import HttpCode
 from src.server.mocks.vim import MockVim as vim_m
+
+import os
+import unittest
+import uuid
 
 
 class TestVimRealtime(unittest.TestCase):

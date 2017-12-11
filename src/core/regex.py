@@ -18,7 +18,10 @@
 import re
 
 
-def uuid(uuid_version, data):
+def uuid(data, uuid_version=None):
+    # If no version is provided, match any
+    if uuid_version is None:
+        uuid_version = "[a-f0-9]"
     transaction_id_re = re.compile((
         ("[a-f0-9]{8}-[a-f0-9]{4}-<version>[a-f0-9]{3}-" +
          "[89ab][a-f0-9]{3}-[a-f0-9]{12}$")
@@ -27,7 +30,7 @@ def uuid(uuid_version, data):
 
 
 def uuid4(data):
-    return uuid(4, data)
+    return uuid(data, 4)
 
 
 def unix_path(data):

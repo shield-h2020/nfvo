@@ -54,7 +54,7 @@ class TestUtils:
         headers_inner.update(headers)
         return [url, headers_inner]
 
-    def __check_output(self, response, schema, exp_code=None, exp_out=None):
+    def __check_output(self, response, schema_re, exp_code=None, exp_out=None):
         if exp_code is None:
             exp_code = response.status_code
         # Check proper code returned
@@ -77,10 +77,10 @@ class TestUtils:
                 except Exception:
                     error = True
         if not error:
-            # Check proper content returned
-            val_con = getattr(schema, "validate")(exp_out)
-            self.test.assertEqual(exp_out, val_con,
-                                  "Unexpected output structure")
+            # Check proper content returned (exception raised if wrong)
+            getattr(schema_re, "validate")(exp_out)
+            # self.test.assertEqual(exp_out, val_con,
+            #                       "Unexpected output structure")
 
     def test_get(self, url, schema, headers={}, exp_code=None, exp_out=None):
         url, headers_inner = self.__set_url_headers(url, headers)

@@ -41,9 +41,9 @@ class MockEndpoints:
     def get_api_endpoints_schema(self):
         schema = self.get_api_endpoints_mock
         for schema_ep in schema.get("endpoints"):
-            schema_ep["methods"][0] =\
-                And(str, Use(str.upper), lambda s: s in (
-                    "GET", "POST", "DELETE", "PUT"))
+            schema_ep["methods"] = \
+                And(list, lambda l: all(
+                    x in ["GET", "POST", "DELETE", "PUT"] for x in l))
             schema_ep["endpoint"] = \
                 And(Use(str), lambda n: regex.unix_path(n) is not None)
         return Schema(schema)

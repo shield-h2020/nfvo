@@ -18,25 +18,26 @@
 from core.exception import Exception
 from flask import Blueprint
 from flask import request
-from nfvi import vim as vim_s
+from nfvi.vim import VnsfoVim as vim_s
 from server.endpoints import VnsfoEndpoints as endpoints
 from server.http import content
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
 
 nfvo_views = Blueprint("nfvo_vim_views", __name__)
+nfvo_vnf = vim_s()
 
 
 @nfvo_views.route(endpoints.VIM_LIST, methods=["GET"])
 @content.expect_json_content
 def get_vim_list():
-    return HttpResponse.json(HttpCode.OK, vim_s.get_vim_list())
+    return HttpResponse.json(HttpCode.OK, nfvo_vnf.get_vim_list())
 
 
 @nfvo_views.route(endpoints.VIM_IMAGE, methods=["GET"])
 @content.expect_json_content
 def get_vim_images():
-    return HttpResponse.json(HttpCode.OK, vim_s.get_vim_img_list())
+    return HttpResponse.json(HttpCode.OK, nfvo_vnf.get_vim_img_list())
 
 
 @nfvo_views.route(endpoints.VIM_IMAGE_UPLOAD, methods=["POST"])
@@ -50,5 +51,5 @@ def register_vnf_image(vim_id):
     img_bin = request.files.get("image")
     img_name = img_bin.filename
     # img_name = img_name[0:img_name.index(".")-1]
-    output = vim_s.register_vdu(vim_id, img_name, img_bin.stream)
+    output = nfvo_vnf.register_vdu(vim_id, img_name, img_bin.stream)
     return HttpResponse.json(HttpCode.ACCEPTED, output)
