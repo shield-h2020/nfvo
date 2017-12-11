@@ -153,7 +153,7 @@ Run all tests, or either mocked or real-time/live tests.
 
 ```
 cd test
-python main.py
-python main.py -m
-python main.py -r
+python3 main.py
+python3 main.py -m
+python3 main.py -r
 ```
