@@ -15,13 +15,12 @@
 # limitations under the License.
 
 
-import unittest
-
 from common.test_utils import TestUtils
-
 from src.server.endpoints import VnsfoEndpoints as endpoints_s
 from src.server.http.http_code import HttpCode
 from src.server.mocks.ns import MockNs as ns_m
+
+import unittest
 
 
 class TestNfvNsRealtime(unittest.TestCase):

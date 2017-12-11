@@ -15,14 +15,12 @@
 # limitations under the License.
 
 
-import os
-import unittest
-
 from common.test_utils import TestUtils
-
 from src.server.endpoints import VnsfoEndpoints as endpoints_s
 from src.server.http.http_code import HttpCode
-from src.server.mocks.vnf import MockVnfs as vnfs_m
+from src.server.mocks.vnf import MockVnsf as vnfs_m
+import os
+import unittest
 
 
 class TestNfvVnfRealtime(unittest.TestCase):
@@ -30,11 +28,11 @@ class TestNfvVnfRealtime(unittest.TestCase):
     def setUp(self):
         self.exec_action_on_vnf = endpoints_s.VNSF_ACTION_EXEC
         self.get_vnfr_config = endpoints_s.VNSF_C_VNSFS
-        self.vnsf_running_list = endpoints_s.VNSF_R_VNSFS
+        self.get_vnfr_running = endpoints_s.VNSF_R_VNSFS
         self.utils = TestUtils()
 
-    def test_vnsf_running_list(self):
-        url = self.vnsf_running_list
+    def test_get_vnfr_running(self):
+        url = self.get_vnfr_running
         exp_code = HttpCode.OK
         headers = {}
         schema = vnfs_m().get_vnfr_running_schema()

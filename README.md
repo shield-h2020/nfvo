@@ -128,6 +128,12 @@ curl -ik https://127.0.0.1:8448/vim/image/${vim_id} -X POST \
 
 ### vNSF
 
+#### Provide available vNSFs
+
+```
+curl -ik https://127.0.0.1:8448/vnsf/config
+```
+
 #### Provide the running vNSFs
 
 ```

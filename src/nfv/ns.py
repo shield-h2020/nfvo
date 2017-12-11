@@ -27,6 +27,7 @@ import requests
 class VnsfoNs:
 
     def __init__(self):
+        self.res_key = "ns"
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
     @content.on_mock(ns_m().get_nsr_config_mock)
@@ -37,7 +38,7 @@ class VnsfoNs:
                 verify=False)
         # Yep, this could be insecure - but the output comes from NFVO
         catalog = eval(resp.text) if resp.text else []
-        return VnsfoNs.format_ns_catalog_descriptors(catalog)
+        return self.format_ns_catalog_descriptors(catalog)
 
     def get_nsr_running(self):
         resp = requests.get(
@@ -51,10 +52,9 @@ class VnsfoNs:
         catalog = self.get_nsr_config()
         return catalog
 
-    @staticmethod
-    def format_ns_catalog_descriptors(catalog):
-        output = {"ns": list()}
-        nss = output.get("ns")
+    def format_ns_catalog_descriptors(self, catalog):
+        output = {self.res_key: list()}
+        nss = output.get(self.res_key)
         for n in catalog:
             for nd in n["descriptors"]:
                 constituent_vnfs = nd.get("constituent-vnfd", None)

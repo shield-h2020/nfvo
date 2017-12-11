@@ -18,13 +18,14 @@
 from core.exception import Exception
 from flask import Blueprint
 from flask import request
-from nfv import vnf
+from nfv.vnf import VnsfoVnsf as vnsf_s
 from server.http import content
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
 from server.endpoints import VnsfoEndpoints as endpoints
 
 nfvo_views = Blueprint("nfvo_vnf_views", __name__)
+nfvo_vnf = vnsf_s()
 
 
 @nfvo_views.route(endpoints.VNSF_ACTION_STATUS, methods=["GET"])
@@ -35,12 +36,12 @@ def check_primitive_on_vnsf(vnsf_id, action_id):
 
 @nfvo_views.route(endpoints.VNSF_C_VNSFS, methods=["GET"])
 def fetch_config_vnsfs():
-    return HttpResponse.json(HttpCode.OK, vnf.get_vnfr_config())
+    return HttpResponse.json(HttpCode.OK, nfvo_vnf.get_vnfr_config())
 
 
 @nfvo_views.route(endpoints.VNSF_R_VNSFS, methods=["GET"])
 def fetch_running_vnsfs():
-    return HttpResponse.json(HttpCode.OK, vnf.fetch_running_vnsfs())
+    return HttpResponse.json(HttpCode.OK, nfvo_vnf.get_vnfr_running())
 
 
 @nfvo_views.route(endpoints.VNSF_VNSF_TENANT, methods=["GET"])
@@ -60,6 +61,6 @@ def exec_primitive_on_vnsf():
         Exception.improper_usage("Missing parameters: any of {}"
                                  .format(exp_params))
     # Extract params, respecting the specific ordering
-    payload = vnf.submit_action_request(
+    payload = nfvo_vnf.submit_action_request(
         *[request.json.get(x) for x in exp_params])
     return HttpResponse.json(HttpCode.ACCEPTED, payload)

@@ -23,8 +23,9 @@ from schema import Use
 class MockNs:
 
     def __init__(self):
+        self.res_key = "ns"
         self.get_nsr_config_mock = {
-            "ns": [
+            self.res_key: [
                 {
                     "constituent_vnfs": [
                         {
@@ -43,7 +44,7 @@ class MockNs:
 
     def get_nsr_config_schema(self):
         schema = self.get_nsr_config_mock
-        for schema_conf in schema.get("ns"):
+        for schema_conf in schema.get(self.res_key):
             for schema_const in schema_conf.get("constituent_vnfs"):
                 schema_const["member-vnf-index"] = And(Use(int))
                 schema_const["start-by-default"] = \
