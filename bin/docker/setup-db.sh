@@ -25,4 +25,4 @@ echo >> ${ENV_TMP_FILE}
 . ${ENV_TMP_FILE} > ${ENV_FILE}
 
 # Setup mongoDB data store.
-mongo --port ${DB_PORT} --eval "var PORT='$DB_PORT', DB_COLLECTION='$DB_DBNAME', DB_USER='$DB_USERNAME', DB_PASS='$DB_PASSWORD'" ${CNTR_FOLDER_DEV}/docker/mongodb-init.js
+mongod --port ${DB_PORT} # --eval "var PORT='$DB_PORT', DB_COLLECTION='$DB_DBNAME', DB_USER='$DB_USERNAME', DB_PASS='$DB_PASSWORD'" ${CNTR_FOLDER_DEV}/docker/mongodb-init.js

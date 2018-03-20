@@ -6,8 +6,11 @@ FROM ubuntu:16.04
 
 LABEL project="${CNTR_PROJECT}"
 
+RUN apt-get -y update && apt-get -y install mongodb-server
+RUN mkdir -p ${SHARED_FOLDER_DEV}/bin/docker
+RUN mkdir -p /data/db
+COPY . ${SHARED_FOLDER_DEV}/bin/docker
 WORKDIR ${SHARED_FOLDER_DEV}/bin/docker
 
-CMD ["mongod", "--port", "${DB_PORT}"]
 
-ENTRYPOINT ["/bin/bash", "${DST_PATH}/bin/docker/setup-db.sh"]
+ENTRYPOINT ["/bin/bash", "${SHARED_FOLDER_DEV}/bin/docker/setup-db.sh"]
