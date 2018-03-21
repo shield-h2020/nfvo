@@ -24,5 +24,14 @@ echo "_VARS_BLOCK_" >> ${ENV_TMP_FILE}
 echo >> ${ENV_TMP_FILE}
 . ${ENV_TMP_FILE} > ${ENV_FILE}
 
+mongod --port ${DB_PORT} &
+
+echo "Waiting for mongodb"
+until nc -z localhost 27017
+do
+    echo "."
+    sleep 1
+done
+
 # Setup mongoDB data store.
-mongod --port ${DB_PORT} # --eval "var PORT='$DB_PORT', DB_COLLECTION='$DB_DBNAME', DB_USER='$DB_USERNAME', DB_PASS='$DB_PASSWORD'" ${CNTR_FOLDER_DEV}/docker/mongodb-init.js
+mongo --port ${DB_PORT} --eval "var PORT='$DB_PORT', DB_COLLECTION='$DB_DBNAME', DB_USER='$DB_USERNAME', DB_PASS='$DB_PASSWORD'" ${CNTR_FOLDER_DEV}/docker/mongodb-init.js
