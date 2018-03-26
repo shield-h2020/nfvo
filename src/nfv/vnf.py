@@ -162,10 +162,15 @@ class VnsfoVnsf:
                 ns_name = vnf_name
             vim_name = self.vnfo_vim.get_vim_name_by_uuid(
                 vim_list, vnf.get("om-datacenter"))
+            ip_address = ""
+            if "connection-point" in vnf.keys()\
+                    and len(vnf.get("connection-point")) > 0\
+                    and "ip-address" in vnf.get("connection-point")[0].keys():
+                ip_address = vnf.get("connection-point")[0].get("ip-address")
 
             vnsf_dict = {
                 "config_status": vnf.get("config-status"),
-                "ip": vnf.get("connection-point")[0].get("ip-address"),
+                "ip": ip_address,
                 "ns_id": vnf.get("nsr-id-ref"),
                 "ns_name": ns_name,
                 "operational_status": vnf.get("operational-status"),
