@@ -114,6 +114,7 @@ class OpenStackConnector:
     @staticmethod
     def __parse_vim_credentials(raw_data):
         # Parse header titles (to know which value is under process)
+        raw_data = raw_data.decode("unicode_escape")
         table_head_split = raw_data.split("\n")
         table_head = table_head_split[0]
         table_head = re.sub(r"config", "", table_head)
@@ -138,7 +139,7 @@ class OpenStackConnector:
 
         # Define new structure with details per DC
         dc_data_det = {}
-        for dc, dc_data in dc_data_int.iteritems():
+        for dc, dc_data in dc_data_int.items():
             dc_data_det[dc] = {}
             dc_data_split = dc_data.split()
             for n, head in enumerate(table_head_split):
