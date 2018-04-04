@@ -12,8 +12,6 @@ services:
           - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
           - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
           - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
-        ports:
-          - "${DB_PORT}:${DB_PORT}"
         volumes:
           - "./mongo-entrypoint/:/docker-entrypoint-initdb.d/"
 
