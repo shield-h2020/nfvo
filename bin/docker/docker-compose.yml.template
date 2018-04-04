@@ -32,4 +32,4 @@ services:
             - ${SRC_PATH}:${DST_PATH}
         command:         python3 ${DST_PATH}/src/main.py
         links:
-          - nfvo-db
+          - ${CNTR_DB}
