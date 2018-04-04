@@ -5,10 +5,17 @@ services:
     # MongoDB
     ${CNTR_DB}:
         image: mongo
-        env_file:          ${ENV_FILE}
-        build:
-            context:       .
-            dockerfile:    ${DOCKER_FILE_DB}
+        labels:
+          project: shield-nfvo
+        env_file: ${ENV_FILE}
+        environment:
+          - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+          - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+          - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+        ports:
+          - "${DB_PORT}:${DB_PORT}"
+        volumes:
+          - "./mongo-entrypoint/:/docker-entrypoint-initdb.d/"
 
     # vNSFO
     ${CNTR_NFVO}:
@@ -24,3 +31,5 @@ services:
         volumes:
             - ${SRC_PATH}:${DST_PATH}
         command:         python3 ${DST_PATH}/src/main.py
+        links:
+          - nfvo-db
