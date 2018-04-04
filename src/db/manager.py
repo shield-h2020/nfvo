@@ -42,18 +42,20 @@ class DBManager():
         self.db_db = self.db_category.get("db")
         self.db_name = self.db_db.get("name")
         self.user_id = self.db_db.get("user")
+        self.auth_source = self.db_db.get("auth_source")
         self.user_password = self.db_db.get("password")
         self.user_options = {"roles": [
             {"role": "readWrite", "db": self.db_name},
             {"role": "dbAdmin", "db": self.db_name}
         ]}
         self.address = "mongodb://{}:{}".format(self.host, self.port)
-        self.auth_db_address = "mongodb://{}:{}@{}:{}/{}".format(
+        self.auth_db_address = "mongodb://{}:{}@{}:{}/{}?authSource={}".format(
                 self.user_id,
                 self.user_password,
                 self.host,
                 self.port,
-                self.db_name)
+                self.db_name,
+                self.auth_source)
         self.collections = [
                 "resource.vnsf",
                 "resource.vnsf.action",
