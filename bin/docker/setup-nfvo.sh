@@ -13,9 +13,6 @@ do
     sleep 1
 done
 
-# Create database user in mongodb container
-mongo --host ${CNTR_DB}:${DB_PORT} --eval "db.runCommand({ createUser: \"${DB_USERNAME}\", pwd: \"${DB_PASSWORD}\", roles: [ {role: \"readWrite\", db: \"${DB_DBNAME}\"} ]})"
-
 # Pip requirements
 pip3 install -r ${REQ_PATH}/nfvo-pip.txt
 pip3 install -r ${REQ_PATH}/test-pip.txt
