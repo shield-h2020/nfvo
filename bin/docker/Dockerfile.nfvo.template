@@ -4,8 +4,6 @@
 
 FROM ubuntu:16.04
 
-LABEL project="${CNTR_PROJECT}"
-
 WORKDIR ${SRC_PATH}
 
 # Dependencies

@@ -6,3 +6,4 @@
     name = shield-nfvo
     user = user
     password = user
+    auth_source = admin

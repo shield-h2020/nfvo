@@ -1,4 +1,5 @@
 bin/docker/*
+!bin/docker/mongo-entrypoint
 !bin/docker/[D|d]ocker*.template
 cert/*
 conf/*.conf
