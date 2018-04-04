@@ -6,7 +6,7 @@ services:
     ${CNTR_DB}:
         image: mongo
         labels:
-          project: shield-nfvo
+          project: ${CNTR_PROJECT}
         env_file: ${ENV_FILE}
         environment:
           - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
@@ -19,6 +19,8 @@ services:
 
     # vNSFO
     ${CNTR_NFVO}:
+        labels:
+          project: ${CNTR_PROJECT}
         env_file:        ${ENV_FILE}
         build:
           context:       .
