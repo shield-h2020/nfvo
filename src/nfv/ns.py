@@ -48,6 +48,39 @@ class VnsfoNs:
         output = json.loads(resp.text)
         return output
 
+    def instantiate_ns(self, data):
+        NSR = {
+            "nsr": [
+                {
+                    "id": "90b024f4-79a3-4acb-818a-c93728220b3d",
+                    "name": "TestXN65E06D499AA624",
+                    "short-name": "Test",
+                    "description": " ",
+                    "admin-status": "ENABLED",
+                    "om-datacenter": "f9acd550-9d48-11e7-ae4c-00163e3afbe5",
+                    "nsd": {
+                        "id": "l3filter_nsd",
+                        "name": "l3filter_nsd",
+                        "short-name": "l3filter_nsd",
+                        "description": " ",
+                        "constituent-vnfd": [
+                            {
+                                "vnfd-id-ref": "l3filter_vnfd",
+                                "member-vnf-index": 1
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        resp = requests.post(
+            osm_eps.NS_INSTANTIATE,
+            headers=osm_eps.get_default_headers(),
+            verify=False,
+            json=NSR)
+        output = json.loads(resp.text)
+        return output
+
     def fetch_config_nss(self):
         catalog = self.get_nsr_config()
         return catalog

@@ -48,6 +48,9 @@ NS_CATALOG_C = S_BASE.format(NFVO_PKG_ENDPOINT, NFVO_PKG_PORT, NS_CATALOG_C_EP)
 NS_CATALOG_O_EP = "api/operational/nsd-catalog/nsd"
 NS_CATALOG_O = S_BASE.format(NFVO_ENDPOINT, NFVO_PORT, NS_CATALOG_O_EP)
 
+NS_INSTANTIATE_EP = "api/operational/ns-instance-config/nsr"
+NS_INSTANTIATE = S_BASE.format(NFVO_ENDPOINT, NFVO_PORT, NS_INSTANTIATE_EP)
+
 # Infrastructure
 VIM_DC_EP = "api/operational/datacenters"
 VIM_DC = S_BASE.format(NFVO_ENDPOINT, NFVO_PORT, VIM_DC_EP)
