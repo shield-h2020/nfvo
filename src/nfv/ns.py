@@ -15,6 +15,7 @@
 # limitations under the License.
 
 
+import uuid
 from nfvo.osm import endpoints as osm_eps
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from server.http import content
@@ -48,20 +49,22 @@ class VnsfoNs:
         output = json.loads(resp.text)
         return output
 
-    def instantiate_ns(self, data):
+    def instantiate_ns(self, instantiation_data):
+        print(instantiation_data)
+        nsr_id = str(uuid.uuid4())
         NSR = {
             "nsr": [
                 {
-                    "id": "90b024f4-79a3-4acb-818a-c93728220b3d",
-                    "name": "TestXN65E06D499AA624",
+                    "id": nsr_id,
+                    "name": instantiation_data['name'],
                     "short-name": "Test",
                     "description": " ",
                     "admin-status": "ENABLED",
-                    "om-datacenter": "f9acd550-9d48-11e7-ae4c-00163e3afbe5",
+                    "om-datacenter": instantiation_data['om-datacenter'],
                     "nsd": {
-                        "id": "l3filter_nsd",
-                        "name": "l3filter_nsd",
-                        "short-name": "l3filter_nsd",
+                        "id": instantiation_data['nss_id'],
+                        "name": instantiation_data['nss_id'],
+                        "short-name": instantiation_data['nss_id'],
                         "description": " ",
                         "constituent-vnfd": [
                             {
@@ -78,8 +81,7 @@ class VnsfoNs:
             headers=osm_eps.get_default_headers(),
             verify=False,
             json=NSR)
-        output = json.loads(resp.text)
-        return output
+        return resp
 
     def fetch_config_nss(self):
         catalog = self.get_nsr_config()
