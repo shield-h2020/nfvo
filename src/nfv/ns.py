@@ -57,15 +57,14 @@ class VnsfoNs:
                 {
                     "id": nsr_id,
                     "name": instantiation_data['name'],
-                    "short-name": "Test",
-                    "description": " ",
+                    "short-name": instantiation_data['name'],
+                    "description": instantiation_data['name'],
                     "admin-status": "ENABLED",
                     "om-datacenter": instantiation_data['om-datacenter'],
                     "nsd": {
                         "id": instantiation_data['nss_id'],
                         "name": instantiation_data['nss_id'],
                         "short-name": instantiation_data['nss_id'],
-                        "description": " ",
                         "constituent-vnfd": [
                             {
                                 "vnfd-id-ref": "l3filter_vnfd",
