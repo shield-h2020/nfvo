@@ -15,16 +15,16 @@
 # limitations under the License.
 
 
-import uuid
 from nfvo.osm import endpoints as osm_eps
 from nfvo.osm import NFVO_DEFAULT_OM_DATACENTER
-from templates import nfvo as nfvo_tmpl
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from server.http import content
 from server.mocks.ns import MockNs as ns_m
+from templates import nfvo as nfvo_tmpl
 
 import json
 import requests
+import uuid
 
 
 class VnsfoNs:
@@ -47,7 +47,7 @@ class VnsfoNs:
         else:
             # filtering by name
             fcatalog = self.format_ns_catalog_descriptors(catalog)
-            return [x for x in fcatalog['ns'] if x['ns_name'] == ns_name]
+            return [x for x in fcatalog["ns"] if x["ns_name"] == ns_name]
 
 
     def get_nsr_running(self):
@@ -61,19 +61,19 @@ class VnsfoNs:
     def build_nsr_data(self, instantiation_data):
         nsr_id = str(uuid.uuid4())
         # need to retrieve vnfds of the nsd
-        configuration = self.get_nsr_config(instantiation_data['nss_id'])
+        configuration = self.get_nsr_config(instantiation_data["nss_id"])
         if len(configuration) == 0 or configuration is None:
             # in case payload is None rift.io will throw a 404
             return None
         # filtering by start-by-default (field seems to be there for this)
-        vnfss = [{'vnfd-id-ref': x['vnfd-id-ref'],
-                  'member-vnf-index': x['member-vnf-index']} for
-                 x in configuration[0]['constituent_vnfs'] if x['start-by-default'] == 'true']
+        vnfss = [{"vnfd-id-ref": x["vnfd-id-ref"],
+                  "member-vnf-index": x["member-vnf-index"]} for
+                 x in configuration[0]["constituent_vnfs"] if x["start-by-default"] == "true"]
         return nfvo_tmpl.instantiation_data_msg(nsr_id, instantiation_data, vnfss)
 
     def instantiate_ns(self, instantiation_data):
-        if not 'om-datacenter' in instantiation_data:
-            instantiation_data['om-datacenter'] = NFVO_DEFAULT_OM_DATACENTER
+        if "om-datacenter" not in instantiation_data:
+            instantiation_data["om-datacenter"] = NFVO_DEFAULT_OM_DATACENTER
         nsr_data = self.build_nsr_data(instantiation_data)
         resp = requests.post(
             osm_eps.NS_INSTANTIATE,
