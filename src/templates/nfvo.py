@@ -52,7 +52,7 @@ exec_action_vnf_encoded = """
 """
 
 
-def instantiation_data_msg(nsr_id, instantiation_data, vnfs):
+def instantiation_data_msg(nsr_id, instantiation_data, vnfs, vlds):
     return {
         "nsr": [
             {
@@ -62,17 +62,12 @@ def instantiation_data_msg(nsr_id, instantiation_data, vnfs):
                 "description": instantiation_data["instance_name"],
                 "admin-status": "ENABLED",
                 "om-datacenter": instantiation_data["vim_id"],
+                "vld": vlds,
                 "nsd": {
                     "id": instantiation_data["ns_id"],
                     "name": instantiation_data["ns_id"],
                     "short-name": instantiation_data["ns_id"],
-                    "constituent-vnfd": vnfs,
-                    # "vld": {
-                    #     "id": "%s_vld1" % nsr_id,
-                    #     "name": "%s_vld1" % nsr_id,
-                    #     "short-name": "%s_vld1" % nsr_id,
-                    #     "vim-network-name": instantiation_data["vim_net"],
-                    # }
+                    "constituent-vnfd": vnfs
                 }
             }
         ]

@@ -41,6 +41,7 @@ class VnsfoNs:
                 verify=False)
         # Yep, this could be insecure - but the output comes from NFVO
         catalog = eval(resp.text) if resp.text else []
+        # print(json.dumps(catalog, indent=4, sort_keys=True))
         if ns_name is None:
             # returning all ns_catalog_descriptors
             return self.format_ns_catalog_descriptors(catalog)
@@ -69,8 +70,14 @@ class VnsfoNs:
                   "member-vnf-index": x["member-vnf-index"]} for
                  x in configuration[0]["constituent_vnfs"]
                  if x["start-by-default"] == "true"]
+        vlds = [{"id": x["id"],
+                 "name": x["name"],
+                 "type": x["type"],
+                 "vim-network-name": x["vim-network-name"]} for x in configuration[0]["vld"]
+                if "vim-network-name" in x]
+
         return nfvo_tmpl.instantiation_data_msg(
-                nsr_id, instantiation_data, vnfss)
+                nsr_id, instantiation_data, vnfss, vlds)
 
     def instantiate_ns(self, instantiation_data):
         if "vim_id" not in instantiation_data:
@@ -80,6 +87,8 @@ class VnsfoNs:
             instantiation_data["vim_net"] = NFVO_DEFAULT_OM_DATACENTER_NET
         instantiation_data["vim-network-name"] = instantiation_data["vim_net"]
         nsr_data = self.build_nsr_data(instantiation_data)
+        print("NSR_DATA")
+        print(json.dumps(nsr_data, indent=4, sort_keys=4))
         resp = requests.post(
             osm_eps.NS_INSTANTIATE,
             headers=osm_eps.get_default_headers(),
@@ -104,5 +113,6 @@ class VnsfoNs:
                         "ns_name": nd.get("name"),
                         "vendor": nd.get("vendor"),
                         "version": nd.get("version"),
+                        "vld": nd.get("vld")
                     })
         return output
