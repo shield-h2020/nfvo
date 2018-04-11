@@ -68,7 +68,6 @@ class VnsfoNs:
         vnfss = [{'vnfd-id-ref': x['vnfd-id-ref'],
                   'member-vnf-index': x['member-vnf-index']} for
                  x in configuration[0]['constituent_vnfs'] if x['start-by-default'] == 'true']
-        print(nfvo_tmpl.instantiation_data_msg(nsr_id, instantiation_data, vnfss))
         return nfvo_tmpl.instantiation_data_msg(nsr_id, instantiation_data, vnfss)
 
     def instantiate_ns(self, instantiation_data):

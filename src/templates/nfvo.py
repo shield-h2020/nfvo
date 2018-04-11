@@ -41,6 +41,7 @@ exec_action_vnf = """
     ],
     "vnfr-id-ref": ""
 }
+
 """
 exec_action_encoded = """
 name={name}&nsr_id_ref={ns_id}&vnf-list[0][member_vnf_index_ref]={vnf_index}&vnf-list[0][vnfr-id-ref]={vnf_id}&vnf-list[0][vnf-primitive][0][name]={action_name}&vnf-list[0][vnf-primitive][0][index]={action_idx}{action_data}&triggered-by=vnf-primitive
