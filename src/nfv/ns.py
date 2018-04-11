@@ -15,16 +15,16 @@
 # limitations under the License.
 
 
-import uuid
 from nfvo.osm import endpoints as osm_eps
 from nfvo.osm import NFVO_DEFAULT_OM_DATACENTER, NFVO_DEFAULT_OM_DATACENTER_NET
-from templates import nfvo as nfvo_tmpl
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from server.http import content
 from server.mocks.ns import MockNs as ns_m
+from templates import nfvo as nfvo_tmpl
 
 import json
 import requests
+import uuid
 
 
 class VnsfoNs:
