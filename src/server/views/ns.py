@@ -40,7 +40,7 @@ def instantiate_ns():
     if exp_ct not in request.headers.get("Content-Type", ""):
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
     instantiation_data = request.get_json()
-    exp_params = ["ns_id", "name"]
+    exp_params = ["ns_id", "instance_name"]
     if not content.data_in_request(request, exp_params):
         Exception.improper_usage("Missing parameters: any of {}"
                                  .format(exp_params))

@@ -408,17 +408,20 @@ definitions:
     type: object
     required:
       - ns_id
-      - name
+      - instance_name
     properties:
       ns_id:
         type: string
         example: l23filter_nsd
-      name:
+      instance_name:
         type: string
         example: my service instance
-      om-datacenter:
+      vim_id:
         type: string
         example: f9acd550-9d48-11e7-ae4c-00163e3afbe5
+      vim_net:
+        type: string
+        example: provider
 
   InstantiateNSOutput:
     type: object

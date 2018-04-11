@@ -17,7 +17,7 @@
 
 import uuid
 from nfvo.osm import endpoints as osm_eps
-from nfvo.osm import NFVO_DEFAULT_OM_DATACENTER
+from nfvo.osm import NFVO_DEFAULT_OM_DATACENTER, NFVO_DEFAULT_OM_DATACENTER_NET
 from templates import nfvo as nfvo_tmpl
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from server.http import content
@@ -73,8 +73,12 @@ class VnsfoNs:
                 nsr_id, instantiation_data, vnfss)
 
     def instantiate_ns(self, instantiation_data):
-        if "om-datacenter" not in instantiation_data:
-            instantiation_data["om-datacenter"] = NFVO_DEFAULT_OM_DATACENTER
+        if "vim_id" not in instantiation_data:
+            instantiation_data["vim_id"] = NFVO_DEFAULT_OM_DATACENTER
+        instantiation_data["om-datacenter"] = instantiation_data["vim_id"]
+        if "vim_net" not in instantiation_data:
+            instantiation_data["vim_net"] = NFVO_DEFAULT_OM_DATACENTER_NET
+        instantiation_data["vim-network-name"] = instantiation_data["vim_net"]
         nsr_data = self.build_nsr_data(instantiation_data)
         resp = requests.post(
             osm_eps.NS_INSTANTIATE,
