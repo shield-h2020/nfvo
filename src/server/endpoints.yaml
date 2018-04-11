@@ -147,6 +147,32 @@ paths:
             $ref: "#/definitions/ConfigNssOutput"
         <<: *API_RESPONSES
 
+  /ns/instantiate:
+    post:
+      tags:
+        - ns
+      summary: Instantiates a NSS
+      consumes:
+        - application/json
+      parameters:
+      - in: body
+        name: body
+        description: The body of the request
+        required: true
+        schema:
+          $ref: "#/definitions/InstantiateNssInput"
+      description: >-
+        Instantiates a NSS
+      operationId: instantiateNS
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/InstantiateNsOutput"
+        <<: *API_RESPONSES
+
   /package/onboard:
     post:
       tags:
@@ -377,6 +403,29 @@ paths:
         <<: *API_RESPONSES
 
 definitions:
+
+  InstantiateNssInput:
+    type: object
+    required:
+      - nss_id
+      - name
+      - om-datacenter
+    properties:
+      nss_id:
+        type: string
+        example: l23filter_nsd
+      name:
+        type: string
+        example: my service instance
+      om-datacenter:
+        type: string
+        example: f9acd550-9d48-11e7-ae4c-00163e3afbe5
+
+  InstantiateNssOutput:
+    type: object
+    properties:
+      success:
+        type: string
 
   ConfigNssOutput:
     type: object
