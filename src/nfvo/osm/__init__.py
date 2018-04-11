@@ -20,6 +20,8 @@ from core.config import FullConfParser
 
 NFVO_ENDPOINT = "10.101.10.100"
 NFVO_PORT = "8008"
+# Used to map internally to an OSM DC, if user does not request a specific one
+# TODO: once all DCs are operative, remove this and find from /vim endpoint
 NFVO_DEFAULT_OM_DATACENTER = "f9acd550-9d48-11e7-ae4c-00163e3afbe5"
 NFVO_PKG_ENDPOINT = NFVO_ENDPOINT
 NFVO_PKG_PORT = "8443"

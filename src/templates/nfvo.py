@@ -51,21 +51,22 @@ exec_action_vnf_encoded = """
 &vnf-list[0][vnf-primitive][0][parameter][{idx}][name]={param_name}&vnf-list[0][vnf-primitive][0][parameter][{idx}][value]={param_value}
 """
 
-def instantiation_data_msg(nsr_id, instantiation_data, vnfss):
+
+def instantiation_data_msg(nsr_id, instantiation_data, vnfs):
     return {
         "nsr": [
             {
                 "id": nsr_id,
-                "name": instantiation_data['name'],
-                "short-name": instantiation_data['name'],
-                "description": instantiation_data['name'],
+                "name": instantiation_data["name"],
+                "short-name": instantiation_data["name"],
+                "description": instantiation_data["name"],
                 "admin-status": "ENABLED",
-                "om-datacenter": instantiation_data['om-datacenter'],
+                "om-datacenter": instantiation_data["om-datacenter"],
                 "nsd": {
-                    "id": instantiation_data['nss_id'],
-                    "name": instantiation_data['nss_id'],
-                    "short-name": instantiation_data['nss_id'],
-                    "constituent-vnfd": vnfss
+                    "id": instantiation_data["ns_id"],
+                    "name": instantiation_data["ns_id"],
+                    "short-name": instantiation_data["ns_id"],
+                    "constituent-vnfd": vnfs
                 }
             }
         ]
