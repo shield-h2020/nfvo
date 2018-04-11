@@ -170,7 +170,7 @@ paths:
         200:
           description: Request succeeded
           schema:
-            $ref: "#/definitions/InstantiateNsOutput"
+            $ref: "#/definitions/InstantiateNssOutput"
         <<: *API_RESPONSES
 
   /package/onboard:
