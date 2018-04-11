@@ -15,7 +15,6 @@
 # limitations under the License.
 
 
-import json
 from core.exception import Exception
 from flask import Blueprint
 from flask import request
