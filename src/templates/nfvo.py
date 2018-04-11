@@ -42,7 +42,6 @@ exec_action_vnf = """
     "vnfr-id-ref": ""
 }
 """
-
 exec_action_encoded = """
 name={name}&nsr_id_ref={ns_id}&vnf-list[0][member_vnf_index_ref]={vnf_index}&vnf-list[0][vnfr-id-ref]={vnf_id}&vnf-list[0][vnf-primitive][0][name]={action_name}&vnf-list[0][vnf-primitive][0][index]={action_idx}{action_data}&triggered-by=vnf-primitive
 """
@@ -50,3 +49,23 @@ name={name}&nsr_id_ref={ns_id}&vnf-list[0][member_vnf_index_ref]={vnf_index}&vnf
 exec_action_vnf_encoded = """
 &vnf-list[0][vnf-primitive][0][parameter][{idx}][name]={param_name}&vnf-list[0][vnf-primitive][0][parameter][{idx}][value]={param_value}
 """
+
+def instantiation_data_msg(nsr_id, instantiation_data, vnfss):
+    return {
+        "nsr": [
+            {
+                "id": nsr_id,
+                "name": instantiation_data['name'],
+                "short-name": instantiation_data['name'],
+                "description": instantiation_data['name'],
+                "admin-status": "ENABLED",
+                "om-datacenter": instantiation_data['om-datacenter'],
+                "nsd": {
+                    "id": instantiation_data['nss_id'],
+                    "name": instantiation_data['nss_id'],
+                    "short-name": instantiation_data['nss_id'],
+                    "constituent-vnfd": vnfss
+                }
+            }
+        ]
+    }

@@ -17,6 +17,7 @@
 
 import uuid
 from nfvo.osm import endpoints as osm_eps
+from templates import nfvo as nfvo_tmpl
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from server.http import content
 from server.mocks.ns import MockNs as ns_m
@@ -32,14 +33,21 @@ class VnsfoNs:
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
     @content.on_mock(ns_m().get_nsr_config_mock)
-    def get_nsr_config(self):
+    def get_nsr_config(self, ns_name=None):
         resp = requests.get(
                 osm_eps.NS_CATALOG_C,
                 headers=osm_eps.get_default_headers(),
                 verify=False)
         # Yep, this could be insecure - but the output comes from NFVO
         catalog = eval(resp.text) if resp.text else []
-        return self.format_ns_catalog_descriptors(catalog)
+        if ns_name is None:
+            # returning all ns_catalog_descriptors
+            return self.format_ns_catalog_descriptors(catalog)
+        else:
+            # filtering by name
+            fcatalog = self.format_ns_catalog_descriptors(catalog)
+            return [x for x in fcatalog['ns'] if x['ns_name'] == ns_name]
+
 
     def get_nsr_running(self):
         resp = requests.get(
@@ -49,37 +57,27 @@ class VnsfoNs:
         output = json.loads(resp.text)
         return output
 
-    def instantiate_ns(self, instantiation_data):
-        print(instantiation_data)
+    def build_nsr_data(self, instantiation_data):
         nsr_id = str(uuid.uuid4())
-        NSR = {
-            "nsr": [
-                {
-                    "id": nsr_id,
-                    "name": instantiation_data['name'],
-                    "short-name": instantiation_data['name'],
-                    "description": instantiation_data['name'],
-                    "admin-status": "ENABLED",
-                    "om-datacenter": instantiation_data['om-datacenter'],
-                    "nsd": {
-                        "id": instantiation_data['nss_id'],
-                        "name": instantiation_data['nss_id'],
-                        "short-name": instantiation_data['nss_id'],
-                        "constituent-vnfd": [
-                            {
-                                "vnfd-id-ref": "l3filter_vnfd",
-                                "member-vnf-index": 1
-                            }
-                        ]
-                    }
-                }
-            ]
-        }
+        # need to retrieve vnfds of the nsd
+        configuration = self.get_nsr_config(instantiation_data['nss_id'])
+        if len(configuration) == 0 or configuration is None:
+            # in case payload is None rift.io will throw a 404
+            return None
+        # filtering by start-by-default (field seems to be there for this)
+        vnfss = [{'vnfd-id-ref': x['vnfd-id-ref'],
+                  'member-vnf-index': x['member-vnf-index']} for
+                 x in configuration[0]['constituent_vnfs'] if x['start-by-default'] == 'true']
+        print(nfvo_tmpl.instantiation_data_msg(nsr_id, instantiation_data, vnfss))
+        return nfvo_tmpl.instantiation_data_msg(nsr_id, instantiation_data, vnfss)
+
+    def instantiate_ns(self, instantiation_data):
+        nsr_data = self.build_nsr_data(instantiation_data)
         resp = requests.post(
             osm_eps.NS_INSTANTIATE,
             headers=osm_eps.get_default_headers(),
             verify=False,
-            json=NSR)
+            json=nsr_data)
         return resp
 
     def fetch_config_nss(self):

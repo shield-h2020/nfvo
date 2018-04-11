@@ -47,4 +47,4 @@ def instantiate_nss():
         Exception.improper_usage("Missing parameters: any of {}"
                                  .format(exp_params))
     response = nfvo_ns.instantiate_ns(instantiation_data)
-    return HttpResponse.json(response.status_code, json.loads(response.text))
+    return HttpResponse.json(response.status_code, response.text)
