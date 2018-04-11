@@ -151,7 +151,7 @@ paths:
     post:
       tags:
         - ns
-      summary: Instantiates a NSS
+      summary: Instantiates a NS
       consumes:
         - application/json
       parameters:
@@ -160,9 +160,9 @@ paths:
         description: The body of the request
         required: true
         schema:
-          $ref: "#/definitions/InstantiateNssInput"
+          $ref: "#/definitions/InstantiateNSInput"
       description: >-
-        Instantiates a NSS
+        Instantiates a NS
       operationId: instantiateNS
       produces:
         - application/json
@@ -170,7 +170,7 @@ paths:
         200:
           description: Request succeeded
           schema:
-            $ref: "#/definitions/InstantiateNssOutput"
+            $ref: "#/definitions/InstantiateNSOutput"
         <<: *API_RESPONSES
 
   /package/onboard:
@@ -404,13 +404,13 @@ paths:
 
 definitions:
 
-  InstantiateNssInput:
+  InstantiateNSInput:
     type: object
     required:
-      - nss_id
+      - ns_id
       - name
     properties:
-      nss_id:
+      ns_id:
         type: string
         example: l23filter_nsd
       name:
@@ -420,7 +420,7 @@ definitions:
         type: string
         example: f9acd550-9d48-11e7-ae4c-00163e3afbe5
 
-  InstantiateNssOutput:
+  InstantiateNSOutput:
     type: object
     properties:
       success:

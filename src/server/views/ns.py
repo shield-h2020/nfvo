@@ -35,14 +35,13 @@ def fetch_config_nss():
 
 @nfvo_views.route(endpoints.NS_INSTANTIATE, methods=["POST"])
 @content.expect_json_content
-def instantiate_nss():
+def instantiate_ns():
     exp_ct = "application/json"
     if exp_ct not in request.headers.get("Content-Type", ""):
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
     instantiation_data = request.get_json()
-    exp_params = ["nss_id", "name"]
-    if not content.data_in_request(
-            request, exp_params):
+    exp_params = ["ns_id", "name"]
+    if not content.data_in_request(request, exp_params):
         Exception.improper_usage("Missing parameters: any of {}"
                                  .format(exp_params))
     response = nfvo_ns.instantiate_ns(instantiation_data)
