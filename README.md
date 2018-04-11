@@ -79,6 +79,24 @@ curl -ik https://127.0.0.1:8448
 curl -ik https://127.0.0.1:8448/ns/config
 ```
 
+#### Instantiate an already registered NS
+
+##### Specific deployment location and provider network
+
+```
+curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
+     -H "Content-Type: application/json" \
+     -d '{"name": "l3f_test", "ns_id": "l3filter_nsd", "vim_id": "f9acd550-9d48-11e7-ae4c-00163e3afbe5", "vim_net": "provider"}'
+```
+
+##### Random deployment location and provider network
+
+```
+curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
+     -H "Content-Type: application/json" \
+     -d '{"name": "l3f_test", "ns_id": "l3filter_nsd"}'
+```
+
 ### Package
 
 #### Onboards a locally stored package into NFVO
