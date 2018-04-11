@@ -71,10 +71,12 @@ class VnsfoNs:
                  x in configuration[0]["constituent_vnfs"]
                  if x["start-by-default"] == "true"]
         vlds = [{"id": x["id"],
+                 "mgmt-network": x["mgmt-network"],
                  "name": x["name"],
                  "type": x["type"],
-                 "vim-network-name": x["vim-network-name"]} for x in configuration[0]["vld"]
-                if "vim-network-name" in x]
+                 "vim-network-name": x["vim-network-name"],
+                 "vnfd-connection-point-ref": x["vnfd-connection-point-ref"]}
+                for x in configuration[0]["vld"] if "vim-network-name" in x]
 
         return nfvo_tmpl.instantiation_data_msg(
                 nsr_id, instantiation_data, vnfss, vlds)
