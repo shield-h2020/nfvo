@@ -409,7 +409,6 @@ definitions:
     required:
       - nss_id
       - name
-      - om-datacenter
     properties:
       nss_id:
         type: string

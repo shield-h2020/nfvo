@@ -20,6 +20,7 @@ from core.config import FullConfParser
 
 NFVO_ENDPOINT = "10.101.10.100"
 NFVO_PORT = "8008"
+NFVO_DEFAULT_OM_DATACENTER = "f9acd550-9d48-11e7-ae4c-00163e3afbe5"
 NFVO_PKG_ENDPOINT = NFVO_ENDPOINT
 NFVO_PKG_PORT = "8443"
 NFVO_RO_ENDPOINT = NFVO_ENDPOINT
@@ -33,6 +34,8 @@ def load_config():
     nfvo_general = nfvo_category.get("general")
     nfvo_host = nfvo_general.get("host", NFVO_ENDPOINT)
     nfvo_port = nfvo_general.get("port", NFVO_PORT)
+    nfvo_default_om_datacenter = nfvo_general.get("default_om_datacenter",
+                                                  NFVO_DEFAULT_OM_DATACENTER)
     # Package data
     nfvo_package = nfvo_category.get("package")
     nfvo_pkg_host = nfvo_package.get("host", NFVO_PKG_ENDPOINT)
@@ -43,6 +46,7 @@ def load_config():
     nfvo_ro_port = nfvo_ro.get("port", NFVO_RO_PORT)
     return {"nfvo_host": nfvo_host,
             "nfvo_port": nfvo_port,
+            "nfvo_default_om_datacenter": nfvo_default_om_datacenter,
             "nfvo_pkg_host": nfvo_pkg_host,
             "nfvo_pkg_port": nfvo_pkg_port,
             "nfvo_ro_host": nfvo_ro_host,
@@ -52,6 +56,7 @@ def load_config():
 cfg = load_config()
 NFVO_ENDPOINT = cfg.get("nfvo_host")
 NFVO_PORT = cfg.get("nfvo_port")
+NFVO_DEFAULT_OM_DATACENTER = cfg.get("nfvo_default_om_datacenter")
 NFVO_PKG_ENDPOINT = cfg.get("nfvo_pkg_host")
 NFVO_PKG_PORT = cfg.get("nfvo_pkg_port")
 NFVO_RO_ENDPOINT = cfg.get("nfvo_ro_host")

@@ -17,6 +17,7 @@
 
 import uuid
 from nfvo.osm import endpoints as osm_eps
+from nfvo.osm import NFVO_DEFAULT_OM_DATACENTER
 from templates import nfvo as nfvo_tmpl
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from server.http import content
@@ -71,6 +72,8 @@ class VnsfoNs:
         return nfvo_tmpl.instantiation_data_msg(nsr_id, instantiation_data, vnfss)
 
     def instantiate_ns(self, instantiation_data):
+        if not 'om-datacenter' in instantiation_data:
+            instantiation_data['om-datacenter'] = NFVO_DEFAULT_OM_DATACENTER
         nsr_data = self.build_nsr_data(instantiation_data)
         resp = requests.post(
             osm_eps.NS_INSTANTIATE,
