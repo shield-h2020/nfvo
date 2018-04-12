@@ -39,7 +39,7 @@ class VnsfoNs:
                 osm_eps.NS_CATALOG_C,
                 headers=osm_eps.get_default_headers(),
                 verify=False)
-        # Yep, this could be insecure - but the output comes from NFVO
+        # yep, this could be insecure - but the output comes from NFVO
         catalog = eval(resp.text) if resp.text else []
         # print(json.dumps(catalog, indent=4, sort_keys=True))
         if ns_name is None:
@@ -61,7 +61,7 @@ class VnsfoNs:
     def build_nsr_data(self, instantiation_data):
         nsr_id = str(uuid.uuid4())
         # need to retrieve vnfds of the nsd
-        configuration = self.get_nsr_config(instantiation_data["ns_id"])
+        configuration = self.get_nsr_config(instantiation_data["ns_name"])
         if len(configuration) == 0 or configuration is None:
             # in case payload is None rift.io will throw a 404
             return None

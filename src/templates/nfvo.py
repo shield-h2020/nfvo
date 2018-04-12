@@ -63,9 +63,9 @@ def instantiation_data_msg(nsr_id, instantiation_data, vnfs, vlds):
                 "admin-status": "ENABLED",
                 "om-datacenter": instantiation_data["vim_id"],
                 "nsd": {
-                    "id": instantiation_data["ns_id"],
-                    "name": instantiation_data["ns_id"],
-                    "short-name": instantiation_data["ns_id"],
+                    "id": instantiation_data["ns_name"],
+                    "name": instantiation_data["ns_name"],
+                    "short-name": instantiation_data["ns_name"],
                     "constituent-vnfd": vnfs,
                     "vld": vlds
                 }

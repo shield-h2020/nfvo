@@ -86,7 +86,7 @@ curl -ik https://127.0.0.1:8448/ns/config
 ```
 curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -H "Content-Type: application/json" \
-     -d '{"name": "l3f_test", "ns_id": "l3filter_nsd", "vim_id": "f9acd550-9d48-11e7-ae4c-00163e3afbe5", "vim_net": "provider"}'
+     -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd", "vim_id": "f9acd550-9d48-11e7-ae4c-00163e3afbe5", "vim_net": "provider"}'
 ```
 
 ##### Random deployment location and provider network
@@ -94,7 +94,7 @@ curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
 ```
 curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -H "Content-Type: application/json" \
-     -d '{"name": "l3f_test", "ns_id": "l3filter_nsd"}'
+     -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd"}'
 ```
 
 ### Package

@@ -407,10 +407,10 @@ definitions:
   InstantiateNSInput:
     type: object
     required:
-      - ns_id
+      - ns_name
       - instance_name
     properties:
-      ns_id:
+      ns_name:
         type: string
         example: l23filter_nsd
       instance_name:
@@ -426,11 +426,11 @@ definitions:
   InstantiateNSOutput:
     type: object
     properties:
+      ns_name:
+        type: string
       instance_name:
         type: string
       instance_id:
-        type: string
-      ns_name:
         type: string
       vim_id:
         type: string
