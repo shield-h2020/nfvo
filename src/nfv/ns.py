@@ -79,7 +79,7 @@ class VnsfoNs:
                      "type": x["type"],
                      "vim-network-name": instantiation_data["vim_net"]}
                     for x in configuration[0]["vld"]
-                    if x["mgmt-network"] == "true"]
+                    if x.get("mgmt-network", "") == "true"]
         else:
             # By default, include virtual links configuration only if
             # specific vim-network-name is defined
