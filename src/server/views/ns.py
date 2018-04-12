@@ -18,9 +18,9 @@
 from core.exception import Exception
 from flask import Blueprint
 from flask import request
-from server.http import content
 from nfv.ns import VnsfoNs as ns_s
 from server.endpoints import VnsfoEndpoints as endpoints
+from server.http import content
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
 

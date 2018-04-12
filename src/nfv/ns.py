@@ -70,13 +70,15 @@ class VnsfoNs:
                   "member-vnf-index": x["member-vnf-index"]} for
                  x in configuration[0]["constituent_vnfs"]
                  if x["start-by-default"] == "true"]
-        # Including virtual links conf only if specific vim-network-name is defined
+        # Including virtual links conf only if specific vim-network-name
+        # is defined in the NS descriptor AND is flagged as mgmt-network
         vlds = [{"id": x["id"],
                  "mgmt-network": x["mgmt-network"],
                  "name": x["name"],
                  "type": x["type"],
                  "vim-network-name": x["vim-network-name"]}
-                for x in configuration[0]["vld"] if "vim-network-name" in x]
+                for x in configuration[0]["vld"]
+                if x.get("mgmt-network", "") == "true"]
         return nfvo_tmpl.instantiation_data_msg(
                 nsr_id, instantiation_data, vnfss, vlds)
 
