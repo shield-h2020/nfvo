@@ -70,13 +70,13 @@ class VnsfoNs:
                   "member-vnf-index": x["member-vnf-index"]} for
                  x in configuration[0]["constituent_vnfs"]
                  if x["start-by-default"] == "true"]
+        # Including virtual links conf only if specific vim-network-name is defined
         vlds = [{"id": x["id"],
                  "mgmt-network": x["mgmt-network"],
                  "name": x["name"],
                  "type": x["type"],
                  "vim-network-name": x["vim-network-name"]}
                 for x in configuration[0]["vld"] if "vim-network-name" in x]
-
         return nfvo_tmpl.instantiation_data_msg(
                 nsr_id, instantiation_data, vnfss, vlds)
 
@@ -88,8 +88,6 @@ class VnsfoNs:
             instantiation_data["vim_net"] = NFVO_DEFAULT_OM_DATACENTER_NET
         instantiation_data["vim-network-name"] = instantiation_data["vim_net"]
         nsr_data = self.build_nsr_data(instantiation_data)
-        print("NSR_DATA")
-        print(json.dumps(nsr_data, indent=4, sort_keys=4))
         resp = requests.post(
             osm_eps.NS_INSTANTIATE,
             headers=osm_eps.get_default_headers(),
