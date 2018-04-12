@@ -74,8 +74,7 @@ class VnsfoNs:
                  "mgmt-network": x["mgmt-network"],
                  "name": x["name"],
                  "type": x["type"],
-                 "vim-network-name": x["vim-network-name"],
-                 "vnfd-connection-point-ref": x["vnfd-connection-point-ref"]}
+                 "vim-network-name": x["vim-network-name"]}
                 for x in configuration[0]["vld"] if "vim-network-name" in x]
 
         return nfvo_tmpl.instantiation_data_msg(
