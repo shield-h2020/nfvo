@@ -152,6 +152,8 @@ class VnsfoVnsf:
         output = {self.res_key: list()}
         vnsfs = output.get(self.res_key)
         vim_list = self.vnfo_vim.get_vim_list()
+        if len(catalog.keys()) == 0:
+            return output
         for vnf in catalog["collection"]["vnfr:vnfr"]:
             # Parse content of vnf-data first
             vnf_name = vnf.get("name")
