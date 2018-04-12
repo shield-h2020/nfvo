@@ -426,7 +426,15 @@ definitions:
   InstantiateNSOutput:
     type: object
     properties:
-      success:
+      instance_name:
+        type: string
+      instance_id:
+        type: string
+      ns_name:
+        type: string
+      vim_id:
+        type: string
+      result:
         type: string
 
   ConfigNssOutput:
