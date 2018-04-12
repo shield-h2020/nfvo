@@ -44,5 +44,9 @@ def instantiate_ns():
     if not content.data_in_request(request, exp_params):
         Exception.improper_usage("Missing parameters: any of {}"
                                  .format(exp_params))
-    response = nfvo_ns.instantiate_ns(instantiation_data)
-    return HttpResponse.json(response.status_code, response.text)
+    result = nfvo_ns.instantiate_ns(instantiation_data)
+    if result.get("result", "") == "success":
+        return HttpResponse.json(HttpCode.OK, result)
+    else:
+        return HttpResponse.json(result["error_response"].status_code,
+                                 result["error_response"].text)

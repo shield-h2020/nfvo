@@ -106,7 +106,17 @@ class VnsfoNs:
             headers=osm_eps.get_default_headers(),
             verify=False,
             json=nsr_data)
-        return resp
+        if resp.status_code in(200, 201, 202):
+            success_msg = {"instance_name": nsr_data["nsr"][0]["name"],
+                           "instance_id": nsr_data["nsr"][0]["id"],
+                           "ns_name": nsr_data["nsr"][0]["nsd"]["id"],
+                           "vim_id": nsr_data["nsr"][0]["om-datacenter"],
+                           "result": "success"}
+            return success_msg
+        else:
+            error_msg = {"result": "error",
+                         "error_response": resp}
+            return error_msg
 
     def fetch_config_nss(self):
         catalog = self.get_nsr_config()
