@@ -42,6 +42,7 @@ class VnsfoEndpoints:
     # Network service
     NS = "/ns"
     NS_C_NSS = "{}/config".format(NS)
+    NS_INSTANTIATE = "{}/instantiate".format(NS)
     # Package
     PKG = "/package"
     PKG_ONBOARD = "{}/onboard".format(PKG)

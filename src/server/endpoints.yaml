@@ -147,6 +147,32 @@ paths:
             $ref: "#/definitions/ConfigNssOutput"
         <<: *API_RESPONSES
 
+  /ns/instantiate:
+    post:
+      tags:
+        - ns
+      summary: Instantiates a NS
+      consumes:
+        - application/json
+      parameters:
+      - in: body
+        name: body
+        description: The body of the request
+        required: true
+        schema:
+          $ref: "#/definitions/InstantiateNSInput"
+      description: >-
+        Instantiates a NS
+      operationId: instantiateNS
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/InstantiateNSOutput"
+        <<: *API_RESPONSES
+
   /package/onboard:
     post:
       tags:
@@ -377,6 +403,39 @@ paths:
         <<: *API_RESPONSES
 
 definitions:
+
+  InstantiateNSInput:
+    type: object
+    required:
+      - ns_name
+      - instance_name
+    properties:
+      ns_name:
+        type: string
+        example: l23filter_nsd
+      instance_name:
+        type: string
+        example: my service instance
+      vim_id:
+        type: string
+        example: f9acd550-9d48-11e7-ae4c-00163e3afbe5
+      vim_net:
+        type: string
+        example: provider
+
+  InstantiateNSOutput:
+    type: object
+    properties:
+      ns_name:
+        type: string
+      instance_name:
+        type: string
+      instance_id:
+        type: string
+      vim_id:
+        type: string
+      result:
+        type: string
 
   ConfigNssOutput:
     type: object

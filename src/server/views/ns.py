@@ -15,9 +15,12 @@
 # limitations under the License.
 
 
+from core.exception import Exception
 from flask import Blueprint
+from flask import request
 from nfv.ns import VnsfoNs as ns_s
 from server.endpoints import VnsfoEndpoints as endpoints
+from server.http import content
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
 
@@ -28,3 +31,22 @@ nfvo_ns = ns_s()
 @nfvo_views.route(endpoints.NS_C_NSS, methods=["GET"])
 def fetch_config_nss():
     return HttpResponse.json(HttpCode.OK, nfvo_ns.fetch_config_nss())
+
+
+@nfvo_views.route(endpoints.NS_INSTANTIATE, methods=["POST"])
+@content.expect_json_content
+def instantiate_ns():
+    exp_ct = "application/json"
+    if exp_ct not in request.headers.get("Content-Type", ""):
+        Exception.invalid_content_type("Expected: {}".format(exp_ct))
+    instantiation_data = request.get_json()
+    exp_params = ["ns_name", "instance_name"]
+    if not content.data_in_request(request, exp_params):
+        Exception.improper_usage("Missing parameters: any of {}"
+                                 .format(exp_params))
+    result = nfvo_ns.instantiate_ns(instantiation_data)
+    if result.get("result", "") == "success":
+        return HttpResponse.json(HttpCode.OK, result)
+    else:
+        return HttpResponse.json(result["error_response"].status_code,
+                                 result["error_response"].text)

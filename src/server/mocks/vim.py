@@ -89,6 +89,7 @@ class MockVim:
             schema_conf3["container_format"] = And(Use(str))
             schema_conf3["created_at"] = And(
                 Use(str), lambda n: regex.rfc3399(n) is not None)
+            schema_conf3[Optional("description")] = And(Use(str))
             schema_conf3["disk_format"] = And(Use(str))
             schema_conf3["file"] = And(
                 Use(str), lambda n: regex.unix_path(n) is not None)
@@ -112,7 +113,6 @@ class MockVim:
             schema_conf3["schema"] = And(Use(str))
             schema_conf3["size"] = And(Use(int))
             schema_conf3["status"] = And(Use(str))
-            schema_conf3["tags"] = And(Use(list))
             schema_conf3["tags"] = And(Use(list))
             schema_conf3["updated_at"] = And(
                 Use(str), lambda n: regex.rfc3399(n) is not None)

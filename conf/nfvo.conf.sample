@@ -1,6 +1,7 @@
 [general]
     host = {{general_host}}
     port = 8008
+    default_om_datacenter = {{default_om_datacenter}}
 
 [package]
     host = {{package_host}}
