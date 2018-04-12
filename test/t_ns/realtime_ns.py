@@ -27,6 +27,7 @@ class TestNfvNsRealtime(unittest.TestCase):
 
     def setUp(self):
         self.get_nsr_config = endpoints_s.NS_C_NSS
+        self.post_nsr_instantiate = endpoints_s.NS_INSTANTIATE
         self.utils = TestUtils()
 
     def test_get_nsr_config(self):
@@ -34,3 +35,10 @@ class TestNfvNsRealtime(unittest.TestCase):
         exp_code = HttpCode.OK
         schema = ns_m().get_nsr_config_schema()
         self.utils.test_get(url, schema, {}, exp_code)
+
+    @unittest.skip(TestUtils.ignore_hazard)
+    def test_post_nsr_instantiate(self):
+        url = self.get_nsr_instantiate
+        exp_code = HttpCode.OK
+        schema = ns_m().post_nsr_instantiate_schema()
+        self.utils.test_post(url, schema, {}, exp_code)

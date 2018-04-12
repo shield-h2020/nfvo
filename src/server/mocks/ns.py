@@ -41,6 +41,7 @@ class MockNs:
                 }
             ]
         }
+        self.post_nsr_instantiate_mock = {"success": ""}
 
     def get_nsr_config_schema(self):
         schema = self.get_nsr_config_mock
@@ -54,4 +55,9 @@ class MockNs:
             schema_conf["ns_name"] = And(Use(str))
             schema_conf["vendor"] = And(Use(str))
             schema_conf["version"] = And(Use(str))
+        return Schema(schema)
+
+    def post_nsr_instantiate_schema(self):
+        schema = self.post_nsr_instantiate_mock
+        schema["success"] = And(Use(str))
         return Schema(schema)

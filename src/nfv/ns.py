@@ -93,6 +93,7 @@ class VnsfoNs:
         return nfvo_tmpl.instantiation_data_msg(
                 nsr_id, instantiation_data, vnfss, vlds)
 
+    @content.on_mock(ns_m().post_nsr_instantiate_mock)
     def instantiate_ns(self, instantiation_data):
         if "vim_id" not in instantiation_data:
             instantiation_data["vim_id"] = NFVO_DEFAULT_OM_DATACENTER
