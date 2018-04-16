@@ -52,7 +52,6 @@ class VnsfoNs:
 
     def format_nsr_running_data(self, data):
         nsrs = data["collection"]["nsr:nsr"]
-        print(json.dumps(nsrs, indent=4))
         return [{
             "config_status": x["config-status"],
             "operational_status": x["operational-status"],
