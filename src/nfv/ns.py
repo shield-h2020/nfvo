@@ -50,13 +50,41 @@ class VnsfoNs:
             fcatalog = self.format_ns_catalog_descriptors(catalog)
             return [x for x in fcatalog["ns"] if x["ns_name"] == ns_name]
 
-    def get_nsr_running(self):
+    def format_nsr_running_data(self, data):
+        nsrs = data["collection"]["nsr:nsr"]
+        print(json.dumps(nsrs, indent=4))
+        return [{
+            "config_status": x["config-status"],
+            "operational_status": x["operational-status"],
+            "instance_name": x["name-ref"],
+            "ns_name": x["nsd-name-ref"],
+            "instance_id": x["ns-instance-config-ref"],
+            "constituent_vnf_instances": [
+                {"instance_id": y["vnfr-id"],
+                 "vim_id": y["om-datacenter"]} for y in
+                x["constituent-vnfr-ref"]],
+            "vlrs": [
+                {"instance_id": y["vlr-ref"],
+                 "vim_id": y["om-datacenter"]} for y in
+                x["vlr"]]
+        } for x in nsrs]
+
+    def get_nsr_running(self, instance_name=None):
         resp = requests.get(
-                osm_eps.NS_CATALOG_O,
+                osm_eps.NS_RUNNING,
                 headers=osm_eps.get_default_headers(),
                 verify=False)
-        output = json.loads(resp.text)
-        return output
+        if instance_name is not None:
+            return {
+                "ns": [x for x in
+                       self.format_nsr_running_data(json.loads(resp.text))
+                       if x.get("instance_name", "") == instance_name]
+            }
+        else:
+            return {
+                "ns": [x for x in
+                       self.format_nsr_running_data(json.loads(resp.text))]
+            }
 
     def build_nsr_data(self, instantiation_data):
         nsr_id = str(uuid.uuid4())
