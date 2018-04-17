@@ -149,13 +149,14 @@ class MockNs:
             running_ns["ns_name"] = And(Use(str))
             running_ns["operational_status"] = And(Use(str))
             for vlr in running_ns["vlrs"]:
-                vlr["vim_id"] = \
-                    And(Use(str), lambda n: regex.uuid4(n) is not None)
+                vlr["vim_id"] = And(Use(str))
                 vlr["vlr_id"] = \
                     And(Use(str), lambda n: regex.uuid4(n) is not None)
             for vnf in running_ns["constituent_vnf_instances"]:
                 vnf["config_status"] = And(Use(str))
                 vnf["ip"] = And(Use(str))
+                vnf["vnf_id"] = \
+                    And(Use(str), lambda n: regex.uuid4(n) is not None)
                 vnf["ns_id"] = \
                     And(Use(str), lambda n: regex.uuid4(n) is not None)
                 vnf["ns_name"] = And(Use(str))
