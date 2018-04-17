@@ -77,22 +77,22 @@ class VnsfoNs:
                 osm_eps.NS_RUNNING,
                 headers=osm_eps.get_default_headers(),
                 verify=False)
+        if instance_id is None:
+            return {
+                "ns": [x for x in
+                       self.format_nsr_running_data(json.loads(resp.text))]
+            }
         if regex.uuid4(instance_id) is not None:
             return {
                 "ns": [x for x in
                        self.format_nsr_running_data(json.loads(resp.text))
                        if x.get("instance_id", "") == instance_id]
             }
-        elif instance_id is not None:
+        else:
             return {
                 "ns": [x for x in
                        self.format_nsr_running_data(json.loads(resp.text))
                        if x.get("instance_name", "") == instance_id]
-            }
-        else:
-            return {
-                "ns": [x for x in
-                       self.format_nsr_running_data(json.loads(resp.text))]
             }
 
     def build_nsr_data(self, instantiation_data):

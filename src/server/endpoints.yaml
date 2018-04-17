@@ -173,6 +173,23 @@ paths:
             $ref: "#/definitions/InstantiateNSOutput"
         <<: *API_RESPONSES
 
+  /ns/running:
+    get:
+      tags:
+        - ns
+      summary: Provides running NSs
+      description: >-
+        Returns the instantiated NS.
+      operationId: getDeployedNss
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/RunningNsOutput"
+        <<: *API_RESPONSES
+
   /ns/running/{instance_id}:
     get:
       parameters:
@@ -181,19 +198,13 @@ paths:
           required: false
           schema:
             type: string
-          description: Instance id
-        - in: query
-          name: instance_name
-          required: false
-          schema:
-            type: string
-          description: Instance name filter
+          description: Instance id or name
       tags:
         - ns
-      summary: Provides running NSs
+      summary: Provides specific running NSs
       description: >-
-        Returns the instantiated NSs.
-      operationId: getDeployedNss
+        Returns the specific instantiated NS.
+      operationId: getDeployedNssPerId
       produces:
         - application/json
       responses:

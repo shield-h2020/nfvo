@@ -73,7 +73,7 @@ curl -ik https://127.0.0.1:8448
 
 ### NS
 
-#### Provide available NSs
+#### Provide the available NSs
 
 ```
 curl -ik https://127.0.0.1:8448/ns/config
@@ -163,7 +163,7 @@ curl -ik https://127.0.0.1:8448/vim/image/${vim_id} -X POST \
 
 ### vNSF
 
-#### Provide available vNSFs
+#### Provide the available vNSFs
 
 ```
 curl -ik https://127.0.0.1:8448/vnsf/config
