@@ -108,7 +108,13 @@ curl -ik https://127.0.0.1:8448/ns/running
 ##### Only NSs instances named fl7f_test24 (example)
 
 ```
-curl -ik https://127.0.0.1:8448/ns/running/fl7f_test24
+curl -ik https://127.0.0.1:8448/ns/running?instance_name=fl7f_test24
+```
+
+##### NS with instance_id c3fea13a-cc52-4bf9-bf12-3ed20bfb8259
+
+```
+curl -ik https://127.0.0.1:8448/ns/running/c3fea13a-cc52-4bf9-bf12-3ed20bfb8259
 ```
 
 ### Package
