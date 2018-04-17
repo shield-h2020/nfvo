@@ -62,8 +62,9 @@ class VnsfoNs:
             "instance_id": x["ns-instance-config-ref"],
             "constituent_vnf_instances": [
                 y for y in vnsf.get_vnfr_running().get("vnsf", "")
-                if y["vnf_id"]
-                in [z["vnfr-id"] for z in x["constituent-vnfr-ref"]]],
+                if y.get("vnf_id", "")
+                in [z.get("vnfr-id", "")
+                    for z in x.get("constituent-vnfr-ref", "")]],
             "vlrs": [
                 {"vlr_id": y["vlr-ref"],
                  "vim_id": y["om-datacenter"]} for y in
