@@ -29,6 +29,7 @@ class TestNfvNsMocked(unittest.TestCase):
     def setUp(self):
         self.get_nsr_config = endpoints_s.NS_C_NSS
         self.post_nsr_instantiate = endpoints_s.NS_INSTANTIATE
+        self.get_nsr_running = endpoints_s.NS_R_NSS
         self.nfvo_ns = nfvo_ns()
         self.utils = TestUtils()
 
@@ -46,3 +47,10 @@ class TestNfvNsMocked(unittest.TestCase):
         schema = ns_m().post_nsr_instantiate_schema()
         data = {}
         self.utils.test_mocked_post(url, schema, data, {}, exp_code, exp_out)
+
+    def test_mocked_get_ns_running(self):
+        url = self.get_nsr_running
+        exp_code = HttpCode.OK
+        exp_out = self.nfvo_ns.get_nsr_running(**{"mock": True})
+        schema = ns_m().get_nsr_running_schema()
+        self.utils.test_mocked_get(url, schema, {}, exp_code, exp_out)

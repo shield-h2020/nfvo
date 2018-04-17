@@ -71,6 +71,7 @@ class VnsfoNs:
                 x["vlr"]]
         } for x in nsrs]
 
+    @content.on_mock(ns_m().get_nsr_running_mock)
     def get_nsr_running(self, instance_name=None):
         resp = requests.get(
                 osm_eps.NS_RUNNING,

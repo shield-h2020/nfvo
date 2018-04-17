@@ -72,6 +72,37 @@ class MockNs:
             "vim_net": "provider"
         }
 
+        self.get_nsr_running_mock = {
+            self.res_key: [
+                {
+                    "config_status": "configured",
+                    "constituent_vnf_instances": [
+                        {
+                            "config_status": "configuring",
+                            "ip": "10.101.20.52",
+                            "ns_id": "d75efa2d-b4d4-42a3-9bcb-20324f7d8e47",
+                            "ns_name": "fl7f_test25",
+                            "operational_status": "running",
+                            "vendor": "POLITO",
+                            "vim": "openstack-orion",
+                            "vnf_id": "6c358c6b-2807-4988-826e-6c601e674e0d",
+                            "vnf_name": "fl7f_test25__fl7filter_vnfd__1"
+                        }
+                    ],
+                    "instance_id": "d75efa2d-b4d4-42a3-9bcb-20324f7d8e47",
+                    "instance_name": "fl7filter_nsd",
+                    "ns_name": "fl7filter_nsd",
+                    "operational_status": "running",
+                    "vlrs": [
+                        {
+                            "vim_id": "d75efa2d-b4d4-42a3-9bcb-20324f7d8e47",
+                            "vlr_id": "8cb0c418-830f-4bf6-acdc-fbccdc0b1818"
+                        }
+                    ]
+                }
+            ]
+        }
+
     def get_nsr_config_schema(self):
         schema = self.get_nsr_config_mock
         for schema_conf in schema.get(self.res_key):
@@ -106,4 +137,30 @@ class MockNs:
         schema["vim_id"] = \
             And(Use(str), lambda n: regex.uuid4(n) is not None)
         schema["vim_net"] = And(Use(str))
+        return Schema(schema)
+
+    def get_nsr_running_schema(self):
+        schema = self.get_nsr_running_mock
+        for running_ns in schema[self.res_key]:
+            running_ns["config_status"] = And(Use(str))
+            running_ns["instance_id"] = \
+                And(Use(str), lambda n: regex.uuid4(n) is not None)
+            running_ns["instance_name"] = And(Use(str))
+            running_ns["ns_name"] = And(Use(str))
+            running_ns["operational_status"] = And(Use(str))
+            for vlr in running_ns["vlrs"]:
+                vlr["vim_id"] = \
+                    And(Use(str), lambda n: regex.uuid4(n) is not None)
+                vlr["vlr_id"] = \
+                    And(Use(str), lambda n: regex.uuid4(n) is not None)
+            for vnf in running_ns["constituent_vnf_instances"]:
+                vnf["config_status"] = And(Use(str))
+                vnf["ip"] = And(Use(str))
+                vnf["ns_id"] = \
+                    And(Use(str), lambda n: regex.uuid4(n) is not None)
+                vnf["ns_name"] = And(Use(str))
+                vnf["operational_status"] = And(Use(str))
+                vnf["vendor"] = And(Use(str))
+                vnf["vim"] = And(Use(str))
+                vnf["vnf_name"] = And(Use(str))
         return Schema(schema)
