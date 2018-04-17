@@ -15,6 +15,7 @@
 # limitations under the License.
 
 
+from nfv.vnf import VnsfoVnsf
 from nfvo.osm import endpoints as osm_eps
 from nfvo.osm import NFVO_DEFAULT_OM_DATACENTER, NFVO_DEFAULT_OM_DATACENTER_NET
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -52,6 +53,7 @@ class VnsfoNs:
 
     def format_nsr_running_data(self, data):
         nsrs = data["collection"]["nsr:nsr"]
+        vnsf = VnsfoVnsf()
         return [{
             "config_status": x["config-status"],
             "operational_status": x["operational-status"],
@@ -59,11 +61,11 @@ class VnsfoNs:
             "ns_name": x["nsd-name-ref"],
             "instance_id": x["ns-instance-config-ref"],
             "constituent_vnf_instances": [
-                {"instance_id": y["vnfr-id"],
-                 "vim_id": y["om-datacenter"]} for y in
-                x["constituent-vnfr-ref"]],
+                y for y in vnsf.get_vnfr_running().get("vnsf", "")
+                if y["vnf_id"]
+                in [z["vnfr-id"] for z in x["constituent-vnfr-ref"]]],
             "vlrs": [
-                {"instance_id": y["vlr-ref"],
+                {"vlr_id": y["vlr-ref"],
                  "vim_id": y["om-datacenter"]} for y in
                 x["vlr"]]
         } for x in nsrs]
