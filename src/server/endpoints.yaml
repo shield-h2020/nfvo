@@ -173,10 +173,16 @@ paths:
             $ref: "#/definitions/InstantiateNSOutput"
         <<: *API_RESPONSES
 
-  /ns/running/{instance_name}:
+  /ns/running/{instance_id}:
     get:
       parameters:
         - in: path
+          name: instance_id
+          required: false
+          schema:
+            type: string
+          description: Instance id
+        - in: query
           name: instance_name
           required: false
           schema:

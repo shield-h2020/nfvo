@@ -42,7 +42,6 @@ class VnsfoNs:
                 verify=False)
         # yep, this could be insecure - but the output comes from NFVO
         catalog = eval(resp.text) if resp.text else []
-        # print(json.dumps(catalog, indent=4, sort_keys=True))
         if ns_name is None:
             # returning all ns_catalog_descriptors
             return self.format_ns_catalog_descriptors(catalog)
@@ -72,11 +71,17 @@ class VnsfoNs:
         } for x in nsrs]
 
     @content.on_mock(ns_m().get_nsr_running_mock)
-    def get_nsr_running(self, instance_name=None):
+    def get_nsr_running(self, instance_id=None, instance_name=None):
         resp = requests.get(
                 osm_eps.NS_RUNNING,
                 headers=osm_eps.get_default_headers(),
                 verify=False)
+        if instance_id is not None:
+            return {
+                "ns": [x for x in
+                       self.format_nsr_running_data(json.loads(resp.text))
+                       if x.get("instance_id", "") == instance_id]
+            }
         if instance_name is not None:
             return {
                 "ns": [x for x in

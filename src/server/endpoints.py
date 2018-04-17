@@ -44,7 +44,7 @@ class VnsfoEndpoints:
     NS_C_NSS = "{}/config".format(NS)
     NS_INSTANTIATE = "{}/instantiate".format(NS)
     NS_R_NSS = "{}/running".format(NS)
-    NS_R_NSS_NAMED = "{}/<instance_name>".format(NS_R_NSS)
+    NS_R_NSS_ID = "{}/<instance_id>".format(NS_R_NSS)
     # Package
     PKG = "/package"
     PKG_ONBOARD = "{}/onboard".format(PKG)

@@ -53,7 +53,8 @@ def instantiate_ns():
 
 
 @nfvo_views.route(endpoints.NS_R_NSS, methods=["GET"])
-@nfvo_views.route(endpoints.NS_R_NSS_NAMED, methods=["GET"])
-def fetch_running_nss(instance_name=None):
-    nss = nfvo_ns.get_nsr_running(instance_name)
+@nfvo_views.route(endpoints.NS_R_NSS_ID, methods=["GET"])
+def fetch_running_nss(instance_id=None):
+    instance_name = request.args.get("instance_name")
+    nss = nfvo_ns.get_nsr_running(instance_id, instance_name)
     return HttpResponse.json(HttpCode.OK, nss)
