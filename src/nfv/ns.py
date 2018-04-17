@@ -15,6 +15,7 @@
 # limitations under the License.
 
 
+from core import regex
 from nfv.vnf import VnsfoVnsf
 from nfvo.osm import endpoints as osm_eps
 from nfvo.osm import NFVO_DEFAULT_OM_DATACENTER, NFVO_DEFAULT_OM_DATACENTER_NET
@@ -71,22 +72,22 @@ class VnsfoNs:
         } for x in nsrs]
 
     @content.on_mock(ns_m().get_nsr_running_mock)
-    def get_nsr_running(self, instance_id=None, instance_name=None):
+    def get_nsr_running(self, instance_id=None):
         resp = requests.get(
                 osm_eps.NS_RUNNING,
                 headers=osm_eps.get_default_headers(),
                 verify=False)
-        if instance_id is not None:
+        if regex.uuid4(instance_id) is not None:
             return {
                 "ns": [x for x in
                        self.format_nsr_running_data(json.loads(resp.text))
                        if x.get("instance_id", "") == instance_id]
             }
-        if instance_name is not None:
+        elif instance_id is not None:
             return {
                 "ns": [x for x in
                        self.format_nsr_running_data(json.loads(resp.text))
-                       if x.get("instance_name", "") == instance_name]
+                       if x.get("instance_name", "") == instance_id]
             }
         else:
             return {
