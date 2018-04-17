@@ -97,6 +97,20 @@ curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd"}'
 ```
 
+#### Provide the running NSs
+
+##### All NSs
+
+```
+curl -ik https://127.0.0.1:8448/ns/running
+```
+
+##### Only NSs instances named fl7f_test24 (example)
+
+```
+curl -ik https://127.0.0.1:8448/ns/running/fl7f_test24
+```
+
 ### Package
 
 #### Onboards a locally stored package into NFVO
