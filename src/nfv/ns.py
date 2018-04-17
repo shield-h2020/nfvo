@@ -15,6 +15,8 @@
 # limitations under the License.
 
 
+from core import regex
+from nfv.vnf import VnsfoVnsf
 from nfvo.osm import endpoints as osm_eps
 from nfvo.osm import NFVO_DEFAULT_OM_DATACENTER, NFVO_DEFAULT_OM_DATACENTER_NET
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -41,7 +43,6 @@ class VnsfoNs:
                 verify=False)
         # yep, this could be insecure - but the output comes from NFVO
         catalog = eval(resp.text) if resp.text else []
-        # print(json.dumps(catalog, indent=4, sort_keys=True))
         if ns_name is None:
             # returning all ns_catalog_descriptors
             return self.format_ns_catalog_descriptors(catalog)
@@ -50,13 +51,49 @@ class VnsfoNs:
             fcatalog = self.format_ns_catalog_descriptors(catalog)
             return [x for x in fcatalog["ns"] if x["ns_name"] == ns_name]
 
-    def get_nsr_running(self):
+    def format_nsr_running_data(self, data):
+        nsrs = data["collection"]["nsr:nsr"]
+        vnsf = VnsfoVnsf()
+        return [{
+            "config_status": x["config-status"],
+            "operational_status": x["operational-status"],
+            "instance_name": x["name-ref"],
+            "ns_name": x["nsd-name-ref"],
+            "instance_id": x["ns-instance-config-ref"],
+            "constituent_vnf_instances": [
+                y for y in vnsf.get_vnfr_running().get("vnsf", "")
+                if y.get("vnf_id", "")
+                in [z.get("vnfr-id", "")
+                    for z in x.get("constituent-vnfr-ref", "")]],
+            "vlrs": [
+                {"vlr_id": y["vlr-ref"],
+                 "vim_id": y["om-datacenter"]} for y in
+                x["vlr"]]
+        } for x in nsrs]
+
+    @content.on_mock(ns_m().get_nsr_running_mock)
+    def get_nsr_running(self, instance_id=None):
         resp = requests.get(
-                osm_eps.NS_CATALOG_O,
+                osm_eps.NS_RUNNING,
                 headers=osm_eps.get_default_headers(),
                 verify=False)
-        output = json.loads(resp.text)
-        return output
+        if instance_id is None:
+            return {
+                "ns": [x for x in
+                       self.format_nsr_running_data(json.loads(resp.text))]
+            }
+        if regex.uuid4(instance_id) is not None:
+            return {
+                "ns": [x for x in
+                       self.format_nsr_running_data(json.loads(resp.text))
+                       if x.get("instance_id", "") == instance_id]
+            }
+        else:
+            return {
+                "ns": [x for x in
+                       self.format_nsr_running_data(json.loads(resp.text))
+                       if x.get("instance_name", "") == instance_id]
+            }
 
     def build_nsr_data(self, instantiation_data):
         nsr_id = str(uuid.uuid4())

@@ -173,6 +173,47 @@ paths:
             $ref: "#/definitions/InstantiateNSOutput"
         <<: *API_RESPONSES
 
+  /ns/running:
+    get:
+      tags:
+        - ns
+      summary: Provides running NSs
+      description: >-
+        Returns the instantiated NS.
+      operationId: getDeployedNss
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/RunningNsOutput"
+        <<: *API_RESPONSES
+
+  /ns/running/{instance_id}:
+    get:
+      parameters:
+        - in: path
+          name: instance_id
+          required: false
+          schema:
+            type: string
+          description: Instance id or name
+      tags:
+        - ns
+      summary: Provides specific running NSs
+      description: >-
+        Returns the specific instantiated NS.
+      operationId: getDeployedNssPerId
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/RunningNsOutput"
+        <<: *API_RESPONSES
+
   /package/onboard:
     post:
       tags:
@@ -603,6 +644,75 @@ definitions:
             vnf_name:
               type: string
               example: mspl__mspl_vnf__2
+
+  RunningNsOutput:
+    type: object
+    required:
+      - ns
+    properties:
+      ns:
+        type: array
+        items:
+          type: object
+          properties:
+            config_status:
+              type: string
+              example: configured
+            instance_id:
+              type: string
+              example: d75efa2d-b4d4-42a3-9bcb-20324f7d8e47
+            instance_name:
+              type: string
+              example: fl7filter_nsd
+            ns_name:
+              type: string
+              example: fl7filter_nsd
+            operational_status:
+              type: string
+              example: running
+            vlrs:
+              type: array
+              items:
+                type: object
+                properties:
+                  vim_id:
+                    type: string
+                    example: f9acd550-9d48-11e7-ae4c-00163e3afbe5
+                  vlr_id:
+                    type: string
+                    example: 8cb0c418-830f-4bf6-acdc-fbccdc0b1818
+            constituent_vnf_instances:
+              type: array
+              items:
+                type: object
+                properties:
+                  config_status:
+                    type: string
+                    example: configuring
+                  ip:
+                    type: string
+                    example: 10.101.20.52
+                  ns_id:
+                    type: string
+                    example: d75efa2d-b4d4-42a3-9bcb-20324f7d8e47
+                  ns_name:
+                    type: string
+                    example: fl7f_test25
+                  operational_status:
+                    type: string
+                    example: running
+                  vendor:
+                    type: string
+                    example: POLITO
+                  vim:
+                    type: string
+                    example: openstack-orion
+                  vnf_id:
+                    type: string
+                    example: 6c358c6b-2807-4988-826e-6c601e674e0d
+                  vnf_name:
+                    type: string
+                    example: fl7f_test25__fl7filter_vnfd__1
 
   VimListOutput:
     type: array

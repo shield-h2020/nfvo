@@ -73,7 +73,7 @@ curl -ik https://127.0.0.1:8448
 
 ### NS
 
-#### Provide available NSs
+#### Provide the available NSs
 
 ```
 curl -ik https://127.0.0.1:8448/ns/config
@@ -95,6 +95,23 @@ curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
 curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd"}'
+```
+
+#### Provide the running NSs
+
+##### All NSs
+
+```
+curl -ik https://127.0.0.1:8448/ns/running
+```
+
+##### Specific NS instance
+
+```
+# Option 1: using NSR ID
+curl -ik https://127.0.0.1:8448/ns/running/c3fea13a-cc52-4bf9-bf12-3ed20bfb8259
+# Option 2: using name of the NS instance
+curl -ik https://127.0.0.1:8448/ns/running/fl7f_test
 ```
 
 ### Package
@@ -146,7 +163,7 @@ curl -ik https://127.0.0.1:8448/vim/image/${vim_id} -X POST \
 
 ### vNSF
 
-#### Provide available vNSFs
+#### Provide the available vNSFs
 
 ```
 curl -ik https://127.0.0.1:8448/vnsf/config

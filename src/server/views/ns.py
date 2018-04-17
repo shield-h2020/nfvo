@@ -50,3 +50,10 @@ def instantiate_ns():
     else:
         return HttpResponse.json(result["error_response"].status_code,
                                  result["error_response"].text)
+
+
+@nfvo_views.route(endpoints.NS_R_NSS, methods=["GET"])
+@nfvo_views.route(endpoints.NS_R_NSS_ID, methods=["GET"])
+def fetch_running_nss(instance_id=None):
+    nss = nfvo_ns.get_nsr_running(instance_id)
+    return HttpResponse.json(HttpCode.OK, nss)
