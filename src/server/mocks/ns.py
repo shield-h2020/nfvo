@@ -51,6 +51,10 @@ class MockNs:
                             "name": And(Use(str)),
                             "short-name": And(Use(str)),
                             "type": And(Use(str)),
+                            Optional("description"): And(Use(str)),
+                            Optional("vendor"): And(Use(str)),
+                            Optional("version"): And(Use(str)),
+                            Optional("ip-profile-ref"): And(Use(str)),
                             Optional("vim-network-name"): And(Use(str)),
                             "vnfd-connection-point-ref": [
                                 {
