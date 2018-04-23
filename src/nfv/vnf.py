@@ -138,9 +138,12 @@ class VnsfoVnsf:
         for n in catalog:
             for nd in n["descriptors"]:
                 if "constituent-vnfd" not in nd.keys():
+                    charm = {}
+                    if "vnf-configuration" in nd:
+                        charm = nd.get("vnf-configuration")\
+                                   .get("juju").get("charm")
                     vnsfs.append({
-                        "charm": nd.get("vnf-configuration")
-                                   .get("juju").get("charm"),
+                        "charm": charm,
                         "description": nd.get("description"),
                         "ns_name": nd.get("name"),
                         "vendor": nd.get("vendor"),
