@@ -97,6 +97,14 @@ curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd"}'
 ```
 
+##### Instantiate and perform VNSF action asynchronously (once NS is running)
+
+```
+curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
+     -H "Content-Type: application/json" \
+     -d '{"instance_name": "fl7filter_test", "ns_name": "fl7filter_nsd", "vim_net": "provider", "action": "set-policies", "params": {"policies": "test-policy"}}'
+```
+
 #### Provide the running NSs
 
 ##### All NSs

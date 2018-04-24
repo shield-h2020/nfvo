@@ -16,6 +16,7 @@
 
 
 from core import regex
+from flask import current_app
 from nfv.vnf import VnsfoVnsf
 from nfvo.osm import endpoints as osm_eps
 from nfvo.osm import NFVO_DEFAULT_OM_DATACENTER, NFVO_DEFAULT_OM_DATACENTER_NET
@@ -26,6 +27,8 @@ from templates import nfvo as nfvo_tmpl
 
 import json
 import requests
+import threading
+import time
 import uuid
 
 
@@ -109,7 +112,7 @@ class VnsfoNs:
                 {"vlr_id": y["vlr-ref"],
                  "vim_id": y["om-datacenter"]} for y in
                 x.get("vlr", [])]
-        } for x in nsrs]
+        } for x in nsrs if "config-status" in x]
 
     @content.on_mock(ns_m().get_nsr_running_mock)
     def get_nsr_running(self, instance_id=None):
@@ -172,6 +175,61 @@ class VnsfoNs:
         return nfvo_tmpl.instantiation_data_msg(
                 nsr_id, instantiation_data, vnfss, vlds)
 
+    def deployment_monitor_thread(self, instance_id, action, params, app):
+        # TODO configurable action timeout
+        timeout = 3600
+        action_submitted = False
+        while not action_submitted:
+            # TODO configurable delay
+            time.sleep(5)
+            timeout = timeout-5
+            print("Checking {0} {1} {2}".format(instance_id, action, params))
+            nss = self.get_nsr_running(instance_id)
+            if timeout < 0:
+                print("Timeout reached, aborting thread")
+                break
+            if len(nss) < 1:
+                print("No instance found")
+                break
+            operational_status = nss["ns"][0].get("operational_status", "")
+            if operational_status == "failed":
+                print("Instance failed, aborting")
+                break
+            # MAYBE ... configurable status to perform action running/active?
+            # include this in an optional request parameter?
+            if operational_status == "running" and \
+               "constituent_vnf_instances" in nss["ns"][0]:
+                # Perform action on all vnf instances?
+                for vnsf_instance in nss["ns"][0]["constituent_vnf_instances"]:
+                    vnsf = VnsfoVnsf()
+                    exec_tmpl = vnsf.fill_vnf_action_request_encoded(
+                        vnsf_instance["vnf_id"], action, params)
+                    output = vnsf.exec_action_on_vnf(exec_tmpl)
+                    if action is not None:
+                        app.mongo.store_vnf_action(vnsf_instance["vnf_id"],
+                                                   action,
+                                                   params,
+                                                   json.loads(output))
+                        print("Action performed and stored, exiting thread")
+                    action_submitted = True
+            else:
+                print("Operational status: {0}, waiting ...".
+                      format(operational_status))
+        return
+
+    def apply_mspl_action(self, instance_id, instantiation_data):
+        if ("action" not in instantiation_data) or ("params"
+                                                    not in instantiation_data):
+            return
+        print("Configuring instance, starting thread ...")
+        # passing also current_app._get_current_object() (flask global context)
+        t = threading.Thread(target=self.deployment_monitor_thread,
+                             args=(instance_id,
+                                   instantiation_data["action"],
+                                   instantiation_data["params"],
+                                   current_app._get_current_object()))
+        t.start()
+
     @content.on_mock(ns_m().post_nsr_instantiate_mock)
     def instantiate_ns(self, instantiation_data):
         if "vim_id" not in instantiation_data:
@@ -192,6 +250,8 @@ class VnsfoNs:
                            "ns_name": nsr_data["nsr"][0]["nsd"]["id"],
                            "vim_id": nsr_data["nsr"][0]["om-datacenter"],
                            "result": "success"}
+            self.apply_mspl_action(nsr_data["nsr"][0]["id"],
+                                   instantiation_data)
             return success_msg
         else:
             error_msg = {"result": "error",
