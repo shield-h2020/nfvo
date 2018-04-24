@@ -51,8 +51,47 @@ class VnsfoNs:
             fcatalog = self.format_ns_catalog_descriptors(catalog)
             return [x for x in fcatalog["ns"] if x["ns_name"] == ns_name]
 
+    def build_config_agent_job_map(self, data):
+        config_map = {}
+        for nsr in data:
+            if "config-agent-job" in nsr:
+                for config_job in nsr["config-agent-job"]:
+                    if "vnfr" in config_job:
+                        for vnfr_job in config_job["vnfr"]:
+                            data_record = {
+                                "triggered_by":
+                                config_job["triggered-by"],
+                                "create_time":
+                                config_job["create-time"],
+                                "job_status":
+                                config_job["job-status"],
+                                "job_id":
+                                config_job["job-id"],
+                                "primitives":
+                                [{
+                                    "execution_status":
+                                    x["execution-status"],
+                                    "name":
+                                    x["name"],
+                                    "execution_id":
+                                    x["execution-id"]
+                                } for x in vnfr_job["primitive"]]}
+                            if vnfr_job["id"] in config_map:
+                                config_map[vnfr_job["id"]].append(data_record)
+                            else:
+                                config_map[vnfr_job["id"]] = [data_record]
+        return config_map
+
+    def join_vnfr_with_config_jobs(self, vnfr, config_map):
+        if vnfr["vnf_id"] in config_map:
+            vnfr["config_jobs"] = config_map[vnfr["vnf_id"]]
+        else:
+            vnfr["config_jobs"] = []
+        return vnfr
+
     def format_nsr_running_data(self, data):
         nsrs = data["collection"]["nsr:nsr"]
+        config_agent_job_map = self.build_config_agent_job_map(nsrs)
         vnsf = VnsfoVnsf()
         return [{
             "config_status": x["config-status"],
@@ -60,15 +99,16 @@ class VnsfoNs:
             "instance_name": x["name-ref"],
             "ns_name": x["nsd-name-ref"],
             "instance_id": x["ns-instance-config-ref"],
-            "constituent_vnf_instances": [
-                y for y in vnsf.get_vnfr_running().get("vnsf", "")
+            "constituent_vnf_instances":
+            [self.join_vnfr_with_config_jobs(y, config_agent_job_map)
+                for y in vnsf.get_vnfr_running().get("vnsf", "")
                 if y.get("vnf_id", "")
                 in [z.get("vnfr-id", "")
                     for z in x.get("constituent-vnfr-ref", "")]],
             "vlrs": [
                 {"vlr_id": y["vlr-ref"],
                  "vim_id": y["om-datacenter"]} for y in
-                x["vlr"]]
+                x.get("vlr", [])]
         } for x in nsrs]
 
     @content.on_mock(ns_m().get_nsr_running_mock)

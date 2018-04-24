@@ -17,6 +17,8 @@
 
 from bson import json_util
 from core.config import FullConfParser
+from db.models.vnf_action_request import VnfActionRequest
+from mongoengine import connect as me_connect
 
 import json
 import logging
@@ -56,6 +58,7 @@ class DBManager():
                 self.port,
                 self.db_name,
                 self.auth_source)
+        me_connect(host=self.auth_db_address)
         self.collections = [
                 "resource.vnsf",
                 "resource.vnsf.action",
@@ -114,32 +117,45 @@ class DBManager():
     def __to_json(data):
         return json.dumps(data, default=json_util.default)
 
-    def store_vnf_action(self, vnsfr_id, primitive, params):
+    def format_vnf_action_output(self, output):
+        vnf_out_list_primitive = output["vnf-out-list"]["vnf-out-primitive"]
+        exec_id = vnf_out_list_primitive["execution-id"]
+        exec_status = vnf_out_list_primitive["execution-status"]
+        exec_err_details = vnf_out_list_primitive["execution-error-details"]
+        primitive_name = vnf_out_list_primitive["name"]
+        primitive_index = vnf_out_list_primitive["index"]
+        return {
+            "job_id": output.get("create-time", ""),
+            "create_time": output.get("create-time", ""),
+            "vnf_id": output["vnf-out-list"]["vnfr-id-ref"],
+            "execution_id": exec_id,
+            "execution_status": exec_status,
+            "exec_err_details": exec_err_details,
+            "name": primitive_name,
+            "index": primitive_index,
+            "member_vnf_index_ref":
+            output["vnf-out-list"]["member_vnf_index_ref"],
+            "instance_id": output["nsr_id_ref"],
+            "triggered_by": output["triggered-by"]}
+
+    def store_vnf_action(self, vnsfr_id, primitive, params, output):
         """
         Track remote action executed per vNSF.
         """
-        table = self.__get_table("resource.vnsf.action")
         try:
-            self.__mutex.acquire()
-            current_time = self.__current_ms()
-            row = table.find_one({"_vnsfr_id": vnsfr_id})
-            if row:
-                row["primitive"] = primitive
-                row["params"] = params
-                row["date"] = current_time
-                return table.save(row)
+            if "output" in output:
+                fmt_output = self.format_vnf_action_output(output["output"])
             else:
-                entry = {"_vnsfr_id": vnsfr_id,
-                         "primitive": primitive,
-                         "params": params,
-                         "date": current_time}
-                return table.insert(entry)
+                fmt_output = output
+            vnf_action_request = VnfActionRequest(primitive=primitive,
+                                                  vnsfr_id=vnsfr_id,
+                                                  params=params,
+                                                  response=fmt_output)
+            vnf_action_request.save()
         except Exception:
             e = "Cannot store MSPL information for vNSF with ID: {}".\
                     format(vnsfr_id)
             raise Exception(e)
-        finally:
-            self.__mutex.release()
 
     def delete_action_per_vnsf(self, vnsfr_id):
         table = self.__get_table("resource.vnsf.action")

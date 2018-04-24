@@ -51,6 +51,10 @@ class MockNs:
                             "name": And(Use(str)),
                             "short-name": And(Use(str)),
                             "type": And(Use(str)),
+                            Optional("description"): And(Use(str)),
+                            Optional("vendor"): And(Use(str)),
+                            Optional("version"): And(Use(str)),
+                            Optional("ip-profile-ref"): And(Use(str)),
                             Optional("vim-network-name"): And(Use(str)),
                             "vnfd-connection-point-ref": [
                                 {
@@ -78,6 +82,22 @@ class MockNs:
                     "config_status": "configured",
                     "constituent_vnf_instances": [
                         {
+                            "config_jobs": [
+                                {
+                                    "create_time": 1523980234,
+                                    "job_id": 1,
+                                    "job_status": "success",
+                                    "primitives": [
+                                        {
+                                            "execution_id":
+                                            "action-aab4f318-cdcb",
+                                            "execution_status": "success",
+                                            "name": "set-policies"
+                                        }
+                                    ],
+                                    "triggered_by": "vnf-primitive"
+                                }
+                            ],
                             "config_status": "configuring",
                             "ip": "10.101.20.52",
                             "ns_id": "d75efa2d-b4d4-42a3-9bcb-20324f7d8e47",
@@ -153,6 +173,15 @@ class MockNs:
                 vlr["vlr_id"] = \
                     And(Use(str), lambda n: regex.uuid4(n) is not None)
             for vnf in running_ns["constituent_vnf_instances"]:
+                for config_job in vnf["config_jobs"]:
+                    config_job["create_time"] = And(Use(int))
+                    config_job["job_id"] = And(Use(int))
+                    config_job["job_status"] = And(Use(str))
+                    config_job["triggered_by"] = And(Use(str))
+                    for primitive in config_job["primitives"]:
+                        primitive["execution_id"] = And(Use(str))
+                        primitive["execution_status"] = And(Use(str))
+                        primitive["name"] = And(Use(str))
                 vnf["config_status"] = And(Use(str))
                 vnf["ip"] = And(Use(str))
                 vnf["vnf_id"] = \

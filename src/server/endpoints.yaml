@@ -686,6 +686,37 @@ definitions:
               items:
                 type: object
                 properties:
+                  config_jobs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        created_time:
+                          type: integer
+                          example: 1523980730
+                        job_id:
+                          type: integer
+                          example: 1
+                        job_status:
+                          type: string
+                          example: success
+                        triggered_by:
+                          type: string
+                          example: vnf-primitive
+                        primitives:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              execution_id:
+                                type: string
+                                example: action-62e63d58-c95a-40a8-81e3-ff68232dc4b6
+                              execution_status:
+                                type: string
+                                example: success
+                              name:
+                                type: string
+                                example: set-policies
                   config_status:
                     type: string
                     example: configuring

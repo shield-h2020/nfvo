@@ -138,9 +138,12 @@ class VnsfoVnsf:
         for n in catalog:
             for nd in n["descriptors"]:
                 if "constituent-vnfd" not in nd.keys():
+                    charm = {}
+                    if "vnf-configuration" in nd:
+                        charm = nd.get("vnf-configuration")\
+                                   .get("juju").get("charm")
                     vnsfs.append({
-                        "charm": nd.get("vnf-configuration")
-                                   .get("juju").get("charm"),
+                        "charm": charm,
                         "description": nd.get("description"),
                         "ns_name": nd.get("name"),
                         "vendor": nd.get("vendor"),
@@ -213,7 +216,15 @@ class VnsfoVnsf:
         exec_tmpl = self.fill_vnf_action_request_encoded(
             vnfr_id, action, params)
         output = self.exec_action_on_vnf(exec_tmpl)
+        try:
+            output_dict = json.loads(output)
+        except Exception:
+            return {"Error": "SO-ub output is not valid JSON",
+                    "output": output}
         # Keep track of remote action per vNSF
         if action is not None:
-            current_app.mongo.store_vnf_action(vnfr_id, action, params)
+            current_app.mongo.store_vnf_action(vnfr_id,
+                                               action,
+                                               params,
+                                               output_dict)
         return output
