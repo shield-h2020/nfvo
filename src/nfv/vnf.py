@@ -218,7 +218,7 @@ class VnsfoVnsf:
         output = self.exec_action_on_vnf(exec_tmpl)
         try:
             output_dict = json.loads(output)
-        except:
+        except Exception:
             return {"Error": "SO-ub output is not valid JSON",
                     "output": output}
         # Keep track of remote action per vNSF
