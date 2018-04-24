@@ -117,6 +117,8 @@ class VnsfoNs:
                 osm_eps.NS_RUNNING,
                 headers=osm_eps.get_default_headers(),
                 verify=False)
+        if resp.status_code == 204:
+            return {"ns": []}
         if instance_id is None:
             return {
                 "ns": [x for x in
