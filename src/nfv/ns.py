@@ -108,7 +108,7 @@ class VnsfoNs:
             "vlrs": [
                 {"vlr_id": y["vlr-ref"],
                  "vim_id": y["om-datacenter"]} for y in
-                x["vlr"]]
+                x.get("vlr", [])]
         } for x in nsrs]
 
     @content.on_mock(ns_m().get_nsr_running_mock)
