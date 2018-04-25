@@ -1,7 +1,10 @@
 bin/docker/*
+docker/*.yml
+docker/mongo-entrypoint/*.sh
 !bin/docker/mongo-entrypoint
 !bin/docker/[D|d]ocker*.template
 cert/*
 conf/*.conf
 !conf/*.sample
 *.pyc
+venv

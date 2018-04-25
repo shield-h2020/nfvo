@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "Creating mongo users..."
+mongo {{ mongo_initdb_database }} --host localhost -u {{ mongo_initdb_root_username }} -p {{ mongo_initdb_root_password }} --eval "db.createUser({user: '"{{ db_username }}"', pwd: '"{{ db_password }}"', roles: [{role: 'readWrite', db: '"{{ db_dbname }}"'}]});"
+echo "Mongo users created."
