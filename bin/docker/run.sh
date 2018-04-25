@@ -31,10 +31,10 @@ parse_options() {
 
     parse_cmd=`getopt -n$0 -o h:: -a --long test,teardown -- "$@"`
     if [ $? != 0 ] ; then
-        usage
-        echo
-        echo
-        exit 1
+	usage
+	echo
+	echo
+	exit 1
     fi
 
     eval set -- "$parse_cmd"
@@ -43,42 +43,42 @@ parse_options() {
 
     while [ $# -gt 0 ]
     do
-        case "$1" in
+	case "$1" in
 
-            --test)
-                p_test=true
-                ;;
+	    --test)
+		p_test=true
+		;;
 
-            --teardown)
-                p_teardown=true
-                ;;
+	    --teardown)
+		p_teardown=true
+		;;
 
-            -h)
-                usage
-                exit 1
-                ;;
+	    -h)
+		usage
+		exit 1
+		;;
 
-            # End marker from getopt
-             --)
-                shift
-                break
-                ;;
+	    # End marker from getopt
+	     --)
+		shift
+		break
+		;;
 
-            -*)
-                echo "Unknown option $1"
-                usage
-                exit 1
-                ;;
+	    -*)
+		echo "Unknown option $1"
+		usage
+		exit 1
+		;;
 
-            *)
-                # Any additional parameter is an error.
-                echo "Too many parameters provided."
-                Usage
-                exit 1
-                ;;
+	    *)
+		# Any additional parameter is an error.
+		echo "Too many parameters provided."
+		Usage
+		exit 1
+		;;
 
-        esac
-        shift
+	esac
+	shift
     done
 
     return $OPTIND
@@ -230,18 +230,18 @@ if [[ $p_test = true ]]; then
     echo "Logs will be copied to $REPORT_FULL_PATH"
     docker_log_cmd="docker logs docker_nfvo-test_1 >& ${REPORT_PATH}/report.log"
     while true; do
-         if [[ $(sudo docker ps -a | grep nfvo-test) == *"Exited"* ]]; then
-            docker logs docker_nfvo-test_1 >& ${REPORT_PATH}/report.log
-            echo "Testing finished. Logs copied"
-            exit "0"
-        fi
-        max=$((max-1))
-        if [[ $max -eq 0 ]]; then
-            echo "Timeout. Exiting without copying logs"
-            echo "Once tests are finished (check in \"docker ps -a\"), run the command \"$docker_log_cmd\""
-            exit 0
-        fi
-        sleep 5
+	 if [[ $(sudo docker ps -a | grep nfvo-test) == *"Exited"* ]]; then
+	    docker logs docker_nfvo-test_1 >& ${REPORT_PATH}/report.log
+	    echo "Testing finished. Logs copied"
+	    exit "0"
+	fi
+	max=$((max-1))
+	if [[ $max -eq 0 ]]; then
+	    echo "Timeout. Exiting without copying logs"
+	    echo "Once tests are finished (check in \"docker ps -a\"), run the command \"$docker_log_cmd\""
+	    exit 0
+	fi
+	sleep 5
     done
 fi
 
