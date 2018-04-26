@@ -99,6 +99,14 @@ cleanup() {
     rm docker/mongo-entrypoint/adduser.sh
 }
 
+teardown() {
+    # Stop and remove containers
+    containers=($(docker ps -aq --filter label=project\=shield-nfvo))
+    docker stop "${containers[@]}"
+    docker rm "${containers[@]}"
+    return 0
+}
+
 parse_options "$@"
 
 if [[ $p_teardown != true ]]; then
@@ -113,4 +121,9 @@ if [[ $p_teardown != true ]]; then
 
     # Cleanup
     cleanup
+fi
+
+if [[ $p_teardown = true ]]; then
+    teardown
+    exit 0
 fi
