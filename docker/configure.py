@@ -14,7 +14,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" Configures docker deployment files according conf/* files """
 
 import configparser
 
@@ -22,7 +21,12 @@ from jinja2 import Template
 
 
 def read_config_files(confd):
-    """ Reads configuration files """
+    """
+    Reads configuration files
+
+    @param confd Configuration description dictionary (filepaths)
+    @return confs Configuration objects dictionary
+    """
     confs = {}
     for key in confd.keys():
         confs[key] = configparser.ConfigParser()
@@ -31,8 +35,12 @@ def read_config_files(confd):
 
 
 def apply_confs(confs):
-    """ Render configuration templates """
+    """
+    Render configuration templates
 
+    @param confs Configuration objects dictionary
+    @return None
+    """
     dc_templ = Template(open("docker/docker-compose.yml.template").read())
     dc_render = dc_templ.render({'mongo_initdb_root_username':
                                  confs["db"]["db"]["admin_username"],
