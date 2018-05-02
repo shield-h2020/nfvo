@@ -42,11 +42,11 @@ def apply_confs(confs):
     @return None
     """
     dc_templ = Template(open("docker/docker-compose.yml.template").read())
-    dc_render = dc_templ.render({'mongo_initdb_root_username':
+    dc_render = dc_templ.render({"mongo_initdb_root_username":
                                  confs["db"]["db"]["admin_username"],
-                                 'mongo_initdb_root_password':
+                                 "mongo_initdb_root_password":
                                  confs["db"]["db"]["admin_password"],
-                                 'mongo_initdb_database':
+                                 "mongo_initdb_database":
                                  confs["db"]["db"]["auth_source"],
                                  "nfvo_port":
                                  confs["api"]["general"]["port"]})
@@ -58,17 +58,17 @@ def apply_confs(confs):
 
     with open("docker/mongo-entrypoint/adduser.sh", "w") as outfile:
         outfile.write(
-            au_templ.render({'mongo_initdb_root_username':
+            au_templ.render({"mongo_initdb_root_username":
                              confs["db"]["db"]["admin_username"],
-                             'mongo_initdb_root_password':
+                             "mongo_initdb_root_password":
                              confs["db"]["db"]["admin_password"],
-                             'mongo_initdb_database':
+                             "mongo_initdb_database":
                              confs["db"]["db"]["auth_source"],
-                             'db_username':
+                             "db_username":
                              confs["db"]["db"]["user"],
-                             'db_password':
+                             "db_password":
                              confs["db"]["db"]["password"],
-                             'db_dbname':
+                             "db_dbname":
                              confs["db"]["db"]["name"]}))
 
 if __name__ == "__main__":
