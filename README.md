@@ -37,18 +37,29 @@ python3 src/main.py
 
 First, log in as super user.
 
-Run the main script under `bin/docker`:
+### Docker & Python3 dependencies
+
+Tested on Ubuntu 16.04 with Docker 17.09.1-ce:
+
 ```
-cd bin/docker
-# Pick one of the following
-# Both run the whole environment; yet the 2nd will run tests as well
+$ sudo apt-get install python3 python3-pip -y
+$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+$ sudo apt-get update
+$ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+$ sudo apt-get install docker-ce=17.09.1~ce-0~ubuntu
+$ sudo usermod -G docker $(whoami)
+$ sudo pip3 install docker-compose==1.17.1
+```
+
+### Deployment
+
+Run the main script ./run.sh:
+```
 ./run.sh
-./run.sh --test
 ```
 
 To tear down all related containers:
 ```
-cd bin/docker
 ./run.sh --teardown
 ```
 
@@ -95,6 +106,14 @@ curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
 curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd"}'
+```
+
+##### Instantiate and perform VNSF action asynchronously (once NS is running)
+
+```
+curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
+     -H "Content-Type: application/json" \
+     -d '{"instance_name": "fl7filter_test", "ns_name": "fl7filter_nsd", "vim_net": "provider", "action": "set-policies", "params": {"policies": "test-policy"}}'
 ```
 
 #### Provide the running NSs

@@ -1,0 +1,33 @@
+version:             "3"
+
+services:
+
+    # MongoDB
+    nfvo-db:
+      image: mongo:3.4
+      labels:
+        project: shield-nfvo
+      env_file: .env.base
+      environment:
+        - MONGO_INITDB_ROOT_USERNAME={{ mongo_initdb_root_username }}
+        - MONGO_INITDB_ROOT_PASSWORD={{ mongo_initdb_root_password }}
+        - MONGO_INITDB_DATABASE={{ mongo_initdb_database }}
+      volumes:
+        - "./mongo-entrypoint/:/docker-entrypoint-initdb.d/"
+
+    # vNSFO
+    nfvo:
+      labels:
+        project: shield-nfvo
+      env_file: .env.base
+      build:
+        context: .
+        dockerfile: Dockerfile.nfvo
+      depends_on:
+        - "nfvo-db"
+      ports:
+        - "{{ nfvo_port }}:{{ nfvo_port }}"
+      volumes:
+        - ../:/usr/share/dev/nfvo
+      links:
+        - nfvo-db

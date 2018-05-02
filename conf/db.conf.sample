@@ -7,3 +7,5 @@
     user = user
     password = user
     auth_source = admin
+    admin_username = admin
+    admin_password = adminpass
