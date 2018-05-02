@@ -19,6 +19,9 @@ import configparser
 
 from jinja2 import Template
 
+BASE_PATH = "docker"
+CONF_PATH = "conf"
+
 
 def read_config_files(confd):
     """
@@ -41,7 +44,8 @@ def apply_confs(confs):
     @param confs Configuration objects dictionary
     @return None
     """
-    dc_templ = Template(open("docker/docker-compose.yml.template").read())
+    dc_templ = Template(open("{0}/docker-compose.yml.template".
+                             format(BASE_PATH)).read())
     dc_render = dc_templ.render({"mongo_initdb_root_username":
                                  confs["db"]["db"]["admin_username"],
                                  "mongo_initdb_root_password":
@@ -51,12 +55,15 @@ def apply_confs(confs):
                                  "nfvo_port":
                                  confs["api"]["general"]["port"]})
 
-    with open("docker/docker-compose.yml", "w") as outfile:
+    with open("{0}/docker-compose.yml".
+              format(BASE_PATH), "w") as outfile:
         outfile.write(dc_render.replace("\t", "    "))
     au_templ = Template(
-        open("docker/mongo-entrypoint/adduser.sh.template").read())
+        open("{0}/mongo-entrypoint/adduser.sh.template".
+             format(BASE_PATH)).read())
 
-    with open("docker/mongo-entrypoint/adduser.sh", "w") as outfile:
+    with open("{0}/mongo-entrypoint/adduser.sh".
+              format(BASE_PATH), "w") as outfile:
         outfile.write(
             au_templ.render({"mongo_initdb_root_username":
                              confs["db"]["db"]["admin_username"],
@@ -72,7 +79,7 @@ def apply_confs(confs):
                              confs["db"]["db"]["name"]}))
 
 if __name__ == "__main__":
-    CONFS = read_config_files({"api": "conf/api.conf",
-                               "db": "conf/db.conf",
-                               "nfvo": "conf/nfvo.conf"})
+    CONFS = read_config_files({"api": "{0}/api.conf".format(CONF_PATH),
+                               "db": "{0}/db.conf".format(CONF_PATH),
+                               "nfvo": "{0}/nfvo.conf".format(CONF_PATH)})
     apply_confs(CONFS)
