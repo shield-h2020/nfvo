@@ -107,6 +107,11 @@ teardown() {
     return 0
 }
 
+test() {
+    # Perform tests on the same nfvo container
+    docker exec -t -i docker_nfvo_1 "/bin/bash" -c "python test/main.py"
+}
+
 parse_options "$@"
 
 if [[ $p_teardown != true ]]; then
@@ -121,6 +126,16 @@ if [[ $p_teardown != true ]]; then
 
     # Cleanup
     cleanup
+
+    if [[ $p_test == true ]]; then
+	echo "Waiting for nfvo ..."
+	until nc -z localhost 8448
+	do
+	    echo "."
+	    sleep 1
+	done
+	test
+    fi
 fi
 
 if [[ $p_teardown = true ]]; then
