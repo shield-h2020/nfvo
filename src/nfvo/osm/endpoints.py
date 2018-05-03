@@ -51,7 +51,10 @@ NS_CATALOG_O = S_BASE.format(NFVO_ENDPOINT, NFVO_PORT, NS_CATALOG_O_EP)
 NS_INSTANTIATE_EP = "api/operational/ns-instance-config/nsr"
 NS_INSTANTIATE = S_BASE.format(NFVO_ENDPOINT, NFVO_PORT, NS_INSTANTIATE_EP)
 
-NS_RUNNING_EP = "api/operational/ns-instance-opdata/nsr"
+NS_OPERATIONAL_EP = "api/operational/ns-instance-opdata/nsr"
+NS_OPERATIONAL = S_BASE.format(NFVO_ENDPOINT, NFVO_PORT, NS_OPERATIONAL_EP)
+
+NS_RUNNING_EP = "api/running/ns-instance-config/nsr"
 NS_RUNNING = S_BASE.format(NFVO_ENDPOINT, NFVO_PORT, NS_RUNNING_EP)
 
 # Infrastructure

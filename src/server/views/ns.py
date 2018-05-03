@@ -57,3 +57,14 @@ def instantiate_ns():
 def fetch_running_nss(instance_id=None):
     nss = nfvo_ns.get_nsr_running(instance_id)
     return HttpResponse.json(HttpCode.OK, nss)
+
+
+@nfvo_views.route(endpoints.NS_R_NSS)
+@nfvo_views.route(endpoints.NS_R_NSS_ID, methods=["DELETE"])
+def delete_running_nss(instance_id=None):
+    result = nfvo_ns.delete_nsr_running(instance_id)
+    if result.get("result", "") == "success":
+        return HttpResponse.json(HttpCode.OK, result)
+    else:
+        return HttpResponse.json(result["error_response"].status_code,
+                                 result["error_response"].text)

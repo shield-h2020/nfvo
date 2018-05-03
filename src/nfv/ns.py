@@ -117,7 +117,7 @@ class VnsfoNs:
     @content.on_mock(ns_m().get_nsr_running_mock)
     def get_nsr_running(self, instance_id=None):
         resp = requests.get(
-                osm_eps.NS_RUNNING,
+                osm_eps.NS_OPERATIONAL,
                 headers=osm_eps.get_default_headers(),
                 verify=False)
         if resp.status_code == 204:
@@ -188,8 +188,8 @@ class VnsfoNs:
             if timeout < 0:
                 print("Timeout reached, aborting thread")
                 break
-            if len(nss) < 1:
-                print("No instance found")
+            if len(nss["ns"]) < 1:
+                print("No instance found, aborting thread")
                 break
             operational_status = nss["ns"][0].get("operational_status", "")
             if operational_status == "failed":
@@ -252,6 +252,22 @@ class VnsfoNs:
                            "result": "success"}
             self.apply_mspl_action(nsr_data["nsr"][0]["id"],
                                    instantiation_data)
+            return success_msg
+        else:
+            error_msg = {"result": "error",
+                         "error_response": resp}
+            return error_msg
+
+    def delete_nsr_running(self, instance_id):
+        url = "{0}/{1}".format(osm_eps.NS_RUNNING, instance_id)
+        headers = osm_eps.get_default_headers()
+        resp = requests.delete(url,
+                               headers=headers,
+                               verify=False)
+        if resp.status_code in(200, 201, 202):
+            success_msg = {"instance_id": instance_id,
+                           "action": "delete",
+                           "result": "success"}
             return success_msg
         else:
             error_msg = {"result": "error",
