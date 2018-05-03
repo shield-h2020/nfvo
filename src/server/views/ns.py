@@ -61,8 +61,8 @@ def fetch_running_nss(instance_id=None):
 
 @nfvo_views.route(endpoints.NS_R_NSS)
 @nfvo_views.route(endpoints.NS_R_NSS_ID, methods=["DELETE"])
-def delete_running_nss(instance_id=None):
-    result = nfvo_ns.delete_nsr_running(instance_id)
+def delete_ns(instance_id=None):
+    result = nfvo_ns.delete_ns(instance_id)
     if result.get("result", "") == "success":
         return HttpResponse.json(HttpCode.OK, result)
     else:

@@ -76,6 +76,12 @@ class MockNs:
             "vim_net": "provider"
         }
 
+        self.delete_nsr_mock = {
+            "action": "delete",
+            "instance_id": str(uuid.uuid4()),
+            "result": "success"
+        }
+
         self.get_nsr_running_mock = {
             self.res_key: [
                 {
@@ -157,6 +163,14 @@ class MockNs:
         schema["vim_id"] = \
             And(Use(str), lambda n: regex.uuid4(n) is not None)
         schema["vim_net"] = And(Use(str))
+        return Schema(schema)
+
+    def delete_nsr_schema(self):
+        schema = self.delete_nsr_mock
+        schema["action"] = And(Use(str))
+        schema["result"] = And(Use(str))
+        schema["instance_id"] = \
+            And(Use(str), lambda n: regex.uuid4(n) is not None)
         return Schema(schema)
 
     def get_nsr_running_schema(self):

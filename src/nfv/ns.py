@@ -258,7 +258,8 @@ class VnsfoNs:
                          "error_response": resp}
             return error_msg
 
-    def delete_nsr_running(self, instance_id):
+    @content.on_mock(ns_m().delete_nsr_mock)
+    def delete_ns(self, instance_id):
         url = "{0}/{1}".format(osm_eps.NS_RUNNING, instance_id)
         headers = osm_eps.get_default_headers()
         resp = requests.delete(url,
