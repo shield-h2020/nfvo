@@ -108,10 +108,14 @@ class TestUtils:
             url,
             headers=headers_inner,
             # data=data if "json" not in headers_inner else {},
-            json=data if "json" in headers_inner else {},
+            json=data if (("json" in headers_inner) or
+                          (("Content-type" in headers_inner) and
+                           ("application/json" ==
+                            headers_inner["Content-type"]))) else {},
             files=data if "multipart" in headers_inner else {},
             verify=False)
         self.__check_output(response, schema, exp_code, exp_out)
+        return response
 
     def test_mocked_post(self, url, schema, data, headers, exp_code, exp_out):
         url, headers_inner = self.__set_url_headers(url, headers)

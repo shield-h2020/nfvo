@@ -72,8 +72,9 @@ class MockNs:
         self.post_nsr_instantiate_mock = {
             "instance_name": "my service instance",
             "ns_name": "l23filter_nsd",
-            "vim_id": str(uuid.uuid4()),
-            "vim_net": "provider"
+            "instance_id": str(uuid.uuid4()),
+            "result": "success",
+            "vim_id": str(uuid.uuid4())
         }
 
         self.delete_nsr_mock = {
@@ -161,8 +162,10 @@ class MockNs:
         schema["instance_name"] = And(Use(str))
         schema["ns_name"] = And(Use(str))
         schema["vim_id"] = \
-            And(Use(str), lambda n: regex.uuid4(n) is not None)
-        schema["vim_net"] = And(Use(str))
+            And(Use(str), lambda n: regex.uuid(n) is not None)
+        schema["instance_id"] = \
+            And(Use(str), lambda n: regex.uuid(n) is not None)
+        schema["result"] = And(Use(str))
         return Schema(schema)
 
     def delete_nsr_schema(self):
