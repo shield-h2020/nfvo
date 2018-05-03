@@ -214,6 +214,29 @@ paths:
             $ref: "#/definitions/RunningNsOutput"
         <<: *API_RESPONSES
 
+    delete:
+      parameters:
+        - in: path
+          name: instance_id
+          required: true
+          schema:
+            type: string
+          description: Instance id
+      tags:
+        - ns
+      summary: Deletes running NSs
+      description: >-
+        Deletes the specific instantiated NS.
+      operationId: deleteDeployedNssPerId
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/DeleteNsOutput"
+        <<: *API_RESPONSES
+
   /package/onboard:
     post:
       tags:
@@ -744,6 +767,19 @@ definitions:
                   vnf_name:
                     type: string
                     example: fl7f_test25__fl7filter_vnfd__1
+
+  DeleteNsOutput:
+    type: object
+    properties:
+      action:
+        type: string
+        example: delete
+      instance_id:
+        type: string
+        example: ff8a4f36-3c5d-4580-b3ea-6d30e4063ab9
+      result:
+        type: string
+        example: success
 
   VimListOutput:
     type: array

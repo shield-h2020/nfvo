@@ -116,6 +116,12 @@ curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -d '{"instance_name": "fl7filter_test", "ns_name": "fl7filter_nsd", "vim_net": "provider", "action": "set-policies", "params": {"policies": "test-policy"}}'
 ```
 
+#### Delete an already instantiated NS using it's ID
+
+```
+curl -ik -X DELETE https://127.0.0.1:8448/ns/running/c3fea13a-cc52-4bf9-bf12-3ed20bfb8259
+```
+
 #### Provide the running NSs
 
 ##### All NSs
