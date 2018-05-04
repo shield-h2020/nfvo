@@ -104,14 +104,17 @@ class TestUtils:
     def test_post(self, url, schema, data, headers={},
                   exp_code=None, exp_out=None):
         url, headers_inner = self.__set_url_headers(url, headers)
+        json_data = False
+        if "json" in headers_inner:
+            json_data = True
+        if (("Content-type" in headers_inner) and
+           ("application/json" == headers_inner["Content-type"])):
+            json_data = True
         response = requests.post(
             url,
             headers=headers_inner,
             # data=data if "json" not in headers_inner else {},
-            json=data if (("json" in headers_inner) or
-                          (("Content-type" in headers_inner) and
-                           ("application/json" ==
-                            headers_inner["Content-type"]))) else {},
+            json=data if json_data else {},
             files=data if "multipart" in headers_inner else {},
             verify=False)
         self.__check_output(response, schema, exp_code, exp_out)
