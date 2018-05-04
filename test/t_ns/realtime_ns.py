@@ -20,6 +20,8 @@ from src.server.endpoints import VnsfoEndpoints as endpoints_s
 from src.server.http.http_code import HttpCode
 from src.server.mocks.ns import MockNs as ns_m
 
+import json
+import time
 import unittest
 
 
@@ -28,6 +30,7 @@ class TestNfvNsRealtime(unittest.TestCase):
     def setUp(self):
         self.get_nsr_config = endpoints_s.NS_C_NSS
         self.post_nsr_instantiate = endpoints_s.NS_INSTANTIATE
+        self.delete_nsr = endpoints_s.NS_DELETE
         self.get_nsr_running = endpoints_s.NS_R_NSS
         self.utils = TestUtils()
 
@@ -37,12 +40,23 @@ class TestNfvNsRealtime(unittest.TestCase):
         schema = ns_m().get_nsr_config_schema()
         self.utils.test_get(url, schema, {}, exp_code)
 
-    @unittest.skip(TestUtils.ignore_hazard)
     def test_post_nsr_instantiate(self):
-        url = self.get_nsr_instantiate
+        url = self.post_nsr_instantiate
         exp_code = HttpCode.OK
         schema = ns_m().post_nsr_instantiate_schema()
-        self.utils.test_post(url, schema, {}, exp_code)
+        data = {"instance_name": "realtime-test",
+                "ns_name": "fl7filter_nsd",
+                "vim_net": "provider",
+                "action": "set-policies",
+                "params": {"policies": "test-policy"}}
+        headers = {"Content-type": "application/json"}
+        response = self.utils.test_post(url, schema, data, headers, exp_code)
+        instantiation_data = json.loads(response.text)
+        del_url = self.delete_nsr.replace("<instance_id>",
+                                          instantiation_data["instance_id"])
+        del_schema = ns_m().delete_nsr_schema()
+        time.sleep(5)
+        self.utils.test_delete(del_url, del_schema, {}, exp_code)
 
     def test_get_nsr_running(self):
         url = self.get_nsr_running

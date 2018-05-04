@@ -43,6 +43,7 @@ class VnsfoEndpoints:
     NS = "/ns"
     NS_C_NSS = "{}/config".format(NS)
     NS_INSTANTIATE = "{}/instantiate".format(NS)
+    NS_DELETE = "{}/running/<instance_id>".format(NS)
     NS_R_NSS = "{}/running".format(NS)
     NS_R_NSS_ID = "{}/<instance_id>".format(NS_R_NSS)
     # Package

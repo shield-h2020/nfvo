@@ -22,6 +22,7 @@ from src.server.http.http_code import HttpCode
 from src.server.mocks.ns import MockNs as ns_m
 
 import unittest
+import uuid
 
 
 class TestNfvNsMocked(unittest.TestCase):
@@ -29,6 +30,8 @@ class TestNfvNsMocked(unittest.TestCase):
     def setUp(self):
         self.get_nsr_config = endpoints_s.NS_C_NSS
         self.post_nsr_instantiate = endpoints_s.NS_INSTANTIATE
+        self.delete_nsr = endpoints_s.NS_DELETE.replace('<instance_id>',
+                                                        str(uuid.uuid4()))
         self.get_nsr_running = endpoints_s.NS_R_NSS
         self.nfvo_ns = nfvo_ns()
         self.utils = TestUtils()
@@ -47,6 +50,13 @@ class TestNfvNsMocked(unittest.TestCase):
         schema = ns_m().post_nsr_instantiate_schema()
         data = {}
         self.utils.test_mocked_post(url, schema, data, {}, exp_code, exp_out)
+
+    def test_mocked_delete_nsr(self):
+        url = self.delete_nsr
+        exp_code = HttpCode.OK
+        exp_out = self.nfvo_ns.delete_ns(**{"mock": True})
+        schema = ns_m().delete_nsr_schema()
+        self.utils.test_mocked_delete(url, schema, {}, exp_code, exp_out)
 
     def test_mocked_get_ns_running(self):
         url = self.get_nsr_running

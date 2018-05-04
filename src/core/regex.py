@@ -15,18 +15,22 @@
 # limitations under the License.
 
 
+from uuid import UUID
+
 import re
 
 
 def uuid(data, uuid_version=None):
-    # If no version is provided, match any
+    try:
+        version = UUID(data).version
+    except ValueError:
+        return None
     if uuid_version is None:
-        uuid_version = "[a-f0-9]"
-    transaction_id_re = re.compile((
-        ("[a-f0-9]{8}-[a-f0-9]{4}-<version>[a-f0-9]{3}-" +
-         "[89ab][a-f0-9]{3}-[a-f0-9]{12}$")
-        .replace("<version>", str(uuid_version))))
-    return transaction_id_re.match(data)
+        # If no version is provided, match any
+        return data
+    if uuid_version == version:
+        return data
+    return None
 
 
 def uuid4(data):
