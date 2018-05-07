@@ -10,3 +10,7 @@
 [ro]
     host = {{ro_host}}
     port = 9090
+
+[mspl_monitoring]
+    timeout = 3600
+    interval = 5

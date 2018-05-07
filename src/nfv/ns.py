@@ -16,6 +16,7 @@
 
 
 from core import regex
+from core.config import FullConfParser
 from flask import current_app
 from nfv.vnf import VnsfoVnsf
 from nfvo.osm import endpoints as osm_eps
@@ -36,6 +37,11 @@ class VnsfoNs:
 
     def __init__(self):
         self.res_key = "ns"
+        self.config = FullConfParser()
+        self.nfvo_category = self.config.get("nfvo.conf")
+        self.nfvo_mspl_monitoring = self.nfvo_category.get("mspl_monitoring")
+        self.mspl_timeout = int(self.nfvo_mspl_monitoring.get("timeout"))
+        self.mspl_interval = int(self.nfvo_mspl_monitoring.get("interval"))
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
     @content.on_mock(ns_m().get_nsr_config_mock)
@@ -176,13 +182,11 @@ class VnsfoNs:
                 nsr_id, instantiation_data, vnfss, vlds)
 
     def deployment_monitor_thread(self, instance_id, action, params, app):
-        # TODO configurable action timeout
-        timeout = 3600
+        timeout = self.mspl_timeout
         action_submitted = False
         while not action_submitted:
-            # TODO configurable delay
-            time.sleep(5)
-            timeout = timeout-5
+            time.sleep(self.mspl_interval)
+            timeout = timeout-self.mspl_interval
             print("Checking {0} {1} {2}".format(instance_id, action, params))
             nss = self.get_nsr_running(instance_id)
             if timeout < 0:
