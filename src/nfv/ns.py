@@ -42,6 +42,8 @@ class VnsfoNs:
         self.nfvo_mspl_monitoring = self.nfvo_category.get("mspl_monitoring")
         self.mspl_timeout = int(self.nfvo_mspl_monitoring.get("timeout"))
         self.mspl_interval = int(self.nfvo_mspl_monitoring.get("interval"))
+        self.mspl_target_status = self.\
+            nfvo_mspl_monitoring.get("target_status")
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
     @content.on_mock(ns_m().get_nsr_config_mock)
@@ -181,9 +183,12 @@ class VnsfoNs:
         return nfvo_tmpl.instantiation_data_msg(
                 nsr_id, instantiation_data, vnfss, vlds)
 
-    def deployment_monitor_thread(self, instance_id, action, params, app):
+    def deployment_monitor_thread(self, instance_id, action,
+                                  params, app, target_status=None):
         timeout = self.mspl_timeout
         action_submitted = False
+        if target_status is None:
+            target_status = self.mspl_target_status
         while not action_submitted:
             time.sleep(self.mspl_interval)
             timeout = timeout-self.mspl_interval
@@ -199,9 +204,7 @@ class VnsfoNs:
             if operational_status == "failed":
                 print("Instance failed, aborting")
                 break
-            # MAYBE ... configurable status to perform action running/active?
-            # include this in an optional request parameter?
-            if operational_status == "running" and \
+            if operational_status == target_status and \
                "constituent_vnf_instances" in nss["ns"][0]:
                 # Perform action on all vnf instances?
                 for vnsf_instance in nss["ns"][0]["constituent_vnf_instances"]:
@@ -226,12 +229,17 @@ class VnsfoNs:
                                                     not in instantiation_data):
             return
         print("Configuring instance, starting thread ...")
+        target_status = None
+        if "target_status" in instantiation_data:
+            target_status = instantiation_data["target_status"]
         # passing also current_app._get_current_object() (flask global context)
         t = threading.Thread(target=self.deployment_monitor_thread,
                              args=(instance_id,
                                    instantiation_data["action"],
                                    instantiation_data["params"],
-                                   current_app._get_current_object()))
+                                   current_app._get_current_object(),
+                                   target_status))
+
         t.start()
 
     @content.on_mock(ns_m().post_nsr_instantiate_mock)

@@ -14,3 +14,4 @@
 [mspl_monitoring]
     timeout = 3600
     interval = 5
+    target_status = running
