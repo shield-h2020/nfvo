@@ -38,12 +38,12 @@ class VnsfoNs:
     def __init__(self):
         self.res_key = "ns"
         self.config = FullConfParser()
-        self.nfvo_category = self.config.get("nfvo.conf")
-        self.nfvo_mspl_monitoring = self.nfvo_category.get("mspl_monitoring")
-        self.mspl_timeout = int(self.nfvo_mspl_monitoring.get("timeout"))
-        self.mspl_interval = int(self.nfvo_mspl_monitoring.get("interval"))
-        self.mspl_target_status = self.\
-            nfvo_mspl_monitoring.get("target_status")
+        self.nfvo_mspl_category = self.config.get("nfvo.mspl.conf")
+        self.mspl_monitoring = self.nfvo_mspl_category.get("monitoring")
+        self.monitoring_timeout = int(self.mspl_monitoring.get("timeout"))
+        self.monitoring_interval = int(self.mspl_monitoring.get("interval"))
+        self.monitoring_target_status = self.\
+            mspl_monitoring.get("target_status")
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
     @content.on_mock(ns_m().get_nsr_config_mock)
@@ -185,13 +185,13 @@ class VnsfoNs:
 
     def deployment_monitor_thread(self, instance_id, action,
                                   params, app, target_status=None):
-        timeout = self.mspl_timeout
+        timeout = self.monitoring_timeout
         action_submitted = False
         if target_status is None:
-            target_status = self.mspl_target_status
+            target_status = self.monitoring_target_status
         while not action_submitted:
-            time.sleep(self.mspl_interval)
-            timeout = timeout-self.mspl_interval
+            time.sleep(self.monitoring_interval)
+            timeout = timeout-self.monitoring_interval
             print("Checking {0} {1} {2}".format(instance_id, action, params))
             nss = self.get_nsr_running(instance_id)
             if timeout < 0:
