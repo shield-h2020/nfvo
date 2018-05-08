@@ -110,7 +110,9 @@ curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
 
 ##### Instantiate and perform VNSF action asynchronously
 
-###### Waiting for NS default target_status defined in conf/nfvo.conf
+###### Waiting for NS default target status
+
+Default target status (target_status) is defined in conf/nfvo.mspl.conf.sample
 
 ```
 curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
