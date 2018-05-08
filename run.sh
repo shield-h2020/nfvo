@@ -58,10 +58,11 @@ parse_options() {
 
 copy_conf() {
     # copy configuration sample files
-    for conf in "./conf/api.conf" "./conf/db.conf" "./conf/nfvo.conf" "./conf/nfvo.mspl.conf"
+    for conf in conf/*conf.sample
     do
-	if [ ! -f $conf ]; then
-            cp $conf.sample $conf
+	conf_name=${conf%.sample}
+	if [ ! -f $conf_name ]; then
+            cp $conf $conf_name
 	fi
     done
 }
