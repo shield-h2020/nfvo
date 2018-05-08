@@ -486,6 +486,20 @@ definitions:
       vim_net:
         type: string
         example: provider
+      action:
+        type: string
+        example: set-policies
+      params:
+        type: object
+        required:
+          - policies
+        properties:
+          policies:
+            type: string
+            example: test-policy
+      target_status:
+        type: string
+        example: active
 
   InstantiateNSOutput:
     type: object

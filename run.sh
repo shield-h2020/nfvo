@@ -58,17 +58,13 @@ parse_options() {
 
 copy_conf() {
     # copy configuration sample files
-    if [ ! -f ./conf/api.conf ]; then
-        cp conf/api.conf.sample conf/api.conf
-    fi
-
-    if [ ! -f ./conf/db.conf ]; then
-        cp conf/db.conf.sample conf/db.conf
-    fi
-
-    if [ ! -f ./conf/nfvo.conf ]; then
-        cp conf/nfvo.conf.sample conf/nfvo.conf
-    fi
+    for conf in conf/*conf.sample
+    do
+	conf_name=${conf%.sample}
+	if [ ! -f $conf_name ]; then
+            cp $conf $conf_name
+	fi
+    done
 }
 
 generate_certs() {

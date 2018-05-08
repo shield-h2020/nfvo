@@ -16,6 +16,7 @@
 
 
 from core import regex
+from core.config import FullConfParser
 from flask import current_app
 from nfv.vnf import VnsfoVnsf
 from nfvo.osm import endpoints as osm_eps
@@ -36,6 +37,13 @@ class VnsfoNs:
 
     def __init__(self):
         self.res_key = "ns"
+        self.config = FullConfParser()
+        self.nfvo_mspl_category = self.config.get("nfvo.mspl.conf")
+        self.mspl_monitoring = self.nfvo_mspl_category.get("monitoring")
+        self.monitoring_timeout = int(self.mspl_monitoring.get("timeout"))
+        self.monitoring_interval = int(self.mspl_monitoring.get("interval"))
+        self.monitoring_target_status = self.\
+            mspl_monitoring.get("target_status")
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
     @content.on_mock(ns_m().get_nsr_config_mock)
@@ -175,14 +183,15 @@ class VnsfoNs:
         return nfvo_tmpl.instantiation_data_msg(
                 nsr_id, instantiation_data, vnfss, vlds)
 
-    def deployment_monitor_thread(self, instance_id, action, params, app):
-        # TODO configurable action timeout
-        timeout = 3600
+    def deployment_monitor_thread(self, instance_id, action,
+                                  params, app, target_status=None):
+        timeout = self.monitoring_timeout
         action_submitted = False
+        if target_status is None:
+            target_status = self.monitoring_target_status
         while not action_submitted:
-            # TODO configurable delay
-            time.sleep(5)
-            timeout = timeout-5
+            time.sleep(self.monitoring_interval)
+            timeout = timeout-self.monitoring_interval
             print("Checking {0} {1} {2}".format(instance_id, action, params))
             nss = self.get_nsr_running(instance_id)
             if timeout < 0:
@@ -195,9 +204,7 @@ class VnsfoNs:
             if operational_status == "failed":
                 print("Instance failed, aborting")
                 break
-            # MAYBE ... configurable status to perform action running/active?
-            # include this in an optional request parameter?
-            if operational_status == "running" and \
+            if operational_status == target_status and \
                "constituent_vnf_instances" in nss["ns"][0]:
                 # Perform action on all vnf instances?
                 for vnsf_instance in nss["ns"][0]["constituent_vnf_instances"]:
@@ -222,12 +229,17 @@ class VnsfoNs:
                                                     not in instantiation_data):
             return
         print("Configuring instance, starting thread ...")
+        target_status = None
+        if "target_status" in instantiation_data:
+            target_status = instantiation_data["target_status"]
         # passing also current_app._get_current_object() (flask global context)
         t = threading.Thread(target=self.deployment_monitor_thread,
                              args=(instance_id,
                                    instantiation_data["action"],
                                    instantiation_data["params"],
-                                   current_app._get_current_object()))
+                                   current_app._get_current_object(),
+                                   target_status))
+
         t.start()
 
     @content.on_mock(ns_m().post_nsr_instantiate_mock)

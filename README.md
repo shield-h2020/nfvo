@@ -108,12 +108,24 @@ curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd"}'
 ```
 
-##### Instantiate and perform VNSF action asynchronously (once NS is running)
+##### Instantiate and perform VNSF action asynchronously
+
+###### Waiting for NS default target status
+
+Default target status (target_status) is defined in conf/nfvo.mspl.conf.sample
 
 ```
 curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -H "Content-Type: application/json" \
-     -d '{"instance_name": "fl7filter_test", "ns_name": "fl7filter_nsd", "vim_net": "provider", "action": "set-policies", "params": {"policies": "test-policy"}}'
+     -d '{"instance_name": "fl7filter_test", "ns_name": "fl7filter_nsd", "action": "set-policies", "params": {"policies": "test-policy"}}'
+```
+
+###### Waiting for NS custom target_status
+
+```
+curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
+     -H "Content-Type: application/json" \
+     -d '{"instance_name": "fl7filter_test", "ns_name": "fl7filter_nsd", "action": "set-policies", "params": {"policies": "test-policy"}, "target_status": "active"}'
 ```
 
 #### Delete an already instantiated NS
