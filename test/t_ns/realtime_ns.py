@@ -21,6 +21,7 @@ from src.server.http.http_code import HttpCode
 from src.server.mocks.ns import MockNs as ns_m
 
 import json
+import threading
 import time
 import unittest
 
@@ -56,6 +57,39 @@ class TestNfvNsRealtime(unittest.TestCase):
                                           instantiation_data["instance_id"])
         del_schema = ns_m().delete_nsr_schema()
         time.sleep(5)
+        self.utils.test_delete(del_url, del_schema, {}, exp_code)
+
+    def test_real_mspl(self):
+        nsds = ["fl7filter_nsd", "l23filter_nsd", "l3filter_nsd"]
+        mspls = {}
+        rpath = "./test/t_ns/resources"
+        for nsd in nsds:
+            with open("{0}/{1}.mspl.xml".format(rpath, nsd)) as f:
+                mspls[nsd] = f.read()
+        test_threads = []
+        for nsd in mspls.keys():
+            test_threads.append(threading.Thread(
+                target=self.deploy_and_request_mspl,
+                args=(nsd, mspls[nsd])))
+            test_threads[-1].start()
+        [worker.join() for worker in test_threads]
+
+    def deploy_and_request_mspl(self, nsd, mspl):
+        url = self.post_nsr_instantiate
+        exp_code = HttpCode.OK
+        schema = ns_m().post_nsr_instantiate_schema()
+        data = {"instance_name": "realtime-test",
+                "ns_name": nsd,
+                "vim_net": "provider",
+                "action": "set-policies",
+                "params": {"policies": mspl}}
+        headers = {"Content-type": "application/json"}
+        response = self.utils.test_post(url, schema, data, headers, exp_code)
+        instantiation_data = json.loads(response.text)
+        del_url = self.delete_nsr.replace("<instance_id>",
+                                          instantiation_data["instance_id"])
+        del_schema = ns_m().delete_nsr_schema()
+        time.sleep(360)
         self.utils.test_delete(del_url, del_schema, {}, exp_code)
 
     def test_get_nsr_running(self):
