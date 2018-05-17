@@ -100,6 +100,8 @@ teardown() {
     containers=($(docker ps -aq --filter label=project\=shield-nfvo))
     docker stop "${containers[@]}"
     docker rm "${containers[@]}"
+    # Cleanup
+    cleanup
     return 0
 }
 
@@ -119,9 +121,6 @@ if [[ $p_teardown != true ]]; then
 
     # Set-up env (pre-requirements)
     setup
-
-    # Cleanup
-    cleanup
 
     if [[ $p_test == true ]]; then
 	echo "Waiting for nfvo ..."
