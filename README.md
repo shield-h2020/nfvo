@@ -53,14 +53,19 @@ $ sudo pip3 install docker-compose==1.17.1
 
 ### Deployment
 
-Run the main script ./run.sh:
+Run the main script ./setup.sh:
 ```
-./run.sh
+./setup.sh
+```
+
+Deploy and run tests:
+```
+./setup.sh --test
 ```
 
 To tear down all related containers:
 ```
-./run.sh --teardown
+./teardown.sh
 ```
 
 # API

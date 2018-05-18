@@ -21,10 +21,6 @@ parse_options() {
                 p_test=true
                 ;;
 
-            --teardown)
-                p_teardown=true
-                ;;
-
             -h)
                 usage
                 exit 1
@@ -89,22 +85,6 @@ setup() {
     docker-compose -f docker/docker-compose.yml up -d --force-recreate
 }
 
-cleanup() {
-    # Cleanup
-    rm docker/docker-compose.yml
-    rm docker/mongo-entrypoint/adduser.sh
-}
-
-teardown() {
-    # Stop and remove containers
-    containers=($(docker ps -aq --filter label=project\=shield-nfvo))
-    docker stop "${containers[@]}"
-    docker rm "${containers[@]}"
-    # Cleanup
-    cleanup
-    return 0
-}
-
 test() {
     # Perform tests on the same nfvo container
     docker exec -t -i docker_nfvo_1 "/bin/bash" -c "python test/main.py"
@@ -112,28 +92,21 @@ test() {
 
 parse_options "$@"
 
-if [[ $p_teardown != true ]]; then
-    # Copy configuration sample files
-    copy_conf
+# Copy configuration sample files
+copy_conf
 
-    # Install dependencies
-    generate_certs
+# Install dependencies
+generate_certs
 
-    # Set-up env (pre-requirements)
-    setup
+# Set-up env (pre-requirements)
+setup
 
-    if [[ $p_test == true ]]; then
-	echo "Waiting for nfvo ..."
-	until nc -z localhost 8448
-	do
-	    echo "."
-	    sleep 1
-	done
-	test
-    fi
-fi
-
-if [[ $p_teardown = true ]]; then
-    teardown
-    exit 0
+if [[ $p_test == true ]]; then
+    echo "Waiting for nfvo ..."
+    until nc -z localhost 8448
+    do
+	echo "."
+	sleep 1
+    done
+    test
 fi
