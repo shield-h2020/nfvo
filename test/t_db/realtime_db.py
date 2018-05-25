@@ -20,12 +20,17 @@ import unittest
 
 from core.config import FullConfParser
 from db.models.vnf_action_request import VnfActionRequest
+from db.models.auth import PasswordAuth
+from db.models.compute_node import ComputeNode
+from db.models.isolation_script import IsolationScript
+from db.models.vdu import Vdu
 from mongoengine import connect as me_connect
 
 
 class TestDbConnectivity(unittest.TestCase):
 
-    def test_db_connectivity(self):
+    def __init__(self, *args, **kwargs):
+        super(TestDbConnectivity, self).__init__(*args, **kwargs)
         config = FullConfParser()
         db_category = config.get("db.conf")
         db_general = db_category.get("general")
@@ -44,6 +49,8 @@ class TestDbConnectivity(unittest.TestCase):
             db_name,
             auth_source)
         me_connect(host=auth_db_address)
+
+    def test_db_connectivity(self):
         vnsfr_id = str(uuid.uuid4())
         vnf_action_request = VnfActionRequest(primitive="test-primitive",
                                               vnsfr_id=vnsfr_id,
@@ -52,3 +59,19 @@ class TestDbConnectivity(unittest.TestCase):
         vnf_action_request.save()
         read_vnf_action = VnfActionRequest.objects(vnsfr_id=vnsfr_id).first()
         read_vnf_action.delete()
+
+    def test_vdu_model(self):
+        authentication = PasswordAuth(username="user", password="password")
+        isolation_script = IsolationScript(
+            script="#!/usr/bin/env bash\nifconfig down ens5")
+        authentication.save()
+        isolation_script.save()
+        compute_node = ComputeNode(name="nova2",
+                                   authentication=authentication,
+                                   isolation_script=isolation_script)
+        compute_node.save()
+        vdu = Vdu(control_address="192.168.10.10",
+                  authentication=authentication,
+                  isolation_script=isolation_script,
+                  compute_node=compute_node)
+        vdu.save()
