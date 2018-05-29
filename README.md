@@ -53,14 +53,14 @@ $ sudo pip3 install docker-compose==1.17.1
 
 ### Deployment
 
-Run the main script ./run.sh:
+Run the main script ./setup.sh:
 ```
-./run.sh
+./setup.sh
 ```
 
 To tear down all related containers:
 ```
-./run.sh --teardown
+./teardown.sh
 ```
 
 # API
@@ -223,9 +223,20 @@ curl -ki https://127.0.0.1:8448/vnsf/action -X POST \
 
 Run all tests, or either mocked or real-time/live tests.
 
+## All tests
+
 ```
-cd test
-python3 main.py
-python3 main.py -m
-python3 main.py -r
+./setup.sh --test
+```
+
+## Mocked tests
+
+```
+./setup.sh --test-mocked
+```
+
+## Real time tests
+
+```
+./setup.sh --test-realtime
 ```

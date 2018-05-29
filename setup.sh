@@ -1,7 +1,21 @@
 #!/bin/bash
 
+usage()
+{
+    cat <<USAGE_MSG
+USAGE: $0 OPTIONS
+Sets up the docker environment and starts up all daemons. Configuration is retrieved from the conf/*.conf files
+
+OPTIONS
+   --test               (Optional) Execute the tests against the vNSFO
+   --test-mocked        (Optional) Execute the mocked tests against the vNSFO (mocked version)
+   --test-realtime      (Optional) Execute the real time tests against the vNSFO
+   -h                   Prints this usage message
+USAGE_MSG
+}
+
 parse_options() {
-    parse_cmd=`getopt -n$0 -o h:: -a --long test,teardown -- "$@"`
+    parse_cmd=`getopt -n$0 -o h:: -a --long test,test-mocked,test-realtime -- "$@"`
     if [ $? != 0 ] ; then
         usage
         echo
@@ -21,8 +35,12 @@ parse_options() {
                 p_test=true
                 ;;
 
-            --teardown)
-                p_teardown=true
+            --test-mocked)
+                p_test_mocked=true
+                ;;
+
+            --test-realtime)
+                p_test_realtime=true
                 ;;
 
             -h)
@@ -89,52 +107,52 @@ setup() {
     docker-compose -f docker/docker-compose.yml up -d --force-recreate
 }
 
-cleanup() {
-    # Cleanup
-    rm docker/docker-compose.yml
-    rm docker/mongo-entrypoint/adduser.sh
-}
-
-teardown() {
-    # Stop and remove containers
-    containers=($(docker ps -aq --filter label=project\=shield-nfvo))
-    docker stop "${containers[@]}"
-    docker rm "${containers[@]}"
-    return 0
-}
-
 test() {
     # Perform tests on the same nfvo container
     docker exec -t -i docker_nfvo_1 "/bin/bash" -c "python test/main.py"
 }
 
+test_mocked() {
+    # Perform tests on the same nfvo container
+    docker exec -t -i docker_nfvo_1 "/bin/bash" -c "python test/main.py -m"
+}
+
+test_realtime() {
+    # Perform tests on the same nfvo container
+    docker exec -t -i docker_nfvo_1 "/bin/bash" -c "python test/main.py -r"
+}
+
+wait_for_nfvo() {
+    echo "Waiting for nfvo ..."
+    until nc -z localhost 8448
+    do
+        echo "."
+        sleep 1
+    done
+}
+
 parse_options "$@"
 
-if [[ $p_teardown != true ]]; then
-    # Copy configuration sample files
-    copy_conf
+# Copy configuration sample files
+copy_conf
 
-    # Install dependencies
-    generate_certs
+# Install dependencies
+generate_certs
 
-    # Set-up env (pre-requirements)
-    setup
+# Set-up env (pre-requirements)
+setup
 
-    # Cleanup
-    cleanup
-
-    if [[ $p_test == true ]]; then
-	echo "Waiting for nfvo ..."
-	until nc -z localhost 8448
-	do
-	    echo "."
-	    sleep 1
-	done
-	test
-    fi
+if [[ $p_test == true ]]; then
+    wait_for_nfvo
+    test
 fi
 
-if [[ $p_teardown = true ]]; then
-    teardown
-    exit 0
+if [[ $p_test_mocked == true ]]; then
+    wait_for_nfvo
+    test_mocked
+fi
+
+if [[ $p_test_realtime == true ]]; then
+    wait_for_nfvo
+    test_realtime
 fi
