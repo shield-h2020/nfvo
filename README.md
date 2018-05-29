@@ -59,8 +59,23 @@ Run the main script ./setup.sh:
 ```
 
 Deploy and run tests:
+
+All tests:
+
 ```
 ./setup.sh --test
+```
+
+Deploy and run mocked tests:
+
+```
+./setup.sh --test-mocked
+```
+
+Deploy and run real time tests:
+
+```
+./setup.sh --test-realtime
 ```
 
 To tear down all related containers:
