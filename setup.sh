@@ -35,13 +35,13 @@ parse_options() {
                 p_test=true
                 ;;
 
-	    --test-mocked)
-		p_test_mocked=true
-		;;
+            --test-mocked)
+                p_test_mocked=true
+                ;;
 
-	    --test-realtime)
-		p_test_realtime=true
-		;;
+            --test-realtime)
+                p_test_realtime=true
+                ;;
 
             -h)
                 usage
