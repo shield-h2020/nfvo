@@ -20,6 +20,7 @@ import argparse
 import unittest
 
 from t_core.regex import TestRegex
+from t_db.realtime_db import TestDbConnectivity
 from t_nfv.mocked_nfv import TestNfvVnfMocked
 from t_nfv.realtime_nfv import TestNfvVnfRealtime
 from t_ns.mocked_ns import TestNfvNsMocked
@@ -61,6 +62,7 @@ class TestSuite:
             TestPackageRealtime,
             TestRegex,
             TestServerEndpointsRealtime,
+            TestDbConnectivity,
             TestVimRealtime,
         ]
 
