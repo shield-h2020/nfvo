@@ -126,8 +126,8 @@ wait_for_nfvo() {
     echo "Waiting for nfvo ..."
     until nc -z localhost 8448
     do
-	echo "."
-	sleep 1
+        echo "."
+        sleep 1
     done
 }
 
