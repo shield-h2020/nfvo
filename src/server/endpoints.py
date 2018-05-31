@@ -50,7 +50,7 @@ class VnsfoEndpoints:
     PKG = "/package"
     PKG_ONBOARD = "{}/onboard".format(PKG)
     PKG_ONBOARD_REMOTE = "{}/remote".format(PKG_ONBOARD)
-    PKG_REMOVE = "{}/remove/<vnsf_name>".format(PKG)
+    PKG_REMOVE = "{}/<vnsf_name>".format(PKG)
     # Network function
     VNSF = "/vnsf"
     VNSF_ACTION_EXEC = "{}/action".format(VNSF)
