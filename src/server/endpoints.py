@@ -50,11 +50,10 @@ class VnsfoEndpoints:
     PKG = "/package"
     PKG_ONBOARD = "{}/onboard".format(PKG)
     PKG_ONBOARD_REMOTE = "{}/remote".format(PKG_ONBOARD)
-    PKG_REMOVE = "{}/remove/<vnsf_name>".format(PKG)
+    PKG_REMOVE = "{}/<vnsf_name>".format(PKG)
     # Network function
     VNSF = "/vnsf"
     VNSF_ACTION_EXEC = "{}/action".format(VNSF)
-    VNSF_ACTION_STATUS = "{}/<vnsf_id>/action/<action_id>".format(VNSF)
     VNSF_C_VNSFS = "{}/config".format(VNSF)
     VNSF_R_VNSFS = "{}/running".format(VNSF)
     VNSF_VNSF_TENANT = "{}/<tenant_id>".format(VNSF_R_VNSFS)
