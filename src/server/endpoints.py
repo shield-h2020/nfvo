@@ -54,7 +54,6 @@ class VnsfoEndpoints:
     # Network function
     VNSF = "/vnsf"
     VNSF_ACTION_EXEC = "{}/action".format(VNSF)
-    VNSF_ACTION_STATUS = "{}/<vnsf_id>/action/<action_id>".format(VNSF)
     VNSF_C_VNSFS = "{}/config".format(VNSF)
     VNSF_R_VNSFS = "{}/running".format(VNSF)
     VNSF_VNSF_TENANT = "{}/<tenant_id>".format(VNSF_R_VNSFS)
