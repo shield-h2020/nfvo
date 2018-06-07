@@ -15,8 +15,8 @@
 # limitations under the License.
 
 
-from db.models.auth import Auth
-from db.models.isolation_script import IsolationScript
+from db.models.auth.auth import Auth
+from db.models.isolation.isolation_policy import IsolationPolicy
 from mongoengine import DateTimeField
 from mongoengine import Document
 from mongoengine import ReferenceField
@@ -31,5 +31,5 @@ class ComputeNode(Document):
     """
     date = DateTimeField(default=datetime.datetime.now)
     authentication = ReferenceField(Auth, required=True)
-    isolation_script = ReferenceField(IsolationScript, required=True)
+    isolation_policy = ReferenceField(IsolationPolicy, required=True)
     name = StringField(required=True)
