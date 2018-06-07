@@ -58,11 +58,6 @@ Run the main script ./setup.sh:
 ./setup.sh
 ```
 
-Deploy and run tests:
-```
-./setup.sh --test
-```
-
 To tear down all related containers:
 ```
 ./teardown.sh
@@ -228,9 +223,20 @@ curl -ki https://127.0.0.1:8448/vnsf/action -X POST \
 
 Run all tests, or either mocked or real-time/live tests.
 
+## All tests
+
 ```
-cd test
-python3 main.py
-python3 main.py -m
-python3 main.py -r
+./setup.sh --test
+```
+
+## Mocked tests
+
+```
+./setup.sh --test-mocked
+```
+
+## Real time tests
+
+```
+./setup.sh --test-realtime
 ```

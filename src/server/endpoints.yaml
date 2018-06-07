@@ -287,7 +287,7 @@ paths:
             $ref: "#/definitions/PackageOnboardedOutput"
         <<: *API_RESPONSES
 
-  /package/remove/{vnsf_name}:
+  /package/{vnsf_name}:
     delete:
       tags:
         - package
@@ -416,28 +416,6 @@ paths:
           in: path
           required: true
           type: string
-      responses: *API_RESPONSES
-  /vnsf/{vnsf}/action/{action}:
-    get:
-      tags:
-        - vnsf
-      summary: Fetches the status of a previously executed action in a vNSF
-      description: >-
-        TBD. Checks the status of the remote execution of data into a specific vNSF.
-      operationId: checkVnsfAction
-      produces:
-        - application/json
-      parameters:
-        - in: path
-          type: string
-          name: vnsf
-          description: ID of the vNSF record
-          required: true
-        - in: path
-          type: string
-          name: action
-          description: ID of the action executed
-          required: true
       responses: *API_RESPONSES
 
   /vnsf/action:
