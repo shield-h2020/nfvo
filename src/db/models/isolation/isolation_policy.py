@@ -44,3 +44,10 @@ class DeleteFlow(IsolationPolicy):
     """
     flow_id = StringField()
     rule = StringField()
+
+
+class ShutdownResource(IsolationPolicy):
+    """
+    Consisting on shutting down the resource
+    """
+    command = StringField(required=True)
