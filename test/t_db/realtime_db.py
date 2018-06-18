@@ -21,7 +21,7 @@ import unittest
 from core.config import FullConfParser
 from db.models.vnf_action_request import VnfActionRequest
 from db.models.auth.auth import PasswordAuth
-from db.models.compute.compute_node import ComputeNode
+from db.models.infra.node import Node
 from db.models.isolation.isolation_policy import InterfaceDown
 from db.models.compute.vdu import Vdu
 from mongoengine import connect as me_connect
@@ -66,21 +66,26 @@ class TestDbConnectivity(unittest.TestCase):
         isolation_policy = InterfaceDown(name="ens0 down",
                                          interface_name="ens0")
         isolation_policy.save()
-        compute_node = ComputeNode(name="nova2",
-                                   authentication=authentication,
-                                   isolation_policy=isolation_policy)
-        compute_node.save()
+        node = Node(host_name="nova2",
+                    ip_address="192.168.10.1",
+                    distribution="xenial",
+                    pcr0="()",
+                    driver="ssh",
+                    analysis_type="()",
+                    authentication=authentication,
+                    isolation_policy=isolation_policy)
+        node.save()
         vdu_ip_address = "192.168.10.10"
         vdu = Vdu(name="vfw",
                   management_ip=vdu_ip_address,
                   authentication=authentication,
                   isolation_policy=isolation_policy,
-                  compute_node=compute_node)
+                  node=node)
         vdu.save()
         read_vdu = Vdu.objects(management_ip=vdu_ip_address)
         read_vdu.delete()
-        read_compute_node = ComputeNode.objects(name="nova2")
-        read_compute_node.delete()
+        read_node = Node.objects(host_name="nova2")
+        read_node.delete()
         read_isolation_policy = InterfaceDown.objects(id=isolation_policy.id)
         read_isolation_policy.delete()
         read_authentication = PasswordAuth.objects(username="user")

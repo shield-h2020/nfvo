@@ -25,11 +25,16 @@ from mongoengine import StringField
 import datetime
 
 
-class ComputeNode(Document):
+class Node(Document):
     """
-    ComputeNode model
+    Node model
     """
     date = DateTimeField(default=datetime.datetime.now)
+    host_name = StringField(required=True)
+    ip_address = StringField(required=True)
+    pcr0 = StringField(required=True)
+    driver = StringField(required=True)
+    analysis_type = StringField(required=True)
+    distribution = StringField(required=True)
     authentication = ReferenceField(Auth, required=True)
     isolation_policy = ReferenceField(IsolationPolicy, required=True)
-    name = StringField(required=True)

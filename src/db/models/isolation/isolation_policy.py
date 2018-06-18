@@ -46,7 +46,7 @@ class DeleteFlow(IsolationPolicy):
     rule = StringField()
 
 
-class ShutdownResource(IsolationPolicy):
+class Shutdown(IsolationPolicy):
     """
     Consisting on shutting down the resource
     """

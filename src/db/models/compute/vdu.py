@@ -16,7 +16,7 @@
 
 
 from db.models.auth.auth import Auth
-from db.models.compute.compute_node import ComputeNode
+from db.models.infra.node import Node
 from db.models.isolation.isolation_policy import IsolationPolicy
 from mongoengine import DateTimeField
 from mongoengine import Document
@@ -35,4 +35,4 @@ class Vdu(Document):
     management_ip = StringField(required=True)
     authentication = ReferenceField(Auth, required=True)
     isolation_policy = ReferenceField(IsolationPolicy, required=True)
-    compute_node = ReferenceField(ComputeNode, required=True)
+    node = ReferenceField(Node, required=True)
