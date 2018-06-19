@@ -219,6 +219,36 @@ curl -ki https://127.0.0.1:8448/vnsf/action -X POST \
      -d '{ "vnsf_id": "2145d576-1b91-4cb1-9b76-77f2aeab21cd", "action": "set-policies", "params": { "policies": "<mspl-set xmlns=\"http://security.polito.it/shield/mspl\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://security.polito.it/shield/mspl mspl.xsd\"><it-resource id=\"2145d576-1b91-4cb1-9b76-77f2aeab21cd\"><configuration xsi:type=\"filtering-configuration\"><default-action>drop</default-action><resolution-strategy>FMR</resolution-strategy><rule><priority>101</priority><action>drop</action><condition><packet-filter-condition><direction>inbound</direction><direction>inbound</direction><source-address>10.30.0.190</source-address><protocol>UDP</protocol></packet-filter-condition><traffic-flow-condition><rate-limit>36kbit</rate-limit></traffic-flow-condition></condition></rule></configuration></it-resource></mspl-set>" } }'
 ```
 
+### Node
+
+#### Register a new node using private key and delete flow as isolation policy
+
+```
+curl -ki https://127.0.0.1:8448/node -X POST \
+     -H 'Content-Type: application/json' \
+     -d '{ "host_name": "node.test", "ip_address": "192.168.10.2", "pcr0": "??", "driver": "OAT", "analysis_type": "FULL", "distribution": "xenial", "authentication": { "username": "user", "type": "private_key", "private_key": "-----BEGIN RSA PRIVATE KEY-----\nMIIEqAIBAAKCAQEAnaSdeeE/bcAxgsivLliDhRE017ZK74m2QYg58QNbfdzoNba2 ..." }, "isolation_policy": { "name": "delflow", "type": "delflow", "flow_id": "21", "rule": "rule1" } }'
+```
+
+#### Register a new node using password and interface down isolation policy
+
+```
+curl -ki https://127.0.0.1:8448/node -X POST \
+     -H 'Content-Type: application/json' \
+     -d '{ "host_name": "node.test", "ip_address": "192.168.10.2", "pcr0": "??", "driver": "OAT", "analysis_type": "FULL", "distribution": "xenial", "authentication": { "username": "user", "type": "password", "password": "password" }, "isolation_policy": { "name": "Eth0Down", "type": "ifdown", "interface_name": "eth0" } }'
+```
+
+#### Register a new node using password and shutdown isolation policy
+```
+curl -ki https://127.0.0.1:8448/node -X POST \
+     -H 'Content-Type: application/json' \
+     -d '{ "host_name": "node.test", "ip_address": "192.168.10.2", "pcr0": "??", "driver": "OAT", "analysis_type": "FULL", "distribution": "xenial", "authentication": { "username": "user", "type": "password", "password": "password" }, "isolation_policy": { "name": "shutdown", "type": "shutdown", "command": "sudo poweroff" } }'
+```
+
+#### Delete a node and associated data
+```
+curl -ki https://127.0.0.1:8448/node/5b2908871745ba000163bf9e -X DELETE
+```
+
 # Testing
 
 Run all tests, or either mocked or real-time/live tests.
