@@ -309,6 +309,52 @@ paths:
             $ref: "#/definitions/PackageRemovedOutput"
         <<: *API_RESPONSES
 
+  /node:
+    post:
+      tags:
+        - node
+      summary: Registers a new node into the NFVO
+      description: >-
+        Registers a new node into the NFVO including authentication schema and isolation policy
+      operationId: registerNode
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The body of the request
+          required: true
+          schema:
+            $ref: "#/definitions/RegisterNodeInput"
+      responses:
+        202:
+          description: Request accepted
+          schema:
+            $ref: "#/definitions/RegisterNodeOutput"
+        <<: *API_RESPONSES
+
+  /node/{node_id}:
+    delete:
+      tags:
+        - node
+      summary: Removes node from vNSFO
+      description: >-
+        Removes the node from the vNSFO
+      operationId: removeNode
+      produces:
+        - application/json
+      parameters:
+        - node_id: vnsf_name
+          in: path
+          required: true
+          type: string
+      responses:
+        204:
+          description: Request accepted
+        <<: *API_RESPONSES
+
   /vim:
     get:
       tags:
@@ -599,6 +645,88 @@ definitions:
       path:
         type: string
         example: /opt/osm_pkg/cirros_vnf.tar.gz
+
+  RegisterNodeOutput:
+    type: object
+    required:
+      - node_id
+    properties:
+      node_id:
+        type: string
+        example: 48c50c21f6fa26100644
+
+  RegisterNodeInput:
+    type: object
+    required:
+      - host_name
+      - ip_address
+      - pcr0
+      - driver
+      - analysis_type
+      - distribution
+      - authentication
+      - isolation_policy
+    properties:
+      host_name:
+        type: string
+        example: node.test
+      ip_address:
+        type: string
+        example: 192.168.10.2
+      pcr0:
+        type: string
+        example: example
+      driver:
+        type: string
+        example: OAT
+      analysis_type:
+        type: string
+        example: FULL
+      distribution:
+        type: string
+        example: xenial
+      authentication:
+        type: object
+        required:
+          - username
+          - type
+        properties:
+          username:
+            type: string
+            example: user
+          type:
+            type: string
+            example: password, private_key
+          password:
+            type: string
+            example: password
+          private_key:
+            type: string
+            example: -----BEGIN RSA PRIVATE KEY-----\nMIIEqAIBAAKCAQEAnaSdeeE/bcAxgsivLliDhRE017ZK74m2QYg58QNbfdzoNba2 ...
+      isolation_policy:
+        type: object
+        required:
+          - name
+          - type
+        properties:
+          name:
+            type: string
+            example: DownEth0
+          type:
+            type: string
+            example: ifdown, delflow, shutdown
+          interface_name:
+            type: string
+            example: eth0
+          command:
+            type: string
+            example: sudo poweroff
+          flow_id:
+            type: string
+            example: 21
+          rule:
+            type: string
+            example: rule1
 
   PackageOnboardedOutput:
     type: object
