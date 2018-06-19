@@ -30,7 +30,7 @@ class TMClient:
         self.port = config["general"]["port"]
 
     def register_node(self, node_data):
-        url = "{0}:{1}/register_node"
+        url = "{0}:{1}/register_node".format(self.host, self.port)
         data = {"hostName": node_data["host_name"],
                 "address": node_data["ip_address"],
                 "distribution": node_data["distribution"],
@@ -42,3 +42,11 @@ class TMClient:
             return response
         except:
             logger.error("Error registering node in trust-monitor")
+
+    def delete_node(self, node_id):
+        url = "{0}:{1}/node/{2}".format(self.host, self.port, node_id)
+        try:
+            response = requests.delete(url)
+            return response
+        except:
+            logger.error("Error deleting node in trust-monitor")

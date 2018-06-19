@@ -30,6 +30,8 @@ nfvo_views = Blueprint("nfvo_infra_views", __name__)
 @nfvo_views.route(endpoints.NODE_ID, methods=["DELETE"])
 def delete_node(node_id):
     current_app.mongo.delete_node(node_id)
+    trust_monitor_client = TMClient()
+    trust_monitor_client.delete_node(node_id)
     return ('', HttpCode.NO_CONTENT)
 
 
