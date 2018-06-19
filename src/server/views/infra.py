@@ -27,6 +27,12 @@ from server.http.http_response import HttpResponse
 nfvo_views = Blueprint("nfvo_infra_views", __name__)
 
 
+@nfvo_views.route(endpoints.NODE_ID, methods=["DELETE"])
+def delete_node(node_id):
+    current_app.mongo.delete_node(node_id)
+    return ('', HttpCode.NO_CONTENT)
+
+
 @nfvo_views.route(endpoints.NODE, methods=["POST"])
 def register_node():
     exp_ct = "application/json"

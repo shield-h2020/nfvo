@@ -59,6 +59,7 @@ class VnsfoEndpoints:
     VNSF_VNSF_TENANT = "{}/<tenant_id>".format(VNSF_R_VNSFS)
     # Node
     NODE = "/node"
+    NODE_ID = "{}/<node_id>".format(NODE)
 
     def __init__(self):
         self.get_api_endpoints_mock = endpoints_m().get_api_endpoints_mock

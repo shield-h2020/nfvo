@@ -16,6 +16,7 @@
 
 
 from bson import json_util
+from bson.objectid import ObjectId
 from core.config import FullConfParser
 from db.models.vnf_action_request import VnfActionRequest
 from db.models.infra.node import Node
@@ -144,6 +145,16 @@ class DBManager():
             "instance_id": output["nsr_id_ref"],
             "triggered_by": output["triggered-by"]}
 
+    def delete_node(self, node_id):
+        """
+        Deletes the node and reference field documents
+        """
+        nodes = Node.objects(id=ObjectId(node_id))
+        for node in nodes:
+            node.authentication.delete()
+            node.isolation_policy.delete()
+            node.delete()
+
     def store_node_information(self, node_data):
         """
         Stores node information including authentication and isolation_policy
@@ -184,7 +195,7 @@ class DBManager():
                     distribution=str(node_data["distribution"]),
                     pcr0=str(node_data["pcr0"]),
                     driver=str(node_data["driver"]),
-                    analysis_type=node_data["analysis_type"],
+                    analysis_type=str(node_data["analysis_type"]),
                     authentication=auth,
                     isolation_policy=isolation)
         try:
