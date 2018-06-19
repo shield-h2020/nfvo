@@ -22,7 +22,7 @@ from flask import request
 from server.endpoints import VnsfoEndpoints as endpoints
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
-
+from tm.tm_client import TMClient
 
 nfvo_views = Blueprint("nfvo_infra_views", __name__)
 
@@ -53,7 +53,8 @@ def register_node():
         Exception.improper_usage("Missing isolation parameters: {0}".format(
             ", ".join(missing_isolation_params)))
     node_id = current_app.mongo.store_node_information(node_data)
-    # TODO: register node in trust-monitor
+    trust_monitor_client = TMClient()
+    trust_monitor_client.register_node(node_data)
     return HttpResponse.json(HttpCode.OK, {"node_id": node_id})
 
 
