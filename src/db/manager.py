@@ -24,6 +24,7 @@ from db.models.isolation.isolation_policy import InterfaceDown
 from db.models.isolation.isolation_policy import DeleteFlow
 from db.models.isolation.isolation_policy import Shutdown
 from mongoengine import connect as me_connect
+from mongoengine.errors import OperationError, ValidationError
 
 import json
 import logging
@@ -154,7 +155,11 @@ class DBManager():
         if authentication["type"] == "private_key":
             auth = KeyAuth(username=authentication["username"],
                            private_key=authentication["private_key"])
-        auth.save()
+        try:
+            auth.save()
+        except (OperationError, ValidationError):
+            e = "Cannot store node information (auth)"
+            raise Exception(e)
         isolation_policy = node_data["isolation_policy"]
         if isolation_policy["type"] == "ifdown":
             isolation = InterfaceDown(
@@ -167,16 +172,29 @@ class DBManager():
         if isolation_policy["type"] == "shutdown":
             isolation = Shutdown(name=str(isolation_policy["name"]),
                                  command=str(isolation_policy["command"]))
-        isolation.save()
+        try:
+            isolation.save()
+        except (OperationError, ValidationError):
+            # Rolling back
+            auth.delete()
+            e = "Cannot store node information (isolation)"
+            raise Exception(e)
         node = Node(host_name=str(node_data["host_name"]),
                     ip_address=str(node_data["ip_address"]),
                     distribution=str(node_data["distribution"]),
                     pcr0=str(node_data["pcr0"]),
                     driver=str(node_data["driver"]),
-                    analysis_type=str(node_data["analysis_type"]),
+                    analysis_type=node_data["analysis_type"],
                     authentication=auth,
                     isolation_policy=isolation)
-        node.save()
+        try:
+            node.save()
+        except (OperationError, ValidationError):
+            # Rolling back
+            auth.delete()
+            isolation.delete()
+            e = "Cannot store node information (node)"
+            raise Exception(e)
         return str(node.id)
 
     def store_vnf_action(self, vnsfr_id, primitive, params, output):
