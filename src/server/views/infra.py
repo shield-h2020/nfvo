@@ -54,7 +54,7 @@ def register_node():
             ", ".join(missing_isolation_params)))
     node_id = current_app.mongo.store_node_information(node_data)
     # TODO: register node in trust-monitor
-    return HttpResponse.json(HttpCode.OK, {"id": node_id})
+    return HttpResponse.json(HttpCode.OK, {"node_id": node_id})
 
 
 @nfvo_views.route(endpoints.NFVI_FLOW, methods=["GET"])
