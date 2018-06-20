@@ -15,8 +15,11 @@
 # limitations under the License.
 
 
+from db.models.isolation.isolation_record import IsolationRecord
 from mongoengine import DateTimeField
 from mongoengine import Document
+from mongoengine import ListField
+from mongoengine import ReferenceField
 from mongoengine import StringField
 
 import datetime
@@ -24,10 +27,11 @@ import datetime
 
 class IsolationPolicy(Document):
     """
-    SdnController (ODL) model
+    Isolation policy abstract base class
     """
     date = DateTimeField(default=datetime.datetime.now)
     name = StringField(required=True)
+    records = ListField(ReferenceField(IsolationRecord))
     meta = {"allow-inheritance": True, "abstract": True}
 
 

@@ -1,0 +1,5 @@
+[scripts]
+path=src/templates/isolation
+shutdown=shutdown.sh
+delflow=delflow.sh
+ifdown=ifdown.sh
