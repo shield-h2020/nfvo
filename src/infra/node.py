@@ -107,4 +107,26 @@ class Node:
             self._node["isolated"] = True
             self._node.save()
         if isinstance(self._node["isolation_policy"], DeleteFlow):
-            Exception.not_implemented()
+            # Process delete flow template
+            with open("{0}/{1}".format(self._scripts_path,
+                                       self._delflow_path)) as fhandle:
+                sd_templ = Template(fhandle.read())
+                # Send script to node and render template with policy command
+                with scp.open("{0}.sh".format(file_id), "w") as rfhandle:
+                    flow_id = self._node["isolation_policy"]["flow_id"]
+                    rule = self._node["isolation_policy"]["rule"]
+                    rfhandle.write(sd_templ.render(flow_id=flow_id,
+                                                   rule=rule))
+            ssh.exec_command("chmod u+x {0}.sh".format(file_id))
+            # Execute isolation script
+            (stdin, stdout, stderr) = ssh.exec_command("./{0}.sh".
+                                                       format(file_id))
+            # Store isolation record
+            record = IsolationRecord(output=stdout.read(), error=stderr.read())
+            record.save()
+            # Remove tmp file
+            ssh.exec_command("rm {0}.sh".format(file_id))
+            self._node["isolation_policy"]["records"].append(record)
+            self._node["isolation_policy"].save()
+            self._node["isolated"] = True
+            self._node.save()
