@@ -38,6 +38,16 @@ def delete_node(node_id):
     return ('', HttpCode.NO_CONTENT)
 
 
+@nfvo_views.route(endpoints.NODE, methods=["GET"])
+@nfvo_views.route(endpoints.NODE_ID, methods=["GET"])
+def get_nodes(node_id=None):
+    if node_id is not None:
+        if bson.objectid.ObjectId.is_valid(node_id) is False:
+            Exception.improper_usage("Bad node_id: {0}".format(node_id))
+    nodes = current_app.mongo.get_nodes(node_id)
+    return HttpResponse.json(HttpCode.OK, nodes)
+
+
 @nfvo_views.route(endpoints.NODE_ID, methods=["PUT"])
 def config_node(node_id):
     exp_ct = "application/json"

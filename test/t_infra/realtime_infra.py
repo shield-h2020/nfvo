@@ -64,4 +64,4 @@ class TestInfraRealtime(unittest.TestCase):
                             headers,
                             HttpCode.NO_CONTENT)
         time.sleep(5)
-        self.utils.test_delete(del_url, None, {}, HttpCode.NO_CONTENT)
+        # self.utils.test_delete(del_url, None, {}, HttpCode.NO_CONTENT)
