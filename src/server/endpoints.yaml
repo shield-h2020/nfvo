@@ -336,6 +336,27 @@ paths:
         <<: *API_RESPONSES
 
   /node/{node_id}:
+    get:
+      tags:
+        - node
+      summary: Get node information
+      description: >-
+        Get node information and isolation status
+      operationId: getNode
+      produces:
+        - application/json
+      parameters:
+        - node_id: node_id
+          in: path
+          required: false
+          type: string
+      responses:
+        200:
+          description: Node information
+          schema:
+            $ref: "#/definitions/GetNodeOutput"
+        <<: *API_RESPONSES
+
     delete:
       tags:
         - node
@@ -681,6 +702,49 @@ definitions:
       node_id:
         type: string
         example: 48c50c21f6fa26100644
+
+  GetNodeOutput:
+    type: object
+    required:
+      - node_id
+      - host_name
+      - ip_address
+      - pcr0
+      - driver
+      - distribution
+      - analysis_type
+      - status
+    properties:
+      node_id:
+        type: string
+        example: 5b2b7a8edf6e5e00015a815d
+      host_name:
+        type: string
+        example: example.com
+      ip_address:
+        type: string
+        example: 192.168.1.2
+      pcr0:
+        type: string
+        example: ()
+      driver:
+        type: string
+        example: OAM
+      distribution:
+        type: string
+        example: xenial
+      analysis_type:
+        type: string
+        example: FULL
+      status:
+        type: string
+        example: isolated, connected
+      configuration:
+        type: string
+        example: inet addr:127.0.0.1  Mask:255.0.0.0
+      timestamp:
+        type: string
+        example: Thu, 21 Jun 2018 10:19:01 GMT
 
   IsolateNodeInput:
     type: object
