@@ -63,5 +63,7 @@ class TestInfraRealtime(unittest.TestCase):
                             {"isolated": True},
                             headers,
                             HttpCode.NO_CONTENT)
+        get_schema = node_m().get_node_schema()
+        self.utils.test_get(del_url, get_schema)
         time.sleep(5)
-        # self.utils.test_delete(del_url, None, {}, HttpCode.NO_CONTENT)
+        self.utils.test_delete(del_url, None, {}, HttpCode.NO_CONTENT)
