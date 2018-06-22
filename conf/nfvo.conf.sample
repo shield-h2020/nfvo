@@ -10,3 +10,10 @@
 [ro]
     host = {{ro_host}}
     port = 9090
+
+[nbi]
+    protocol = https
+    host = 127.0.0.1
+    port = 9999
+    username = admin
+    password = admin
