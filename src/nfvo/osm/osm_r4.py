@@ -16,7 +16,11 @@
 
 import configparser
 import json
+import random
 import requests
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def check_authorization(f):
@@ -46,9 +50,18 @@ class OSMR4():
             config["nbi"]["protocol"],
             config["nbi"]["host"],
             config["nbi"]["port"])
+        self.default_dc = config["nbi"]["default_om_datacenter"]
+        self.default_flavor = config["nbi"]["default_flavor"]
         self.token_url = "{0}/osm/admin/v1/tokens".format(self.base_url)
         self.ns_descriptors_url = "{0}/osm/nsd/v1/ns_descriptors".\
                                   format(self.base_url)
+        self.ns_descriptors_content_url = \
+            "{0}/osm/nsd/v1/ns_descriptors_content".\
+            format(self.base_url)
+        self.pnf_descriptors_url = "{0}/osm/nsd/v1/pnf_descriptors".\
+                                   format(self.base_url)
+        self.instantiate_url = "{0}/osm/nslcm/v1/ns_instances".\
+                               format(self.base_url)
         self.headers = {"Accept": "application/json"}
         self.token = None
         self.username = config["nbi"]["username"]
@@ -73,9 +86,50 @@ class OSMR4():
         response = requests.get(self.ns_descriptors_url,
                                 headers=self.headers,
                                 verify=False)
-        return response.text
+        return json.loads(response.text)
+
+    @check_authorization
+    def get_ns_descriptors_content(self):
+        response = requests.get(self.ns_descriptors_content_url,
+                                headers=self.headers,
+                                verify=False)
+        return json.loads(response.text)
+
+    @check_authorization
+    def get_pnf_descriptors(self):
+        response = requests.get(self.pnf_descriptors_url,
+                                headers=self.headers,
+                                verify=False)
+        return json.loads(response.text)
+
+    @check_authorization
+    def post_ns_instance(self, nsd_id, name, description,
+                         vim_account_id=None, flavor=None):
+        if vim_account_id is None:
+            vim_account_id = self.default_dc
+        if flavor is None:
+            flavor = self.default_flavor
+        response = requests.post(self.instantiate_url,
+                                 headers=self.headers,
+                                 verify=False,
+                                 json={"nsdId": nsd_id,
+                                       "nsName": name,
+                                       "nsDescription": description,
+                                       "vimAccountId": vim_account_id})
+        instantiation_data = json.loads(response.text)
+        inst_url = "{0}/{1}/instantiate".format(self.instantiate_url,
+                                                instantiation_data["id"])
+        inst_response = requests.post(inst_url,
+                                      headers=self.headers,
+                                      verify=False,
+                                      json={"nsFlavourId": flavor})
+        return json.loads(inst_response.text)
 
 
 if __name__ == "__main__":
     OSM = OSMR4()
-    print(OSM.get_ns_descriptors())
+    NSD_IDS = [x["_id"] for x in OSM.get_ns_descriptors()]
+    print(NSD_IDS)
+    print(OSM.post_ns_instance(random.choice(NSD_IDS),
+                               "Test",
+                               "Test instance"))
