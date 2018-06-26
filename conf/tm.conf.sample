@@ -1,3 +1,4 @@
 [general]
     host = {{general_host}}
     port = 8888
+    protocol = http

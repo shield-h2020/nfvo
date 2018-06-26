@@ -17,3 +17,5 @@
     port = 9999
     username = admin
     password = admin
+    default_om_datacenter = {{default_om_datacenter}}
+    default_flavor = m1.small

@@ -38,7 +38,7 @@ class TestInfraRealtime(unittest.TestCase):
         schema = node_m().post_node_schema()
         data = {"host_name": "84.88.40.113",
                 "ip_address": "84.88.40.113",
-                "pcr0": "",
+                "pcr0": "example",
                 "driver": "OAT",
                 "analysis_type": "FULL",
                 "distribution": "xenial",
