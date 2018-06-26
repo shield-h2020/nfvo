@@ -18,6 +18,7 @@ import configparser
 import json
 import random
 import requests
+import time
 import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -119,17 +120,41 @@ class OSMR4():
         instantiation_data = json.loads(response.text)
         inst_url = "{0}/{1}/instantiate".format(self.instantiate_url,
                                                 instantiation_data["id"])
-        inst_response = requests.post(inst_url,
-                                      headers=self.headers,
-                                      verify=False,
-                                      json={"nsFlavourId": flavor})
-        return json.loads(inst_response.text)
+        requests.post(inst_url,
+                      headers=self.headers,
+                      verify=False,
+                      json={"nsFlavourId": flavor})
+        return instantiation_data
 
+    @check_authorization
+    def delete_ns_instance(self, nsr_id):
+        inst_url = "{0}/{1}".format(self.instantiate_url,
+                                    nsr_id)
+        requests.post("{0}/terminate".format(inst_url),
+                      headers=self.headers,
+                      verify=False)
+        requests.delete(inst_url,
+                        headers=self.headers,
+                        verify=False)
+
+    @check_authorization
+    def get_ns_instance(self, nsr_id=None):
+        if nsr_id is not None:
+            inst_url = "{0}/{1}".format(self.instantiate_url,
+                                        nsr_id)
+        else:
+            inst_url = "{0}".format(self.instantiate_url)
+        response = requests.get(inst_url,
+                                headers=self.headers,
+                                verify=False)
+        return json.loads(response.text)
 
 if __name__ == "__main__":
     OSM = OSMR4()
     NSD_IDS = [x["_id"] for x in OSM.get_ns_descriptors()]
-    print(NSD_IDS)
-    print(OSM.post_ns_instance(random.choice(NSD_IDS),
+    NSR = OSM.post_ns_instance(random.choice(NSD_IDS),
                                "Test",
-                               "Test instance"))
+                               "Test instance")
+    print(OSM.get_ns_instance(NSR["id"]))
+    time.sleep(5)
+    OSM.delete_ns_instance(NSR["id"])
