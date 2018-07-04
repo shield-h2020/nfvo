@@ -110,20 +110,22 @@ class OSMR4():
             vim_account_id = self.default_dc
         if flavor is None:
             flavor = self.default_flavor
+        ns_data = {"nsdId": nsd_id,
+                   "nsName": name,
+                   "nsDescription": description,
+                   "vimAccountId": vim_account_id,
+                   "flavourId": flavor}
         response = requests.post(self.instantiate_url,
                                  headers=self.headers,
                                  verify=False,
-                                 json={"nsdId": nsd_id,
-                                       "nsName": name,
-                                       "nsDescription": description,
-                                       "vimAccountId": vim_account_id})
+                                 json=ns_data)
         instantiation_data = json.loads(response.text)
         inst_url = "{0}/{1}/instantiate".format(self.instantiate_url,
                                                 instantiation_data["id"])
         requests.post(inst_url,
                       headers=self.headers,
                       verify=False,
-                      json={"nsFlavourId": flavor})
+                      json=ns_data)
         return instantiation_data
 
     @check_authorization
@@ -149,12 +151,14 @@ class OSMR4():
                                 verify=False)
         return json.loads(response.text)
 
+
 if __name__ == "__main__":
     OSM = OSMR4()
     NSD_IDS = [x["_id"] for x in OSM.get_ns_descriptors()]
-    NSR = OSM.post_ns_instance(random.choice(NSD_IDS),
+    print(random.choice(NSD_IDS))
+    NSR = OSM.post_ns_instance("833bb02c-92e4-4fdb-ac55-cc927acfd2e7",
                                "Test",
                                "Test instance")
     print(OSM.get_ns_instance(NSR["id"]))
-    time.sleep(5)
+    time.sleep(180)
     OSM.delete_ns_instance(NSR["id"])
