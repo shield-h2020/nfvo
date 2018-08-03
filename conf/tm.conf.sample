@@ -1,0 +1,3 @@
+[general]
+    host = {{general_host}}
+    port = 8888

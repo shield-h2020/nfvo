@@ -89,7 +89,7 @@ class TestNfvNsRealtime(unittest.TestCase):
         del_url = self.delete_nsr.replace("<instance_id>",
                                           instantiation_data["instance_id"])
         del_schema = ns_m().delete_nsr_schema()
-        time.sleep(360)
+        time.sleep(5)
         self.utils.test_delete(del_url, del_schema, {}, exp_code)
 
     def test_get_nsr_running(self):

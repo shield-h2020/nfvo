@@ -16,9 +16,16 @@
 
 
 from bson import json_util
+from bson.objectid import ObjectId
 from core.config import FullConfParser
 from db.models.vnf_action_request import VnfActionRequest
+from db.models.infra.node import Node
+from db.models.auth.auth import PasswordAuth, KeyAuth
+from db.models.isolation.isolation_policy import InterfaceDown
+from db.models.isolation.isolation_policy import DeleteFlow
+from db.models.isolation.isolation_policy import Shutdown
 from mongoengine import connect as me_connect
+from mongoengine.errors import OperationError, ValidationError
 
 import json
 import logging
@@ -137,6 +144,69 @@ class DBManager():
             output["vnf-out-list"]["member_vnf_index_ref"],
             "instance_id": output["nsr_id_ref"],
             "triggered_by": output["triggered-by"]}
+
+    def delete_node(self, node_id):
+        """
+        Deletes the node and reference field documents
+        """
+        nodes = Node.objects(id=ObjectId(node_id))
+        for node in nodes:
+            node.authentication.delete()
+            node.isolation_policy.delete()
+            node.delete()
+
+    def store_node_information(self, node_data):
+        """
+        Stores node information including authentication and isolation_policy
+        """
+        authentication = node_data["authentication"]
+        if authentication["type"] == "password":
+            auth = PasswordAuth(username=authentication["username"],
+                                password=authentication["password"])
+        if authentication["type"] == "private_key":
+            auth = KeyAuth(username=authentication["username"],
+                           private_key=authentication["private_key"])
+        try:
+            auth.save()
+        except (OperationError, ValidationError):
+            e = "Cannot store node information (auth)"
+            raise Exception(e)
+        isolation_policy = node_data["isolation_policy"]
+        if isolation_policy["type"] == "ifdown":
+            isolation = InterfaceDown(
+                name=str(isolation_policy["name"]),
+                interface_name=str(isolation_policy["interface_name"]))
+        if isolation_policy["type"] == "delflow":
+            isolation = DeleteFlow(name=str(isolation_policy["name"]),
+                                   flow_id=str(isolation_policy["flow_id"]),
+                                   rule=str(isolation_policy["rule"]))
+        if isolation_policy["type"] == "shutdown":
+            isolation = Shutdown(name=str(isolation_policy["name"]),
+                                 command=str(isolation_policy["command"]))
+        try:
+            isolation.save()
+        except (OperationError, ValidationError):
+            # Rolling back
+            auth.delete()
+            e = "Cannot store node information (isolation)"
+            raise Exception(e)
+        node = Node(host_name=str(node_data["host_name"]),
+                    ip_address=str(node_data["ip_address"]),
+                    distribution=str(node_data["distribution"]),
+                    pcr0=str(node_data["pcr0"]),
+                    driver=str(node_data["driver"]),
+                    analysis_type=str(node_data["analysis_type"]),
+                    authentication=auth,
+                    isolation_policy=isolation)
+        try:
+            node.save()
+        except (OperationError, ValidationError):
+            # Rolling back
+            auth.delete()
+            isolation.delete()
+            e = "Cannot store node information (node)"
+            raise Exception(e)
+        return str(node.id)
 
     def store_vnf_action(self, vnsfr_id, primitive, params, output):
         """

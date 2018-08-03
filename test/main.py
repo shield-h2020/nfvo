@@ -31,6 +31,7 @@ from t_server.mocked_endpoints import TestServerEndpointsMocked
 from t_server.realtime_endpoints import TestServerEndpointsRealtime
 from t_vim.mocked_vim import TestVimMocked
 from t_vim.realtime_vim import TestVimRealtime
+from t_infra.realtime_infra import TestInfraRealtime
 
 
 class TestSuite:
@@ -57,6 +58,7 @@ class TestSuite:
 
     def __define_tests_realtime(self):
         return [
+            TestInfraRealtime,
             TestNfvNsRealtime,
             TestNfvVnfRealtime,
             TestPackageRealtime,

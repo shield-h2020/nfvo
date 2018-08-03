@@ -20,12 +20,17 @@ import unittest
 
 from core.config import FullConfParser
 from db.models.vnf_action_request import VnfActionRequest
+from db.models.auth.auth import PasswordAuth
+from db.models.infra.node import Node
+from db.models.isolation.isolation_policy import InterfaceDown
+from db.models.compute.vdu import Vdu
 from mongoengine import connect as me_connect
 
 
 class TestDbConnectivity(unittest.TestCase):
 
-    def test_db_connectivity(self):
+    def __init__(self, *args, **kwargs):
+        super(TestDbConnectivity, self).__init__(*args, **kwargs)
         config = FullConfParser()
         db_category = config.get("db.conf")
         db_general = db_category.get("general")
@@ -44,6 +49,8 @@ class TestDbConnectivity(unittest.TestCase):
             db_name,
             auth_source)
         me_connect(host=auth_db_address)
+
+    def test_db_connectivity(self):
         vnsfr_id = str(uuid.uuid4())
         vnf_action_request = VnfActionRequest(primitive="test-primitive",
                                               vnsfr_id=vnsfr_id,
@@ -52,3 +59,34 @@ class TestDbConnectivity(unittest.TestCase):
         vnf_action_request.save()
         read_vnf_action = VnfActionRequest.objects(vnsfr_id=vnsfr_id).first()
         read_vnf_action.delete()
+
+    def test_vdu_model(self):
+        authentication = PasswordAuth(username="user", password="password")
+        authentication.save()
+        isolation_policy = InterfaceDown(name="ens0 down",
+                                         interface_name="ens0")
+        isolation_policy.save()
+        node = Node(host_name="nova2",
+                    ip_address="192.168.10.1",
+                    distribution="xenial",
+                    pcr0="()",
+                    driver="ssh",
+                    analysis_type="()",
+                    authentication=authentication,
+                    isolation_policy=isolation_policy)
+        node.save()
+        vdu_ip_address = "192.168.10.10"
+        vdu = Vdu(name="vfw",
+                  management_ip=vdu_ip_address,
+                  authentication=authentication,
+                  isolation_policy=isolation_policy,
+                  node=node)
+        vdu.save()
+        read_vdu = Vdu.objects(management_ip=vdu_ip_address)
+        read_vdu.delete()
+        read_node = Node.objects(host_name="nova2")
+        read_node.delete()
+        read_isolation_policy = InterfaceDown.objects(id=isolation_policy.id)
+        read_isolation_policy.delete()
+        read_authentication = PasswordAuth.objects(username="user")
+        read_authentication.delete()
