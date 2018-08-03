@@ -256,6 +256,16 @@ curl -ki https://127.0.0.1:8448/node/5b2908871745ba000163bf9e -X PUT \
      -d '{ "isolated": true }'
 ```
 
+#### Get node information and isolation status
+```
+curl -ki https://127.0.0.1:8448/node/5b2908871745ba000163bf9e
+```
+
+to get all nodes
+```
+curl -ki https://127.0.0.1:8448/node
+```
+
 # Testing
 
 Run all tests, or either mocked or real-time/live tests.
