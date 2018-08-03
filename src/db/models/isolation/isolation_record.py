@@ -15,28 +15,17 @@
 # limitations under the License.
 
 
-from db.models.auth.auth import Auth
-from db.models.isolation.isolation_policy import IsolationPolicy
-from mongoengine import BooleanField
 from mongoengine import DateTimeField
 from mongoengine import Document
-from mongoengine import ReferenceField
 from mongoengine import StringField
 
 import datetime
 
 
-class Node(Document):
+class IsolationRecord(Document):
     """
-    Node model
+    Isolation record
     """
     date = DateTimeField(default=datetime.datetime.now)
-    host_name = StringField(required=True)
-    ip_address = StringField(required=True)
-    pcr0 = StringField(required=True)
-    driver = StringField(required=True)
-    analysis_type = StringField(required=True)
-    distribution = StringField(required=True)
-    isolated = BooleanField(default=False)
-    authentication = ReferenceField(Auth, required=True)
-    isolation_policy = ReferenceField(IsolationPolicy, required=True)
+    output = StringField(required=True)
+    error = StringField(required=True)

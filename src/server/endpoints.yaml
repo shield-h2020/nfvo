@@ -346,10 +346,37 @@ paths:
       produces:
         - application/json
       parameters:
-        - node_id: vnsf_name
+        - node_id: node_id
           in: path
           required: true
           type: string
+      responses:
+        204:
+          description: Request accepted
+        <<: *API_RESPONSES
+
+    put:
+      tags:
+        - node
+      summary: Isolates a node
+      description: >-
+        Isolates a compromised node according to isolation policy
+      operationId: isolateNode
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - node_id: node_id
+          in: path
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: The body of the request
+          required: true
+          schema:
+            $ref: "#/definitions/IsolateNodeInput"
       responses:
         204:
           description: Request accepted
@@ -654,6 +681,15 @@ definitions:
       node_id:
         type: string
         example: 48c50c21f6fa26100644
+
+  IsolateNodeInput:
+    type: object
+    required:
+      - isolated
+    properties:
+      isolated:
+        type: boolean
+        example: true
 
   RegisterNodeInput:
     type: object

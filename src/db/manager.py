@@ -152,6 +152,8 @@ class DBManager():
         nodes = Node.objects(id=ObjectId(node_id))
         for node in nodes:
             node.authentication.delete()
+            for record in node.isolation_policy["records"]:
+                record.delete()
             node.isolation_policy.delete()
             node.delete()
 

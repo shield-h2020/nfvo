@@ -249,6 +249,13 @@ curl -ki https://127.0.0.1:8448/node -X POST \
 curl -ki https://127.0.0.1:8448/node/5b2908871745ba000163bf9e -X DELETE
 ```
 
+#### Isolate a node
+```
+curl -ki https://127.0.0.1:8448/node/5b2908871745ba000163bf9e -X PUT \
+     -H 'Content-Type: application/json' \
+     -d '{ "isolated": true }'
+```
+
 # Testing
 
 Run all tests, or either mocked or real-time/live tests.

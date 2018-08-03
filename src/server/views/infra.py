@@ -19,10 +19,13 @@ from core.exception import Exception
 from flask import Blueprint
 from flask import current_app
 from flask import request
+from infra.node import Node
 from server.endpoints import VnsfoEndpoints as endpoints
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
 from tm.tm_client import TMClient
+
+import bson
 
 nfvo_views = Blueprint("nfvo_infra_views", __name__)
 
@@ -32,6 +35,28 @@ def delete_node(node_id):
     current_app.mongo.delete_node(node_id)
     trust_monitor_client = TMClient()
     trust_monitor_client.delete_node(node_id)
+    return ('', HttpCode.NO_CONTENT)
+
+
+@nfvo_views.route(endpoints.NODE_ID, methods=["PUT"])
+def config_node(node_id):
+    exp_ct = "application/json"
+    if exp_ct not in request.headers.get("Content-Type", ""):
+        Exception.invalid_content_type("Expected: {}".format(exp_ct))
+    config_data = request.get_json()
+    fields = ["isolated", "disabled"]
+    action = None
+    for field in fields:
+        if field in config_data:
+            action = field
+    if action is None:
+        Exception.improper_usage("Config should be isolated or disabled")
+    if type(config_data[action]) is not bool:
+        Exception.improper_usage("{0} should be bool".format(action))
+    if bson.objectid.ObjectId.is_valid(node_id) is False:
+        Exception.improper_usage("Bad node_id: {0}".format(node_id))
+    if action == "isolated" and config_data[action] is True:
+        Node(node_id).isolate()
     return ('', HttpCode.NO_CONTENT)
 
 

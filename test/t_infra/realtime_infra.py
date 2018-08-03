@@ -36,8 +36,8 @@ class TestInfraRealtime(unittest.TestCase):
         url = self.post_node
         exp_code = HttpCode.OK
         schema = node_m().post_node_schema()
-        data = {"host_name": "node.test",
-                "ip_address": "192.168.10.2",
+        data = {"host_name": "84.88.40.113",
+                "ip_address": "84.88.40.113",
                 "pcr0": "",
                 "driver": "OAT",
                 "analysis_type": "FULL",
@@ -48,14 +48,20 @@ class TestInfraRealtime(unittest.TestCase):
                     "password": "password"
                 },
                 "isolation_policy": {
-                    "name": "DownEth0",
-                    "type": "ifdown",
-                    "interface_name": "eth0"
+                    "name": "Dummy",
+                    "type": "shutdown",
+                    "command": "ls -laht"
                 }}
         headers = {"Content-type": "application/json"}
         response = self.utils.test_post(url, schema, data, headers, exp_code)
         node_data = json.loads(response.text)
         del_url = self.delete_node.replace("<node_id>",
                                            node_data["node_id"])
+        time.sleep(5)
+        # this will fail outside Omega Building's VPN (firewall blocks ssh)
+        self.utils.test_put(del_url, None,
+                            {"isolated": True},
+                            headers,
+                            HttpCode.NO_CONTENT)
         time.sleep(5)
         self.utils.test_delete(del_url, None, {}, HttpCode.NO_CONTENT)
