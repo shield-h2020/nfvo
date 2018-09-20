@@ -30,6 +30,16 @@ import requests
 import shutil
 
 
+def get_packages():
+    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+    resp = requests.get(
+            osm_eps.NS_CATALOG_C,
+            headers=osm_eps.get_default_headers(),
+            verify=False)
+    output = json.loads(resp.text)
+    return output
+
+
 def post_content(bin_file):
     data_file = ImmutableMultiDict([("package", bin_file)])
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)

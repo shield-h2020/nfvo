@@ -27,6 +27,11 @@ from server.endpoints import VnsfoEndpoints as endpoints
 nfvo_views = Blueprint("nfvo_pkg_views", __name__)
 
 
+@nfvo_views.route(endpoints.PKG, methods=["GET"])
+def get_packages():
+    return HttpResponse.json(HttpCode.ACCEPTED, pkg.get_packages())
+
+
 @nfvo_views.route(endpoints.PKG_ONBOARD, methods=["POST"])
 @content.expect_json_content
 def onboard_package():
