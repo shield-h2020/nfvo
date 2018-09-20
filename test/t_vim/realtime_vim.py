@@ -40,6 +40,7 @@ class TestVimRealtime(unittest.TestCase):
         schema = vim_m().get_vim_list_schema()
         self.utils.test_get(url, schema, data, exp_code)
 
+    @unittest.expectedFailure
     def test_vim_img_list(self):
         url = self.get_vim_img_list
         exp_code = HttpCode.OK
