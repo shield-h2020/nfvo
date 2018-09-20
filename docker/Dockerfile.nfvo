@@ -2,11 +2,11 @@
 # vNSFO API
 #
 
-FROM python:3
+FROM python:3.6
 WORKDIR /usr/share/dev/nfvo
 
 COPY requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD [ "python", "./src/main.py" ]
+CMD [ "python", "u", "./src/main.py" ]
