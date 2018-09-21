@@ -10,3 +10,12 @@
 [ro]
     host = {{ro_host}}
     port = 9090
+
+[nbi]
+    protocol = https
+    host = {{nbi_host}}
+    port = 9999
+    username = admin
+    password = admin
+    default_om_datacenter = {{default_om_datacenter}}
+    default_flavor = m1.small
