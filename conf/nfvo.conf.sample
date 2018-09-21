@@ -13,7 +13,7 @@
 
 [nbi]
     protocol = https
-    host = 127.0.0.1
+    host = {{nbi_host}}
     port = 9999
     username = admin
     password = admin
