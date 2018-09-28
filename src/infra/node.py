@@ -25,7 +25,7 @@ from db.models.isolation.isolation_policy import DeleteFlow
 from db.models.isolation.isolation_policy import Shutdown
 from db.models.isolation.isolation_record import IsolationRecord
 from jinja2 import Template
-
+from tm.tm_client import TMClient
 
 import configparser
 import paramiko
@@ -48,6 +48,15 @@ class Node:
         self._delflow_path = config["scripts"]["delflow"]
         self._ifdown_path = config["scripts"]["ifdown"]
         self._node = nodes[0]
+
+    def disable(self):
+        self._node.disabled = True
+        self._node.update(set__disabled=True)
+
+    def delete(self):
+        trust_monitor_client = TMClient()
+        trust_monitor_client.delete_node(self._node.host_name)
+        self._node.delete()
 
     def isolate(self):
         ssh = paramiko.client.SSHClient()

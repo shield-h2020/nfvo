@@ -73,7 +73,8 @@ class TestDbConnectivity(unittest.TestCase):
                     driver="ssh",
                     analysis_type="()",
                     authentication=authentication,
-                    isolation_policy=isolation_policy)
+                    isolation_policy=isolation_policy,
+                    disabled=False)
         node.save()
         vdu_ip_address = "192.168.10.10"
         vdu = Vdu(name="vfw",
