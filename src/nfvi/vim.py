@@ -111,7 +111,7 @@ class VnsfoVim:
                 imgs = json.loads(resp.text)
                 imgs = [x for x in
                         filter(lambda x: x.get("visibility") == "public",
-                               imgs.get("images"))]
+                               imgs.get("images", []))]
                 img_vims_cfg[tenant_name][dc_name] = imgs
             img_vims.append(img_vims_cfg)
         return output
