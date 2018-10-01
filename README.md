@@ -256,6 +256,13 @@ curl -ki https://127.0.0.1:8448/node/5b2908871745ba000163bf9e -X PUT \
      -d '{ "isolated": true }'
 ```
 
+#### Disable a node
+```
+curl -ki https://127.0.0.1:8448/node/5b2908871745ba000163bf9e -X PUT \
+	 -H 'Content-Type: application/json' \
+	 -d '{ "disabled": true }'
+```
+
 #### Get node information and isolation status
 ```
 curl -ki https://127.0.0.1:8448/node/5b2908871745ba000163bf9e
