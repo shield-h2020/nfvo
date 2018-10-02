@@ -18,7 +18,7 @@
 from common.test_utils import TestUtils
 from src.server.endpoints import VnsfoEndpoints as endpoints_s
 from src.server.http.http_code import HttpCode
-from src.server.mocks.node import MockNode as node_m
+from src.server.mocks.infra import MockInfra as infra_m
 
 import json
 import time
@@ -35,7 +35,7 @@ class TestInfraRealtime(unittest.TestCase):
     def test_post_node(self):
         url = self.post_node
         exp_code = HttpCode.OK
-        schema = node_m().post_node_schema()
+        schema = infra_m().post_node_schema()
         data = {"host_name": "84.88.40.113",
                 "ip_address": "84.88.40.113",
                 "pcr0": "example",
@@ -63,7 +63,7 @@ class TestInfraRealtime(unittest.TestCase):
         #                     {"isolated": True},
         #                     headers,
         #                     HttpCode.NO_CONTENT)
-        # get_schema = node_m().get_node_schema()
+        # get_schema = infra_m().get_node_schema()
         # self.utils.test_get(del_url, get_schema)
         # time.sleep(5)
         self.utils.test_delete(del_url, None, {}, HttpCode.NO_CONTENT)
