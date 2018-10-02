@@ -397,7 +397,9 @@ paths:
           description: The body of the request
           required: true
           schema:
-            $ref: "#/definitions/IsolateNodeInput"
+            oneOf:
+              - $ref: "#/definitions/IsolateNodeInput"
+              - $ref: "#/definitions/DisableNodeInput"
       responses:
         204:
           description: Request accepted
@@ -750,6 +752,15 @@ definitions:
     type: object
     required:
       - isolated
+    properties:
+      isolated:
+        type: boolean
+        example: true
+
+  DisableNodeInput:
+    type: object
+    required:
+      - disabled
     properties:
       isolated:
         type: boolean

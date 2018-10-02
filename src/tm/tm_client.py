@@ -31,14 +31,13 @@ class TMClient:
         self.protocol = config["general"]["protocol"]
 
     def register_node(self, node_data):
-        url = "{0}://{1}:{2}/register_node".format(
+        url = "{0}://{1}:{2}/register_node/".format(
             self.protocol, self.host, self.port)
         data = {"hostName": node_data["host_name"],
                 "address": node_data["ip_address"],
                 "distribution": node_data["distribution"],
                 "pcr0": node_data["pcr0"],
-                "driver": node_data["driver"],
-                "analsysType": node_data["analysis_type"]}
+                "driver": node_data["driver"]}
         try:
             response = requests.post(url, json=data, verify=False)
             return response
@@ -46,11 +45,14 @@ class TMClient:
             logger.error("Error registering node in trust-monitor")
             logger.error(excp)
 
-    def delete_node(self, node_id):
-        url = "{0}://{1}:{2}/node/{3}".format(
-            self.protocol, self.host, self.port, node_id)
+    def delete_node(self, host_name):
+        url = "{0}://{1}:{2}/register_node/".format(
+            self.protocol, self.host, self.port)
+        data = {"hostName": host_name}
         try:
-            response = requests.delete(url, verify=False)
+            response = requests.delete(url,
+                                       verify=False,
+                                       json=data)
             return response
         except Exception as excp:
             logger.error("Error deleting node in trust-monitor")

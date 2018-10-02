@@ -40,3 +40,4 @@ class Node(Document):
     isolated = BooleanField(default=False)
     authentication = ReferenceField(Auth, required=True)
     isolation_policy = ReferenceField(IsolationPolicy, required=True)
+    disabled = BooleanField(required=True)
