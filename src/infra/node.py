@@ -51,6 +51,8 @@ class Node:
 
     def disable(self):
         self._node.disabled = True
+        trust_monitor_client = TMClient()
+        trust_monitor_client.delete_node(self._node.host_name)
         self._node.update(set__disabled=True)
 
     def delete(self):
