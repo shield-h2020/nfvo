@@ -23,7 +23,7 @@ from schema import Use
 import uuid
 
 
-class MockNode:
+class MockInfra:
 
     def __init__(self):
         self.res_key = "node"
