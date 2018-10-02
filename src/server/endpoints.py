@@ -34,7 +34,7 @@ class VnsfoEndpoints:
     NFVI_FLOW = "{}/flowtable".format(NFVI)
     NFVI_NODE = "{}/node".format(NFVI)
     NFVI_TOPO = "{}/network".format(NFVI)
-    ## Nodes
+    # - Nodes
     NFVI_NODE_ID = "{}/<node_id>".format(NFVI_NODE)
     NFVI_NODE_PHYSICAL = "{}/physical".format(NFVI_NODE)
     NFVI_NODE_PHYSICAL_ISOLATED = "{}/isolated".format(NFVI_NODE_PHYSICAL)
