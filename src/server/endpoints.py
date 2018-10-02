@@ -32,8 +32,16 @@ class VnsfoEndpoints:
     # Infrastructure
     NFVI = "/nfvi"
     NFVI_FLOW = "{}/flowtable".format(NFVI)
-    NFVI_NODES = "{}/nodes".format(NFVI)
-    NFVI_TOPO = "{}/topology".format(NFVI)
+    NFVI_NODE = "{}/node".format(NFVI)
+    NFVI_TOPO = "{}/network".format(NFVI)
+    ## Nodes
+    NFVI_NODE_ID = "{}/<node_id>".format(NFVI_NODE)
+    NFVI_NODE_PHYSICAL = "{}/physical".format(NFVI_NODE)
+    NFVI_NODE_PHYSICAL_ISOLATED = "{}/isolated".format(NFVI_NODE_PHYSICAL)
+    NFVI_NODE_PHYSICAL_TRUSTED = "{}/trusted".format(NFVI_NODE_PHYSICAL)
+    NFVI_NODE_VIRTUAL = "{}/virtual".format(NFVI_NODE)
+    NFVI_NODE_VIRTUAL_ISOLATED = "{}/isolated".format(NFVI_NODE_VIRTUAL)
+    NFVI_NODE_VIRTUAL_TRUSTED = "{}/trusted".format(NFVI_NODE_VIRTUAL)
     # Infrastructure manager
     VIM = "/vim"
     VIM_IMAGE = "{}/image".format(VIM)
@@ -57,15 +65,6 @@ class VnsfoEndpoints:
     VNSF_C_VNSFS = "{}/config".format(VNSF)
     VNSF_R_VNSFS = "{}/running".format(VNSF)
     VNSF_VNSF_TENANT = "{}/<tenant_id>".format(VNSF_R_VNSFS)
-    # Node
-    NODE = "/node"
-    NODE_ID = "{}/<node_id>".format(NODE)
-    NODE_PHYSICAL = "{}/physical".format(NODE)
-    NODE_PHYSICAL_ISOLATED = "{}/isolated".format(NODE_PHYSICAL)
-    NODE_PHYSICAL_TRUSTED = "{}/trusted".format(NODE_PHYSICAL)
-    NODE_VIRTUAL = "{}/virtual".format(NODE)
-    NODE_VIRTUAL_ISOLATED = "{}/isolated".format(NODE_VIRTUAL)
-    NODE_VIRTUAL_TRUSTED = "{}/trusted".format(NODE_VIRTUAL)
 
     def __init__(self):
         self.get_api_endpoints_mock = endpoints_m().get_api_endpoints_mock

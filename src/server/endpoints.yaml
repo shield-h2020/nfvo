@@ -50,7 +50,7 @@ tags:
   - name: common
     description: Common operations
   - name: nfvi
-    description: Deployment data
+    description: Infrastructure data
     externalDocs:
       description: D3.1
       url: https://www.shield-h2020.eu/documents/project-deliverables/SHIELD_D3.1_Specifications,_Design_and_Architecture_for_the_vNSF_Ecosystem_v1.0.pdf
@@ -107,7 +107,8 @@ paths:
       produces:
         - application/json
       responses: *API_RESPONSES
-  /nfvi/topology:
+
+  /nfvi/network:
     get:
       tags:
         - nfvi
@@ -118,17 +119,219 @@ paths:
       produces:
         - application/json
       responses: *API_RESPONSES
-  /nfvi/nodes:
+
+  /nfvi/node:
     get:
       tags:
         - nfvi
-      summary: Provides physical nodes from NFVI
+      summary: Get information for all nodes
       description: >-
-        TBD. Provides the list of active physical nodes in the NFVI.
-      operationId: getDeployedPhysicalNodes
+        Get information and isolation status for all nodes
+      operationId: getNodeAll
       produces:
         - application/json
-      responses: *API_RESPONSES
+      responses:
+        200:
+          description: All nodes information
+          schema:
+            $ref: "#/definitions/GetNodeOutput"
+        <<: *API_RESPONSES
+
+  /nfvi/node/{node_id}:
+    get:
+      tags:
+        - nfvi
+      summary: Get node information
+      description: >-
+        Get node information and isolation status
+      operationId: getNode
+      produces:
+        - application/json
+      parameters:
+        - node_id: node_id
+          in: path
+          required: false
+          type: string
+      responses:
+        200:
+          description: Node information
+          schema:
+            $ref: "#/definitions/GetNodeOutput"
+        <<: *API_RESPONSES
+
+    delete:
+      tags:
+        - nfvi
+      summary: Removes node from vNSFO
+      description: >-
+        Removes the node from the vNSFO
+      operationId: removeNode
+      produces:
+        - application/json
+      parameters:
+        - node_id: node_id
+          in: path
+          required: true
+          type: string
+      responses:
+        204:
+          description: Request accepted
+        <<: *API_RESPONSES
+
+    put:
+      tags:
+        - nfvi
+      summary: Isolates a node
+      description: >-
+        Isolates a compromised node according to isolation policy
+      operationId: isolateNode
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - node_id: node_id
+          in: path
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: The body of the request
+          required: true
+          schema:
+            $ref: "#/definitions/IsolateNodeInput"
+      responses:
+        204:
+          description: Request accepted
+        <<: *API_RESPONSES
+
+  /nfvi/node:
+    post:
+      tags:
+        - nfvi
+      summary: Registers a new node into the NFVO
+      description: >-
+        Registers a new node into the NFVO including authentication schema and isolation policy
+      operationId: registerNode
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The body of the request
+          required: true
+          schema:
+            $ref: "#/definitions/RegisterNodeInput"
+      responses:
+        202:
+          description: Request accepted
+          schema:
+            $ref: "#/definitions/RegisterNodeOutput"
+        <<: *API_RESPONSES
+
+  /nfvi/node/physical:
+    get:
+      tags:
+        - nfvi
+      summary: Get information on physical nodes
+      description: >-
+        Get information and isolation status for the physical nodes
+      operationId: getNodePhysical
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Physical node information
+          schema:
+            $ref: "#/definitions/GetNodeOutput"
+        <<: *API_RESPONSES
+
+  /nfvi/node/physical/isolated:
+    get:
+      tags:
+        - nfvi
+      summary: Get information on isolated physical nodes
+      description: >-
+        Get information for the isolated physical nodes
+      operationId: getNodePhysicalIsolated
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Physical isolated node information
+          schema:
+            $ref: "#/definitions/GetNodeOutput"
+        <<: *API_RESPONSES
+
+  /nfvi/node/physical/trusted:
+    get:
+      tags:
+        - nfvi
+      summary: Get information on trusted physical nodes
+      description: >-
+        Get information for the trusted physical nodes
+      operationId: getNodePhysicalTrusted
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Physical trusted node information
+          schema:
+            $ref: "#/definitions/GetNodeOutput"
+        <<: *API_RESPONSES
+
+  /nfvi/node/virtual:
+    get:
+      tags:
+        - nfvi
+      summary: Get information on virtual nodes
+      description: >-
+        Get information and isolation status for the virtual nodes
+      operationId: getNodeVirtual
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Virtual node information
+          schema:
+            $ref: "#/definitions/GetNodeOutput"
+        <<: *API_RESPONSES
+
+  /nfvi/node/virtual/isolated:
+    get:
+      tags:
+        - nfvi
+      summary: Get information on isolated virtual nodes
+      description: >-
+        Get information for the isolated virtual nodes
+      operationId: getNodeVirtualIsolated
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Virtual isolated node information
+          schema:
+            $ref: "#/definitions/GetNodeOutput"
+        <<: *API_RESPONSES
+
+  /nfvi/node/virtual/trusted:
+    get:
+      tags:
+        - nfvi
+      summary: Get information on trusted virtual nodes
+      description: >-
+        Get information for the trusted virtual nodes
+      operationId: getNodeVirtualTrusted
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Virtual trusted node information
+          schema:
+            $ref: "#/definitions/GetNodeOutput"
+        <<: *API_RESPONSES
 
   /ns/config:
     get:
@@ -307,100 +510,6 @@ paths:
           description: Request accepted
           schema:
             $ref: "#/definitions/PackageRemovedOutput"
-        <<: *API_RESPONSES
-
-  /node:
-    post:
-      tags:
-        - node
-      summary: Registers a new node into the NFVO
-      description: >-
-        Registers a new node into the NFVO including authentication schema and isolation policy
-      operationId: registerNode
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          description: The body of the request
-          required: true
-          schema:
-            $ref: "#/definitions/RegisterNodeInput"
-      responses:
-        202:
-          description: Request accepted
-          schema:
-            $ref: "#/definitions/RegisterNodeOutput"
-        <<: *API_RESPONSES
-
-  /node/{node_id}:
-    get:
-      tags:
-        - node
-      summary: Get node information
-      description: >-
-        Get node information and isolation status
-      operationId: getNode
-      produces:
-        - application/json
-      parameters:
-        - node_id: node_id
-          in: path
-          required: false
-          type: string
-      responses:
-        200:
-          description: Node information
-          schema:
-            $ref: "#/definitions/GetNodeOutput"
-        <<: *API_RESPONSES
-
-    delete:
-      tags:
-        - node
-      summary: Removes node from vNSFO
-      description: >-
-        Removes the node from the vNSFO
-      operationId: removeNode
-      produces:
-        - application/json
-      parameters:
-        - node_id: node_id
-          in: path
-          required: true
-          type: string
-      responses:
-        204:
-          description: Request accepted
-        <<: *API_RESPONSES
-
-    put:
-      tags:
-        - node
-      summary: Isolates a node
-      description: >-
-        Isolates a compromised node according to isolation policy
-      operationId: isolateNode
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - node_id: node_id
-          in: path
-          required: true
-          type: string
-        - in: body
-          name: body
-          description: The body of the request
-          required: true
-          schema:
-            $ref: "#/definitions/IsolateNodeInput"
-      responses:
-        204:
-          description: Request accepted
         <<: *API_RESPONSES
 
   /vim:
