@@ -60,6 +60,12 @@ class VnsfoEndpoints:
     # Node
     NODE = "/node"
     NODE_ID = "{}/<node_id>".format(NODE)
+    NODE_PHYSICAL = "{}/physical".format(NODE)
+    NODE_PHYSICAL_ISOLATED = "{}/isolated".format(NODE_PHYSICAL)
+    NODE_PHYSICAL_TRUSTED = "{}/trusted".format(NODE_PHYSICAL)
+    NODE_VIRTUAL = "{}/virtual".format(NODE)
+    NODE_VIRTUAL_ISOLATED = "{}/isolated".format(NODE_VIRTUAL)
+    NODE_VIRTUAL_TRUSTED = "{}/trusted".format(NODE_VIRTUAL)
 
     def __init__(self):
         self.get_api_endpoints_mock = endpoints_m().get_api_endpoints_mock

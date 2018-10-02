@@ -48,6 +48,42 @@ def get_nodes(node_id=None):
     return HttpResponse.json(HttpCode.OK, nodes)
 
 
+@nfvo_views.route(endpoints.NODE_PHYSICAL, methods=["GET"])
+def get_nodes_physical(node_id=None):
+    nodes = current_app.mongo.get_nodes(node_id)
+    return HttpResponse.json(HttpCode.OK, nodes)
+
+
+@nfvo_views.route(endpoints.NODE_PHYSICAL_ISOLATED, methods=["GET"])
+def get_nodes_physical_isolated(node_id=None):
+    nodes = current_app.mongo.get_nodes(node_id)
+    return HttpResponse.json(HttpCode.OK, nodes)
+
+
+@nfvo_views.route(endpoints.NODE_PHYSICAL_TRUSTED, methods=["GET"])
+def get_nodes_physical_trusted(node_id=None):
+    nodes = current_app.mongo.get_nodes(node_id)
+    return HttpResponse.json(HttpCode.OK, nodes)
+
+
+@nfvo_views.route(endpoints.NODE_VIRTUAL, methods=["GET"])
+def get_nodes_virtual(node_id=None):
+    nodes = current_app.mongo.get_nodes(node_id)
+    return HttpResponse.json(HttpCode.OK, nodes)
+
+
+@nfvo_views.route(endpoints.NODE_VIRTUAL_ISOLATED, methods=["GET"])
+def get_nodes_virtual_isolated(node_id=None):
+    nodes = current_app.mongo.get_nodes(node_id)
+    return HttpResponse.json(HttpCode.OK, nodes)
+
+
+@nfvo_views.route(endpoints.NODE_VIRTUAL_TRUSTED, methods=["GET"])
+def get_nodes_virtual_trusted(node_id=None):
+    nodes = current_app.mongo.get_nodes(node_id)
+    return HttpResponse.json(HttpCode.OK, nodes)
+
+
 @nfvo_views.route(endpoints.NODE_ID, methods=["PUT"])
 def config_node(node_id):
     exp_ct = "application/json"
