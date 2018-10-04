@@ -42,9 +42,7 @@ def fetch_network_topology():
 
 @nfvo_views.route(endpoints.NFVI_NODE_ID, methods=["DELETE"])
 def delete_node(node_id):
-    current_app.mongo.delete_node(node_id)
-    trust_monitor_client = TMClient()
-    trust_monitor_client.delete_node(node_id)
+    Node(node_id).delete()
     return ('', HttpCode.NO_CONTENT)
 
 
@@ -113,6 +111,8 @@ def config_node(node_id):
         Exception.improper_usage("Bad node_id: {0}".format(node_id))
     if action == "isolated" and config_data[action] is True:
         Node(node_id).isolate()
+    if action == "disabled" and config_data[action] is True:
+        Node(node_id).disable()
     return ('', HttpCode.NO_CONTENT)
 
 

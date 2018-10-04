@@ -169,7 +169,8 @@ class DBManager():
                 node_resp["configuration"] = last_record["output"]
             else:
                 node_resp["status"] = "connected"
-            response.append(node_resp)
+            if node["disabled"] is False:
+                response.append(node_resp)
         if len(response) == 1:
             return response[0]
         return response
@@ -228,7 +229,8 @@ class DBManager():
                     driver=str(node_data["driver"]),
                     analysis_type=str(node_data["analysis_type"]),
                     authentication=auth,
-                    isolation_policy=isolation)
+                    isolation_policy=isolation,
+                    disabled=False)
         try:
             node.save()
         except (OperationError, ValidationError):

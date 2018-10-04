@@ -864,6 +864,15 @@ definitions:
         type: boolean
         example: true
 
+  DisableNodeInput:
+    type: object
+    required:
+      - disabled
+    properties:
+      isolated:
+        type: boolean
+        example: true
+
   RegisterNodeInput:
     type: object
     required:

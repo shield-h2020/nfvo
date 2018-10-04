@@ -28,8 +28,8 @@ import unittest
 class TestInfraRealtime(unittest.TestCase):
 
     def setUp(self):
-        self.post_node = endpoints_s.NODE
-        self.delete_node = endpoints_s.NODE_ID
+        self.post_node = endpoints_s.NFVI_NODE
+        self.delete_node = endpoints_s.NFVI_NODE_ID
         self.utils = TestUtils()
 
     def test_post_node(self):
@@ -58,12 +58,9 @@ class TestInfraRealtime(unittest.TestCase):
         del_url = self.delete_node.replace("<node_id>",
                                            node_data["node_id"])
         time.sleep(5)
-        # this will fail outside Omega Building's VPN (firewall blocks ssh)
-        # self.utils.test_put(del_url, None,
-        #                     {"isolated": True},
-        #                     headers,
-        #                     HttpCode.NO_CONTENT)
-        # get_schema = infra_m().get_node_schema()
-        # self.utils.test_get(del_url, get_schema)
-        # time.sleep(5)
+        self.utils.test_put(del_url, None,
+                            {"disabled": True},
+                            headers,
+                            HttpCode.NO_CONTENT)
+        time.sleep(5)
         self.utils.test_delete(del_url, None, {}, HttpCode.NO_CONTENT)
