@@ -30,14 +30,24 @@ import bson
 nfvo_views = Blueprint("nfvo_infra_views", __name__)
 
 
-@nfvo_views.route(endpoints.NODE_ID, methods=["DELETE"])
+@nfvo_views.route(endpoints.NFVI_FLOW, methods=["GET"])
+def fetch_devices_flowtable():
+    Exception.not_implemented()
+
+
+@nfvo_views.route(endpoints.NFVI_TOPO, methods=["GET"])
+def fetch_network_topology():
+    Exception.not_implemented()
+
+
+@nfvo_views.route(endpoints.NFVI_NODE_ID, methods=["DELETE"])
 def delete_node(node_id):
     Node(node_id).delete()
-    return ('', HttpCode.NO_CONTENT)
+    return ("", HttpCode.NO_CONTENT)
 
 
-@nfvo_views.route(endpoints.NODE, methods=["GET"])
-@nfvo_views.route(endpoints.NODE_ID, methods=["GET"])
+@nfvo_views.route(endpoints.NFVI_NODE, methods=["GET"])
+@nfvo_views.route(endpoints.NFVI_NODE_ID, methods=["GET"])
 def get_nodes(node_id=None):
     if node_id is not None:
         if bson.objectid.ObjectId.is_valid(node_id) is False:
@@ -46,7 +56,47 @@ def get_nodes(node_id=None):
     return HttpResponse.json(HttpCode.OK, nodes)
 
 
-@nfvo_views.route(endpoints.NODE_ID, methods=["PUT"])
+@nfvo_views.route(endpoints.NFVI_NODE_PHYSICAL, methods=["GET"])
+def get_nodes_physical():
+    nodes = current_app.mongo.get_phys_virt_nodes(physical=True)
+    return HttpResponse.json(HttpCode.OK, nodes)
+
+
+@nfvo_views.route(endpoints.NFVI_NODE_PHYSICAL_ISOLATED, methods=["GET"])
+def get_nodes_physical_isolated(node_id=None):
+    nodes = current_app.mongo.get_phys_virt_nodes(physical=True,
+                                                  isolated=True)
+    return HttpResponse.json(HttpCode.OK, nodes)
+
+
+@nfvo_views.route(endpoints.NFVI_NODE_PHYSICAL_TRUSTED, methods=["GET"])
+def get_nodes_physical_trusted(node_id=None):
+    nodes = current_app.mongo.get_phys_virt_nodes(physical=True,
+                                                  isolated=False)
+    return HttpResponse.json(HttpCode.OK, nodes)
+
+
+@nfvo_views.route(endpoints.NFVI_NODE_VIRTUAL, methods=["GET"])
+def get_nodes_virtual():
+    nodes = current_app.mongo.get_phys_virt_nodes(physical=False)
+    return HttpResponse.json(HttpCode.OK, nodes)
+
+
+@nfvo_views.route(endpoints.NFVI_NODE_VIRTUAL_ISOLATED, methods=["GET"])
+def get_nodes_virtual_isolated(node_id=None):
+    nodes = current_app.mongo.get_phys_virt_nodes(physical=False,
+                                                  isolated=True)
+    return HttpResponse.json(HttpCode.OK, nodes)
+
+
+@nfvo_views.route(endpoints.NFVI_NODE_VIRTUAL_TRUSTED, methods=["GET"])
+def get_nodes_virtual_trusted(node_id=None):
+    nodes = current_app.mongo.get_phys_virt_nodes(physical=False,
+                                                  isolated=False)
+    return HttpResponse.json(HttpCode.OK, nodes)
+
+
+@nfvo_views.route(endpoints.NFVI_NODE_ID, methods=["PUT"])
 def config_node(node_id):
     exp_ct = "application/json"
     if exp_ct not in request.headers.get("Content-Type", ""):
@@ -70,7 +120,7 @@ def config_node(node_id):
     return ('', HttpCode.NO_CONTENT)
 
 
-@nfvo_views.route(endpoints.NODE, methods=["POST"])
+@nfvo_views.route(endpoints.NFVI_NODE, methods=["POST"])
 def register_node():
     exp_ct = "application/json"
     if exp_ct not in request.headers.get("Content-Type", ""):
@@ -93,21 +143,6 @@ def register_node():
     trust_monitor_client = TMClient()
     trust_monitor_client.register_node(node_data)
     return HttpResponse.json(HttpCode.OK, {"node_id": node_id})
-
-
-@nfvo_views.route(endpoints.NFVI_FLOW, methods=["GET"])
-def fetch_devices_flowtable():
-    Exception.not_implemented()
-
-
-@nfvo_views.route(endpoints.NFVI_TOPO, methods=["GET"])
-def fetch_network_topology():
-    Exception.not_implemented()
-
-
-@nfvo_views.route(endpoints.NFVI_NODES, methods=["GET"])
-def fetch_physical_nodes():
-    Exception.not_implemented()
 
 
 def check_isolation_params(isolation_policy):

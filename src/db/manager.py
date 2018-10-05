@@ -145,6 +145,16 @@ class DBManager():
             "instance_id": output["nsr_id_ref"],
             "triggered_by": output["triggered-by"]}
 
+    def get_phys_virt_nodes(self, physical, isolated=None):
+        """
+        Get physical or virtual nodes
+        """
+        if isolated is not None:
+            nodes = Node.objects(physical=physical, isolated=isolated)
+        else:
+            nodes = Node.objects(physical=physical)
+        return self.__format_nodes(nodes)
+
     def get_nodes(self, node_id=None):
         """
         Get nodes
@@ -153,6 +163,12 @@ class DBManager():
             nodes = Node.objects()
         else:
             nodes = Node.objects(id=ObjectId(node_id))
+        return self.__format_nodes(nodes)
+
+    def __format_nodes(self, nodes):
+        """
+        Output nodes with a specific format
+        """
         response = []
         for node in nodes:
             node_resp = {"node_id": str(node.id),
@@ -161,7 +177,8 @@ class DBManager():
                          "pcr0": node["pcr0"],
                          "driver": node["driver"],
                          "distribution": node["distribution"],
-                         "analysis_type": node["analysis_type"]}
+                         "analysis_type": node["analysis_type"],
+                         "physical": node["physical"]}
             if node["isolated"]:
                 node_resp["status"] = "isolated"
                 last_record = node["isolation_policy"]["records"][-1]
@@ -171,8 +188,6 @@ class DBManager():
                 node_resp["status"] = "connected"
             if node["disabled"] is False:
                 response.append(node_resp)
-        if len(response) == 1:
-            return response[0]
         return response
 
     def delete_node(self, node_id):
@@ -222,6 +237,9 @@ class DBManager():
             auth.delete()
             e = "Cannot store node information (isolation)"
             raise Exception(e)
+        physical = False
+        if ("physical" in node_data) and (node_data["physical"] is True):
+            physical = True
         node = Node(host_name=str(node_data["host_name"]),
                     ip_address=str(node_data["ip_address"]),
                     distribution=str(node_data["distribution"]),
@@ -230,7 +248,8 @@ class DBManager():
                     analysis_type=str(node_data["analysis_type"]),
                     authentication=auth,
                     isolation_policy=isolation,
-                    disabled=False)
+                    disabled=False,
+                    physical=physical)
         try:
             node.save()
         except (OperationError, ValidationError):
