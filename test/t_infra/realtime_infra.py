@@ -58,7 +58,6 @@ class TestInfraRealtime(unittest.TestCase):
     def get_virtual_isolated_length(self):
         virtual_isolated = json.loads(requests.get(self.virtual_isolated_url,
                                                    verify=False).text)
-
         return len(virtual_isolated)
 
     def get_virtual_trusted_length(self):
