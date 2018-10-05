@@ -43,7 +43,7 @@ def fetch_network_topology():
 @nfvo_views.route(endpoints.NFVI_NODE_ID, methods=["DELETE"])
 def delete_node(node_id):
     Node(node_id).delete()
-    return ('', HttpCode.NO_CONTENT)
+    return ("", HttpCode.NO_CONTENT)
 
 
 @nfvo_views.route(endpoints.NFVI_NODE, methods=["GET"])
