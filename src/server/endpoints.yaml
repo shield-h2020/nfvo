@@ -120,23 +120,6 @@ paths:
         - application/json
       responses: *API_RESPONSES
 
-  /nfvi/node:
-    get:
-      tags:
-        - nfvi
-      summary: Get information for all nodes
-      description: >-
-        Get information and isolation status for all nodes
-      operationId: getNodeAll
-      produces:
-        - application/json
-      responses:
-        200:
-          description: All nodes information
-          schema:
-            $ref: "#/definitions/GetNodeOutput"
-        <<: *API_RESPONSES
-
   /nfvi/node/{node_id}:
     get:
       tags:
@@ -156,7 +139,7 @@ paths:
         200:
           description: Node information
           schema:
-            $ref: "#/definitions/GetNodeOutput"
+            $ref: "#/definitions/GetNodeIdOutput"
         <<: *API_RESPONSES
 
     delete:
@@ -206,6 +189,21 @@ paths:
         <<: *API_RESPONSES
 
   /nfvi/node:
+    get:
+      tags:
+        - nfvi
+      summary: Get information for all nodes
+      description: >-
+        Get information and isolation status for all nodes
+      operationId: getNodeAll
+      produces:
+        - application/json
+      responses:
+        200:
+          description: All nodes information
+          schema:
+            $ref: "#/definitions/GetNodeOutput"
+        <<: *API_RESPONSES
     post:
       tags:
         - nfvi
