@@ -854,6 +854,9 @@ definitions:
       timestamp:
         type: string
         example: Thu, 21 Jun 2018 10:19:01 GMT
+      physical:
+        type: boolean
+        example: true
 
   IsolateNodeInput:
     type: object
@@ -894,6 +897,9 @@ definitions:
       pcr0:
         type: string
         example: example
+      physical:
+        type: boolean
+        example: true
       driver:
         type: string
         example: OAT

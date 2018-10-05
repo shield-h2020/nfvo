@@ -21,7 +21,6 @@ from src.server.http.http_code import HttpCode
 from src.server.mocks.infra import MockInfra as infra_m
 
 import json
-import time
 import unittest
 
 
@@ -32,7 +31,11 @@ class TestInfraRealtime(unittest.TestCase):
         self.delete_node = endpoints_s.NFVI_NODE_ID
         self.utils = TestUtils()
 
-    def test_post_node(self):
+    def create_node(self, physical=None):
+        print(self)
+        phys_virt = False
+        if physical is not None:
+            phys_virt = physical
         url = self.post_node
         exp_code = HttpCode.OK
         schema = infra_m().post_node_schema()
@@ -47,6 +50,7 @@ class TestInfraRealtime(unittest.TestCase):
                     "username": "user",
                     "password": "password"
                 },
+                "physical": phys_virt,
                 "isolation_policy": {
                     "name": "Dummy",
                     "type": "shutdown",
@@ -62,3 +66,9 @@ class TestInfraRealtime(unittest.TestCase):
                             headers,
                             HttpCode.NO_CONTENT)
         self.utils.test_delete(del_url, None, {}, HttpCode.NO_CONTENT)
+
+    def test_post_node(self):
+        self.create_node()
+
+    def test_post_physical_node(self):
+        self.create_node(True)

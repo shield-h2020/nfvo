@@ -145,6 +145,32 @@ class DBManager():
             "instance_id": output["nsr_id_ref"],
             "triggered_by": output["triggered-by"]}
 
+    def get_phys_virt_nodes(self, physical):
+        """
+        Get physical or virtual nodes
+        """
+        nodes = Node.objects(physical=physical)
+        response = []
+        for node in nodes:
+            node_resp = {"node_id": str(node.id),
+                         "host_name": node["host_name"],
+                         "ip_address": node["ip_address"],
+                         "pcr0": node["pcr0"],
+                         "driver": node["driver"],
+                         "distribution": node["distribution"],
+                         "analysis_type": node["analysis_type"],
+                         "physical": node["physical"]}
+            if node["isolated"]:
+                node_resp["status"] = "isolated"
+                last_record = node["isolation_policy"]["records"][-1]
+                node_resp["timestamp"] = last_record["date"]
+                node_resp["configuration"] = last_record["output"]
+            else:
+                node_resp["status"] = "connected"
+            if node["disabled"] is False:
+                response.append(node_resp)
+        return response
+
     def get_nodes(self, node_id=None):
         """
         Get nodes
@@ -171,8 +197,6 @@ class DBManager():
                 node_resp["status"] = "connected"
             if node["disabled"] is False:
                 response.append(node_resp)
-        if len(response) == 1:
-            return response[0]
         return response
 
     def delete_node(self, node_id):
@@ -223,8 +247,8 @@ class DBManager():
             e = "Cannot store node information (isolation)"
             raise Exception(e)
         physical = False
-        if ("phyisical" in node_data) and (node_data["physical"] == True):
-            physical=True
+        if ("physical" in node_data) and (node_data["physical"] is True):
+            physical = True
         node = Node(host_name=str(node_data["host_name"]),
                     ip_address=str(node_data["ip_address"]),
                     distribution=str(node_data["distribution"]),

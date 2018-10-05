@@ -57,8 +57,8 @@ def get_nodes(node_id=None):
 
 
 @nfvo_views.route(endpoints.NFVI_NODE_PHYSICAL, methods=["GET"])
-def get_nodes_physical(node_id=None):
-    nodes = current_app.mongo.get_nodes(node_id)
+def get_nodes_physical():
+    nodes = current_app.mongo.get_phys_virt_nodes(physical=True)
     return HttpResponse.json(HttpCode.OK, nodes)
 
 
@@ -75,8 +75,8 @@ def get_nodes_physical_trusted(node_id=None):
 
 
 @nfvo_views.route(endpoints.NFVI_NODE_VIRTUAL, methods=["GET"])
-def get_nodes_virtual(node_id=None):
-    nodes = current_app.mongo.get_nodes(node_id)
+def get_nodes_virtual():
+    nodes = current_app.mongo.get_phys_virt_nodes(physical=False)
     return HttpResponse.json(HttpCode.OK, nodes)
 
 
