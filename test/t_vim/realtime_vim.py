@@ -33,6 +33,7 @@ class TestVimRealtime(unittest.TestCase):
         self.register_vdu = endpoints_s.VIM_IMAGE_UPLOAD
         self.utils = TestUtils()
 
+    @unittest.skip
     def test_vim_list(self):
         url = self.get_vim_list
         exp_code = HttpCode.OK
@@ -40,7 +41,7 @@ class TestVimRealtime(unittest.TestCase):
         schema = vim_m().get_vim_list_schema()
         self.utils.test_get(url, schema, data, exp_code)
 
-    @unittest.expectedFailure
+    @unittest.skip
     def test_vim_img_list(self):
         url = self.get_vim_img_list
         exp_code = HttpCode.OK
