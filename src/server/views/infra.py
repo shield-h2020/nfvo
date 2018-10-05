@@ -64,13 +64,15 @@ def get_nodes_physical():
 
 @nfvo_views.route(endpoints.NFVI_NODE_PHYSICAL_ISOLATED, methods=["GET"])
 def get_nodes_physical_isolated(node_id=None):
-    nodes = current_app.mongo.get_nodes(node_id)
+    nodes = current_app.mongo.get_phys_virt_nodes(physical=True,
+                                                  isolated=True)
     return HttpResponse.json(HttpCode.OK, nodes)
 
 
 @nfvo_views.route(endpoints.NFVI_NODE_PHYSICAL_TRUSTED, methods=["GET"])
 def get_nodes_physical_trusted(node_id=None):
-    nodes = current_app.mongo.get_nodes(node_id)
+    nodes = current_app.mongo.get_phys_virt_nodes(physical=True,
+                                                  isolated=False)
     return HttpResponse.json(HttpCode.OK, nodes)
 
 
@@ -82,13 +84,15 @@ def get_nodes_virtual():
 
 @nfvo_views.route(endpoints.NFVI_NODE_VIRTUAL_ISOLATED, methods=["GET"])
 def get_nodes_virtual_isolated(node_id=None):
-    nodes = current_app.mongo.get_nodes(node_id)
+    nodes = current_app.mongo.get_phys_virt_nodes(physical=False,
+                                                  isolated=True)
     return HttpResponse.json(HttpCode.OK, nodes)
 
 
 @nfvo_views.route(endpoints.NFVI_NODE_VIRTUAL_TRUSTED, methods=["GET"])
 def get_nodes_virtual_trusted(node_id=None):
-    nodes = current_app.mongo.get_nodes(node_id)
+    nodes = current_app.mongo.get_phys_virt_nodes(physical=False,
+                                                  isolated=False)
     return HttpResponse.json(HttpCode.OK, nodes)
 
 

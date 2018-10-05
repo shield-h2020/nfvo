@@ -145,11 +145,14 @@ class DBManager():
             "instance_id": output["nsr_id_ref"],
             "triggered_by": output["triggered-by"]}
 
-    def get_phys_virt_nodes(self, physical):
+    def get_phys_virt_nodes(self, physical, isolated=None):
         """
         Get physical or virtual nodes
         """
-        nodes = Node.objects(physical=physical)
+        if isolated is not None:
+            nodes = Node.objects(physical=physical, isolated=isolated)
+        else:
+            nodes = Node.objects(physical=physical)
         response = []
         for node in nodes:
             node_resp = {"node_id": str(node.id),
@@ -160,7 +163,7 @@ class DBManager():
                          "distribution": node["distribution"],
                          "analysis_type": node["analysis_type"],
                          "physical": node["physical"]}
-            if node["isolated"]:
+            if node["isolated"] is True:
                 node_resp["status"] = "isolated"
                 last_record = node["isolation_policy"]["records"][-1]
                 node_resp["timestamp"] = last_record["date"]
