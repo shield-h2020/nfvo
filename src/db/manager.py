@@ -222,6 +222,9 @@ class DBManager():
             auth.delete()
             e = "Cannot store node information (isolation)"
             raise Exception(e)
+        physical = False
+        if ("phyisical" in node_data) and (node_data["physical"] == True):
+            physical=True
         node = Node(host_name=str(node_data["host_name"]),
                     ip_address=str(node_data["ip_address"]),
                     distribution=str(node_data["distribution"]),
@@ -230,7 +233,8 @@ class DBManager():
                     analysis_type=str(node_data["analysis_type"]),
                     authentication=auth,
                     isolation_policy=isolation,
-                    disabled=False)
+                    disabled=False,
+                    physical=physical)
         try:
             node.save()
         except (OperationError, ValidationError):

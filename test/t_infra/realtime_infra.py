@@ -57,10 +57,8 @@ class TestInfraRealtime(unittest.TestCase):
         node_data = json.loads(response.text)
         del_url = self.delete_node.replace("<node_id>",
                                            node_data["node_id"])
-        time.sleep(5)
         self.utils.test_put(del_url, None,
                             {"disabled": True},
                             headers,
                             HttpCode.NO_CONTENT)
-        time.sleep(5)
         self.utils.test_delete(del_url, None, {}, HttpCode.NO_CONTENT)

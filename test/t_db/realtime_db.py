@@ -74,7 +74,8 @@ class TestDbConnectivity(unittest.TestCase):
                     analysis_type="()",
                     authentication=authentication,
                     isolation_policy=isolation_policy,
-                    disabled=False)
+                    disabled=False,
+                    physical=False)
         node.save()
         vdu_ip_address = "192.168.10.10"
         vdu = Vdu(name="vfw",

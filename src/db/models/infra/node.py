@@ -41,3 +41,4 @@ class Node(Document):
     authentication = ReferenceField(Auth, required=True)
     isolation_policy = ReferenceField(IsolationPolicy, required=True)
     disabled = BooleanField(required=True)
+    physical = BooleanField(required=True)
