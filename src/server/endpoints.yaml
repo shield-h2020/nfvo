@@ -1072,6 +1072,9 @@ definitions:
         items:
           type: object
           properties:
+            nsd_id:
+              type: string
+              example: mspl_vnf
             config_status:
               type: string
               example: configured
