@@ -1,7 +1,10 @@
 [general]
     host = {{general_host}}
     port = 8008
-    default_om_datacenter = {{default_om_datacenter}}
+    default_kvm_datacenter = {{default_kvm_datacenter}}
+    default_docker_datacenter = {{default_docker_datacenter}}
+    default_kvm_datacenter_net = {{default_kvm_datacenter_net}}
+    default_docker_datacenter_net = {{default_docker_datacenter_net}}
 
 [package]
     host = {{package_host}}

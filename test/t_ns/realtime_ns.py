@@ -60,6 +60,25 @@ class TestNfvNsRealtime(unittest.TestCase):
         time.sleep(5)
         self.utils.test_delete(del_url, del_schema, {}, exp_code)
 
+    def test_post_docker_nsr_instantiate(self):
+        url = self.post_nsr_instantiate
+        exp_code = HttpCode.OK
+        schema = ns_m().post_nsr_instantiate_schema()
+        data = {"instance_name": "realtime-test",
+                "ns_name": "fl7filter_nsd",
+                "vim_net": "provider",
+                "action": "set-policies",
+                "params": {"policies": "test-policy"},
+                "virt_type": "docker"}
+        headers = {"Content-type": "application/json"}
+        response = self.utils.test_post(url, schema, data, headers, exp_code)
+        instantiation_data = json.loads(response.text)
+        del_url = self.delete_nsr.replace("<instance_id>",
+                                          instantiation_data["instance_id"])
+        del_schema = ns_m().delete_nsr_schema()
+        time.sleep(5)
+        self.utils.test_delete(del_url, del_schema, {}, exp_code)
+
     def test_real_mspl(self):
         nsds = ["fl7filter_nsd", "l23filter_nsd", "l3filter_nsd"]
         mspls = {}
