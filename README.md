@@ -116,6 +116,14 @@ curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd", "virt_type": "docker"}'
 ```
 
+##### Deploy explicitly using a kvm vim (default behavior)
+
+```
+curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
+     -H "Content-Type: application/json" \
+     -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd", "virt_type": "kvm"}'
+```
+
 ##### Instantiate and perform VNSF action asynchronously
 
 ###### Waiting for NS default target status
