@@ -113,6 +113,7 @@ class VnsfoNs:
             "instance_name": x["name-ref"],
             "ns_name": x["nsd-name-ref"],
             "instance_id": x["ns-instance-config-ref"],
+            "nsd_id": x["nsd-ref"],
             "constituent_vnf_instances":
             [self.join_vnfr_with_config_jobs(y, config_agent_job_map)
                 for y in vnsf.get_vnfr_running().get("vnsf", "")

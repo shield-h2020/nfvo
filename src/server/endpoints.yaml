@@ -813,6 +813,52 @@ definitions:
         type: string
         example: 48c50c21f6fa26100644
 
+  GetNodeIdOutput:
+    type: object
+    required:
+      - node_id
+      - host_name
+      - ip_address
+      - pcr0
+      - driver
+      - distribution
+      - analysis_type
+      - status
+    properties:
+      node_id:
+        type: string
+        example: 5b2b7a8edf6e5e00015a815d
+      host_name:
+        type: string
+        example: example.com
+      ip_address:
+        type: string
+        example: 192.168.1.2
+      pcr0:
+        type: string
+        example: ()
+      driver:
+        type: string
+        example: OAM
+      distribution:
+        type: string
+        example: xenial
+      analysis_type:
+        type: string
+        example: FULL
+      status:
+        type: string
+        example: isolated, connected
+      configuration:
+        type: string
+        example: inet addr:127.0.0.1  Mask:255.0.0.0
+      timestamp:
+        type: string
+        example: Thu, 21 Jun 2018 10:19:01 GMT
+      physical:
+        type: boolean
+        example: true
+
   GetNodeOutput:
     type: object
     required:
@@ -1006,10 +1052,13 @@ definitions:
             vim:
               type: string
               example: openstack-vim1
-            vnf_id:
+            vnfr_id:
               type: string
               example: ed37f789-9ed8-43bc-8b5f-c4c1ca192363
-            vnf_name:
+            vnfd_id:
+              type: string
+              example: mspl_vnf
+            vnfr_name:
               type: string
               example: mspl__mspl_vnf__2
 
@@ -1023,6 +1072,9 @@ definitions:
         items:
           type: object
           properties:
+            nsd_id:
+              type: string
+              example: mspl_vnf
             config_status:
               type: string
               example: configured
