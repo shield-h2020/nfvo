@@ -662,6 +662,9 @@ definitions:
       vim_id:
         type: string
         example: f9acd550-9d48-11e7-ae4c-00163e3afbe5
+      virt_type:
+        type: string
+        example: docker
       vim_net:
         type: string
         example: provider

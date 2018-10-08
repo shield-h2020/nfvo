@@ -20,7 +20,10 @@ from core.config import FullConfParser
 from flask import current_app
 from nfv.vnf import VnsfoVnsf
 from nfvo.osm import endpoints as osm_eps
-from nfvo.osm import NFVO_DEFAULT_OM_DATACENTER, NFVO_DEFAULT_OM_DATACENTER_NET
+from nfvo.osm import \
+    NFVO_DEFAULT_KVM_DATACENTER, NFVO_DEFAULT_KVM_DATACENTER_NET
+from nfvo.osm import \
+    NFVO_DEFAULT_DOCKER_DATACENTER, NFVO_DEFAULT_DOCKER_DATACENTER_NET
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from server.http import content
 from server.mocks.ns import MockNs as ns_m
@@ -245,10 +248,22 @@ class VnsfoNs:
     @content.on_mock(ns_m().post_nsr_instantiate_mock)
     def instantiate_ns(self, instantiation_data):
         if "vim_id" not in instantiation_data:
-            instantiation_data["vim_id"] = NFVO_DEFAULT_OM_DATACENTER
+            if "virt_type" in instantiation_data:
+                if instantiation_data["virt_type"] == "docker":
+                    instantiation_data["vim_id"] = \
+                        NFVO_DEFAULT_DOCKER_DATACENTER
+            else:
+                instantiation_data["vim_id"] = \
+                    NFVO_DEFAULT_KVM_DATACENTER
         instantiation_data["om-datacenter"] = instantiation_data["vim_id"]
         if "vim_net" not in instantiation_data:
-            instantiation_data["vim_net"] = NFVO_DEFAULT_OM_DATACENTER_NET
+            if "virt_type" in instantiation_data:
+                if instantiation_data["virt_type"] == "docker":
+                    instantiation_data["vim_net"] = \
+                        NFVO_DEFAULT_DOCKER_DATACENTER_NET
+            else:
+                instantiation_data["vim_net"] = \
+                    NFVO_DEFAULT_KVM_DATACENTER_NET
         instantiation_data["vim-network-name"] = instantiation_data["vim_net"]
         nsr_data = self.build_nsr_data(instantiation_data)
         resp = requests.post(
