@@ -41,6 +41,7 @@ class MockNs:
                     ],
                     "description": And(Use(str)),
                     "ns_name": And(Use(str)),
+                    "nsd_id": And(Use(str)),
                     "vendor": And(Use(str)),
                     "version": And(Use(str)),
                     "vld": [
@@ -119,6 +120,7 @@ class MockNs:
                     "instance_id": "d75efa2d-b4d4-42a3-9bcb-20324f7d8e47",
                     "instance_name": "fl7filter_nsd",
                     "ns_name": "fl7filter_nsd",
+                    "nsd_id": "fl7filter_nsd",
                     "operational_status": "running",
                     "vlrs": [
                         {
@@ -184,6 +186,7 @@ class MockNs:
                 And(Use(str), lambda n: regex.uuid4(n) is not None)
             running_ns["instance_name"] = And(Use(str))
             running_ns["ns_name"] = And(Use(str))
+            running_ns["nsd_id"] = And(Use(str))
             running_ns["operational_status"] = And(Use(str))
             for vlr in running_ns["vlrs"]:
                 vlr["vim_id"] = And(Use(str))

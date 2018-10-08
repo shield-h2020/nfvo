@@ -180,8 +180,9 @@ class VnsfoVnsf:
                 "ns_name": ns_name,
                 "operational_status": vnf.get("operational-status"),
                 "vendor": vnf.get("vendor"),
-                "vnf_id": vnf.get("id"),
-                "vnf_name": vnf_name,
+                "vnfr_id": vnf.get("id"),
+                "vnfd_id": vnf.get("vnfd").get("id"),
+                "vnfr_name": vnf_name,
                 "vim": vim_name,
             }
             vnsfs.append(vnsf_dict)

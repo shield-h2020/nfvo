@@ -48,8 +48,9 @@ class MockVnsf:
                     "operational_status": "running",
                     "vendor": "OSM",
                     "vim": "openstack-vim1",
-                    "vnf_id": str(uuid.uuid4()),
-                    "vnf_name": "vnf_name__cirros_2vnfd__1",
+                    "vnfr_id": str(uuid.uuid4()),
+                    "vnfd_id": "cirros_2vnfd",
+                    "vnfr_name": "vnf_name__cirros_2vnfd__1",
                 }
             ]
         }
@@ -76,9 +77,10 @@ class MockVnsf:
             schema_conf["operational_status"] = And(Use(str))
             schema_conf["vendor"] = And(Use(str))
             schema_conf["vim"] = And(Use(str))
-            schema_conf["vnf_id"] = \
+            schema_conf["vnfr_id"] = \
                 And(Use(str), lambda n: regex.uuid4(n) is not None)
-            schema_conf["vnf_name"] = And(Use(str))
+            schema_conf["vnfd_id"] = And(Use(str))
+            schema_conf["vnfr_name"] = And(Use(str))
         return Schema(schema)
 
     def exec_action_on_vnf_schema(self):
