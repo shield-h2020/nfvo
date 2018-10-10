@@ -19,6 +19,8 @@ from core.exception import Exception
 from flask import Blueprint
 from flask import request
 from nfv import package as pkg
+from nfv.package import PackageNameException
+from nfv.package import PackageFormatException
 from server.http import content
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
@@ -37,7 +39,13 @@ def onboard_package():
     if not(len(request.files) > 0 and form_param in request.files.keys()):
         Exception.improper_usage("Missing file")
     pkg_bin = request.files.get(form_param)
-    return HttpResponse.json(HttpCode.ACCEPTED, pkg.onboard_package(pkg_bin))
+    try:
+        return HttpResponse.json(HttpCode.ACCEPTED,
+                                 pkg.onboard_package(pkg_bin))
+    except PackageNameException:
+        return Exception.improper_usage("Improper package filename")
+    except PackageFormatException:
+        return Exception.improper_usage("Improper package format")
 
 
 @nfvo_views.route(endpoints.PKG_ONBOARD_REMOTE, methods=["POST"])
