@@ -142,7 +142,7 @@ def onboard_package(pkg_path):
             mime = MimeTypes()
             content_type = mime.guess_type(pkg_path)
             bin_file = FileStorage(fp, filename, "package", content_type)
-    bin_file = process_package(bin_file, ptype, 699.0, filename)
+    bin_file = process_package(bin_file, ptype, pversion, filename)
     # transform bin_file according type and version
     if bin_file is not None:
         output = post_content(bin_file)
