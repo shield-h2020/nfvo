@@ -44,7 +44,6 @@ class PackageNameException(Exception):
 
 
 def post_content(bin_file):
-    return
     data_file = ImmutableMultiDict([("package", bin_file)])
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     resp = requests.post(
@@ -69,7 +68,7 @@ def extract_type_and_version(filename):
     return package_type, package_version
 
 
-def process_package(bin_file, ptype, pversion):
+def process_package(bin_file, ptype, pversion, pfilename):
     io_bytes = BytesIO(bin_file.read())
     tfiles = []
     try:
@@ -78,8 +77,10 @@ def process_package(bin_file, ptype, pversion):
             filename, extension = os.path.splitext(member)
             if extension != ".yaml":
                 try:
+                    tinfo = tarfile.TarInfo(member)
+                    tinfo.size = len(tar.extractfile(member).read())
                     tfiles.append(
-                        {"tinfo": tarfile.TarInfo(member),
+                        {"tinfo": tinfo,
                          "buffer": tar.extractfile(member).read()})
                 except AttributeError:
                     print("Skipping {0} (not readable)".format(member))
@@ -90,17 +91,22 @@ def process_package(bin_file, ptype, pversion):
                 packs = catalog["{0}:{0}".format(ptype)]
                 for pack in packs:
                     pack["{0}:version".format(ptype)] = pversion
+            tinfo = tarfile.TarInfo(member)
+            tinfo.size = len(bytearray(yaml.dump(descriptor), "utf-8"))
             tfiles.append(
-                {"tinfo": tarfile.TarInfo(member),
+                {"tinfo": tinfo,
                  "buffer": bytearray(yaml.dump(descriptor), "utf-8")})
         tar.close()
         wo_bytes = BytesIO()
         wtar = tarfile.open(mode="w:gz", fileobj=wo_bytes)
         for tfile in tfiles:
-            print("Adding {0} to tar".format(tfile["tinfo"]))
             wtar.addfile(tarinfo=tfile["tinfo"],
                          fileobj=BytesIO(tfile["buffer"]))
         wtar.close()
+        wo_bytes.seek(0)
+        wo_bytes.name = pfilename
+        # with open(pfilename, "wb") as fhandle:
+        #     fhandle.write(wo_bytes.read())
         wo_bytes.seek(0)
         return wo_bytes
     except tarfile.ReadError:
@@ -136,7 +142,7 @@ def onboard_package(pkg_path):
             mime = MimeTypes()
             content_type = mime.guess_type(pkg_path)
             bin_file = FileStorage(fp, filename, "package", content_type)
-    bin_file = process_package(bin_file, ptype, pversion)
+    bin_file = process_package(bin_file, ptype, 699.0, filename)
     # transform bin_file according type and version
     if bin_file is not None:
         output = post_content(bin_file)
