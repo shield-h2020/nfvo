@@ -105,9 +105,9 @@ def process_package(bin_file, ptype, pversion, pfilename):
         wtar.close()
         wo_bytes.seek(0)
         wo_bytes.name = pfilename
+        wo_bytes.filename = pfilename
         # with open(pfilename, "wb") as fhandle:
         #     fhandle.write(wo_bytes.read())
-        wo_bytes.seek(0)
         return wo_bytes
     except tarfile.ReadError:
         raise PackageFormatException
