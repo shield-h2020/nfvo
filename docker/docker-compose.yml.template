@@ -14,6 +14,7 @@ services:
         - MONGO_INITDB_DATABASE={{ mongo_initdb_database }}
       volumes:
         - "./mongo-entrypoint/:/docker-entrypoint-initdb.d/"
+        - "./data/:/data/db"
 
     # vNSFO
     nfvo:

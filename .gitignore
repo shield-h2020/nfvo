@@ -8,3 +8,5 @@ conf/*.conf
 !conf/*.sample
 *.pyc
 venv
+docker/data/*
+!docker/data/.gitkeep
