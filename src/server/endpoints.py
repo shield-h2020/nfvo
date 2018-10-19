@@ -57,6 +57,7 @@ class VnsfoEndpoints:
     # Package
     PKG = "/package"
     PKG_ONBOARD = "{}/onboard".format(PKG)
+    PKG_STATUS = "{}/<transaction_id>/status".format(PKG)
     PKG_ONBOARD_REMOTE = "{}/remote".format(PKG_ONBOARD)
     PKG_REMOVE = "{}/<vnsf_name>".format(PKG)
     # Network function

@@ -32,22 +32,25 @@ import threading
 import time
 
 
+def get_package_status(transaction_id):
+    url = "{0}/{1}/state?api_server=https://localhost".\
+                                     format(osm_eps.PKG_STATUS,
+                                            transaction_id)
+    response = requests.get(url,
+                            headers=osm_eps.get_default_headers(),
+                            verify=False)
+    return(json.loads(response.text))
+
+
 def track_status(transaction_id):
     status = ""
     counter = 50
     while status not in ['success', 'failure'] and counter > 0:
         counter = counter - 1
-        url = "{0}/{1}/state?api_server=https://localhost".\
-            format(osm_eps.PKG_STATUS,
-                   transaction_id)
-        response = requests.get(url,
-                                headers=osm_eps.get_default_headers(),
-                                verify=False)
+        response = get_package_status(transaction_id)
         print(
-            "Tracking PKG onboarding: {0}, {1}".format(response.status_code,
-                                                       response.text))
-        js = json.loads(response.text)
-        status = js["status"]
+            "Tracking PKG onboarding: {0}".format(response))
+        status = response["status"]
         time.sleep(1)
 
 

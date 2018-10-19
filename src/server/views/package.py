@@ -56,3 +56,9 @@ def onboard_package_remote():
 @nfvo_views.route(endpoints.PKG_REMOVE, methods=["DELETE"])
 def remove_package(vnsf_name):
     return HttpResponse.json(HttpCode.ACCEPTED, pkg.remove_package(vnsf_name))
+
+
+@nfvo_views.route(endpoints.PKG_STATUS, methods=["GET"])
+def get_package_status(transaction_id):
+    return HttpResponse.json(HttpCode.ACCEPTED,
+                             pkg.get_package_status(transaction_id))

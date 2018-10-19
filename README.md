@@ -191,6 +191,12 @@ curl -ik https://127.0.0.1:8448/package/onboard/remote -X POST \
 curl -ik https://127.0.0.1:8448/package/remove/cirros_vnfd -X DELETE
 ```
 
+#### Get status of an onboarding package
+
+```
+curl -ik https://127.0.0.1:8448/package/01b3e17e-f70b-434d-9388-803bca85f1a4/status
+```
+
 ### VIM
 
 #### Provide the list of registered VIMs

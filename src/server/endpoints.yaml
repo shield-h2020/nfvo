@@ -510,6 +510,28 @@ paths:
             $ref: "#/definitions/PackageRemovedOutput"
         <<: *API_RESPONSES
 
+  /package/{transaction_id}/status:
+    get:
+      tags:
+        - package
+      summary: Get package status
+      description: >-
+        Retrieves status information about an onboarding package
+      operationId: getPackageStatus
+      produces:
+        - application/json
+      parameters:
+        - name: transaction_id
+          in: path
+          required: true
+          type: string
+      responses:
+        202:
+          description: Request accepted
+          schema:
+            $ref: "#/definitions/PackageStatusOutput"
+        <<: *API_RESPONSES
+
   /vim:
     get:
       tags:
@@ -1020,6 +1042,46 @@ definitions:
       package:
         type: string
         example: cirros_vnfd
+
+  PackageStatusOutput:
+    type: object
+    required:
+      - errors
+      - events
+      - status
+      - warnings
+    properties:
+      errors:
+        type: array
+        items:
+          type: object
+          properties:
+            timestamp:
+              type: float
+              example: 1539952176.7809205
+            value:
+              type: string
+              example: Package download failed
+            text:
+              type: string
+              example: onboarding process failed
+      warnings:
+        type: array
+        items:
+          type: object
+          properties:
+            timestamp:
+              type: float
+              example: 1539952176.7809205
+            value:
+              type: string
+              example: Package download failed
+            text:
+              type: string
+              example: onboarding process failed
+      status:
+        type: string
+        example: failure
 
   RunningVnsfOutput:
     type: object
