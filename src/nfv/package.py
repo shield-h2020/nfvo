@@ -32,6 +32,10 @@ import threading
 import time
 
 
+class PackageStatusException(Exception):
+    pass
+
+
 def get_package_status(transaction_id):
     url = "{0}/{1}/state?api_server=https://localhost".\
                                      format(osm_eps.PKG_STATUS,
@@ -39,7 +43,10 @@ def get_package_status(transaction_id):
     response = requests.get(url,
                             headers=osm_eps.get_default_headers(),
                             verify=False)
-    return(json.loads(response.text))
+    try:
+        return(json.loads(response.text))
+    except json.decoder.JSONDecodeError:
+        raise PackageStatusException
 
 
 def track_status(transaction_id):

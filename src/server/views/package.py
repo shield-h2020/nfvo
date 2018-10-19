@@ -19,6 +19,7 @@ from core.exception import Exception
 from flask import Blueprint
 from flask import request
 from nfv import package as pkg
+from nfv.package import PackageStatusException
 from server.http import content
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
@@ -60,5 +61,9 @@ def remove_package(vnsf_name):
 
 @nfvo_views.route(endpoints.PKG_STATUS, methods=["GET"])
 def get_package_status(transaction_id):
-    return HttpResponse.json(HttpCode.ACCEPTED,
-                             pkg.get_package_status(transaction_id))
+    try:
+        return HttpResponse.json(HttpCode.ACCEPTED,
+                                 pkg.get_package_status(transaction_id))
+    except PackageStatusException:
+        Exception.improper_usage(
+            "Package Status Exception, check transaction_id")
