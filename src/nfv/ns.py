@@ -253,6 +253,9 @@ class VnsfoNs:
                 if instantiation_data["virt_type"] == "docker":
                     instantiation_data["vim_id"] = \
                         NFVO_DEFAULT_DOCKER_DATACENTER
+                else:
+                    instantiation_data["vim_id"] = \
+                        NFVO_DEFAULT_KVM_DATACENTER
             else:
                 instantiation_data["vim_id"] = \
                     NFVO_DEFAULT_KVM_DATACENTER
@@ -262,6 +265,9 @@ class VnsfoNs:
                 if instantiation_data["virt_type"] == "docker":
                     instantiation_data["vim_net"] = \
                         NFVO_DEFAULT_DOCKER_DATACENTER_NET
+                else:
+                    instantiation_data["vim_net"] = \
+                        NFVO_DEFAULT_KVM_DATACENTER_NET
             else:
                 instantiation_data["vim_net"] = \
                     NFVO_DEFAULT_KVM_DATACENTER_NET
