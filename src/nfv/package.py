@@ -51,7 +51,7 @@ def get_package_status(transaction_id):
 
 def track_status(transaction_id):
     status = ""
-    counter = 50
+    counter = 3600
     while status not in ['success', 'failure'] and counter > 0:
         counter = counter - 1
         response = get_package_status(transaction_id)
