@@ -15,6 +15,8 @@
 # limitations under the License.
 
 
+import json
+
 from core.exception import Exception
 from flask import Blueprint
 from flask import request
@@ -57,4 +59,12 @@ def exec_primitive_on_vnsf():
     # Extract params, respecting the specific ordering
     payload = nfvo_vnf.submit_action_request(
         *[request.json.get(x) for x in exp_params])
-    return HttpResponse.json(HttpCode.ACCEPTED, payload)
+    try:
+        pldata = json.loads(payload)
+    except json.decoder.JSONDecodeError:
+        return HttpResponse.json(HttpCode.INTERNAL_ERROR,
+                                 "{0} bad json".format(payload))
+    if "statusCode" in pldata:
+        return HttpResponse.json(pldata["statusCode"], payload)
+    else:
+        return HttpResponse.json(HttpCode.ACCEPTED, payload)
