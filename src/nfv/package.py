@@ -28,6 +28,27 @@ import json
 import os
 import requests
 import shutil
+import threading
+import time
+
+
+def track_status(transaction_id):
+    status = ""
+    counter = 50
+    while status not in ['success', 'failure'] and counter > 0:
+        counter = counter - 1
+        url = "{0}/{1}/state?api_server=https://localhost".\
+            format(osm_eps.PKG_STATUS,
+                   transaction_id)
+        response = requests.get(url,
+                                headers=osm_eps.get_default_headers(),
+                                verify=False)
+        print(
+            "Tracking PKG onboarding: {0}, {1}".format(response.status_code,
+                                                       response.text))
+        js = json.loads(response.text)
+        status = js["status"]
+        time.sleep(1)
 
 
 def post_content(bin_file):
@@ -38,6 +59,10 @@ def post_content(bin_file):
             headers=osm_eps.get_default_headers(),
             files=data_file,
             verify=False)
+    transaction_id = json.loads(resp.text)["transaction_id"]
+    track_thread = threading.Thread(target=track_status,
+                                    args=(transaction_id,))
+    track_thread.start()
     output = json.loads(resp.text)
     output.update({"package": bin_file.filename})
     return output

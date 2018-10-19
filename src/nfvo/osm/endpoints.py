@@ -18,6 +18,7 @@
 from nfvo.osm import NFVO_ENDPOINT
 from nfvo.osm import NFVO_PKG_ENDPOINT
 from nfvo.osm import NFVO_PKG_PORT
+from nfvo.osm import NFVO_PKG_STATUS_PORT
 from nfvo.osm import NFVO_PORT
 from nfvo.osm import NFVO_RO_ENDPOINT
 from nfvo.osm import NFVO_RO_PORT
@@ -33,6 +34,8 @@ PKG_NS_REMOVE = S_BASE.format(NFVO_PKG_ENDPOINT, NFVO_PKG_PORT,
 
 PKG_ONBOARD_EP = "composer/upload?api_server=https://localhost"
 PKG_ONBOARD = S_BASE.format(NFVO_PKG_ENDPOINT, NFVO_PKG_PORT, PKG_ONBOARD_EP)
+PKG_STATUS = S_BASE.format(NFVO_PKG_ENDPOINT, NFVO_PKG_STATUS_PORT,
+                           "api/upload")
 
 # PKG_VNF_REMOVE_EP = "/api/config/vnfd-catalog/vnfd/{}"
 PKG_VNF_REMOVE_EP = "composer/api/catalog/vnfd/{}?api_server=https://localhost"
