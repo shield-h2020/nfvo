@@ -176,7 +176,7 @@ class VnsfoNs:
                     if x.get("mgmt-network", "") == "true"]
             # Add vld information despite it's explicit or not
             non_managed_vlds = [{"id": x["id"],
-                                 "mgmt-network": "true",
+                                 "mgmt-network": "false",
                                  "name": x["name"]}
                                 for x in configuration[0]["vld"]
                                 if x.get("mgmt-network", "") == "false"]
