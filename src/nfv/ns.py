@@ -191,6 +191,13 @@ class VnsfoNs:
                      "vim-network-name": x["vim-network-name"]}
                     for x in configuration[0]["vld"]
                     if "vim-network-name" in x]
+            # Add vld information despite it's explicit or not
+            non_managed_vlds = [{"id": x["id"],
+                                 "mgmt-network": "false",
+                                 "name": x["name"]}
+                                for x in configuration[0]["vld"]
+                                if "vim-network-name" not in x]
+            vlds = vlds + non_managed_vlds
         return nfvo_tmpl.instantiation_data_msg(
                 nsr_id, instantiation_data, vnfss, vlds)
 
