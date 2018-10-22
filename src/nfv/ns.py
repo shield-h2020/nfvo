@@ -55,13 +55,13 @@ class VnsfoNs:
                 osm_eps.NS_CATALOG_C,
                 headers=osm_eps.get_default_headers(),
                 verify=False)
-        # yep, this could be insecure - but the output comes from NFVO
+        # Yep, this could be insecure - but the output comes from NFVO
         catalog = eval(resp.text) if resp.text else []
         if ns_name is None:
-            # returning all ns_catalog_descriptors
+            # Returning all ns_catalog_descriptors
             return self.format_ns_catalog_descriptors(catalog)
         else:
-            # filtering by name
+            # Filtering by name
             fcatalog = self.format_ns_catalog_descriptors(catalog)
             return [x for x in fcatalog["ns"] if x["ns_name"] == ns_name]
 
@@ -154,18 +154,18 @@ class VnsfoNs:
 
     def build_nsr_data(self, instantiation_data):
         nsr_id = str(uuid.uuid4())
-        # need to retrieve vnfds of the nsd
+        # Need to retrieve vnfds of the nsd
         configuration = self.get_nsr_config(instantiation_data["ns_name"])
         if len(configuration) == 0 or configuration is None:
-            # in case payload is None rift.io will throw a 404
+            # In case payload is None rift.io will throw a 404
             return None
-        # filtering by start-by-default (field seems to be there for this)
+        # Filtering by start-by-default (field seems to be there for this)
         vnfss = [{"vnfd-id-ref": x["vnfd-id-ref"],
                   "member-vnf-index": x["member-vnf-index"]} for
                  x in configuration[0]["constituent_vnfs"]
                  if x["start-by-default"] == "true"]
         if "vim_net" in instantiation_data:
-            # In case it's already specified inside request
+            # In case it is already specified inside request
             # apply vim_net on mgmt
             vlds = [{"id": x["id"],
                      "mgmt-network": x["mgmt-network"],
@@ -174,7 +174,7 @@ class VnsfoNs:
                      "vim-network-name": instantiation_data["vim_net"]}
                     for x in configuration[0]["vld"]
                     if x.get("mgmt-network", "") == "true"]
-            # Add vld information despite it's explicit or not
+            # Add vld information, wether explicit or not
             non_managed_vlds = [{"id": x["id"],
                                  "mgmt-network": "false",
                                  "name": x["name"]}
@@ -191,7 +191,7 @@ class VnsfoNs:
                      "vim-network-name": x["vim-network-name"]}
                     for x in configuration[0]["vld"]
                     if "vim-network-name" in x]
-            # Add vld information despite it's explicit or not
+            # Add vld information, whether explicit or not
             non_managed_vlds = [{"id": x["id"],
                                  "mgmt-network": "false",
                                  "name": x["name"]}
@@ -250,7 +250,7 @@ class VnsfoNs:
         target_status = None
         if "target_status" in instantiation_data:
             target_status = instantiation_data["target_status"]
-        # passing also current_app._get_current_object() (flask global context)
+        # Passing also current_app._get_current_object() (flask global context)
         t = threading.Thread(target=self.deployment_monitor_thread,
                              args=(instance_id,
                                    instantiation_data["action"],
