@@ -174,6 +174,13 @@ class VnsfoNs:
                      "vim-network-name": instantiation_data["vim_net"]}
                     for x in configuration[0]["vld"]
                     if x.get("mgmt-network", "") == "true"]
+            # Add vld information despite it's explicit or not
+            non_managed_vlds = [{"id": x["id"],
+                                 "mgmt-network": "true",
+                                 "name": x["name"]}
+                                for x in configuration[0]["vld"]
+                                if x.get("mgmt-network", "") == "false"]
+            vlds = vlds + non_managed_vlds
         else:
             # By default, include virtual links configuration only if
             # specific vim-network-name is defined
