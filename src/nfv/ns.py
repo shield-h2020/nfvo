@@ -171,16 +171,23 @@ class VnsfoNs:
                      "mgmt-network": x["mgmt-network"],
                      "name": x["name"],
                      "type": x["type"],
+                     "vnfd-connection-point-ref": x["vnfd-connection-point-ref"],
                      "vim-network-name": instantiation_data["vim_net"]}
                     for x in configuration[0]["vld"]
                     if x.get("mgmt-network", "") == "true"]
             # Add vld information despite it's explicit or not
             non_managed_vlds = [{"id": x["id"],
                                  "mgmt-network": "false",
+                                 "vnfd-connection-point-ref": x["vnfd-connection-point-ref"],
                                  "name": x["name"]}
                                 for x in configuration[0]["vld"]
                                 if x.get("mgmt-network", "") == "false"]
             vlds = vlds + non_managed_vlds
+            print("----------------------------------------------------")
+            print(configuration[0]["vld"])
+            print("----------------------------------------------------")
+            print(vlds)
+            print("----------------------------------------------------")
         else:
             # By default, include virtual links configuration only if
             # specific vim-network-name is defined
@@ -267,6 +274,11 @@ class VnsfoNs:
                 NFVO_DEFAULT_KVM_DATACENTER
             if "virt_type" in instantiation_data:
                 if instantiation_data["virt_type"] == "docker":
+                    # Replacing instance_name in case it's
+                    #    a docker deployment to avoid naming
+                    #    overlap
+                    instantiation_data["instance_name"] = \
+                        str(uuid.uuid4()).replace("-", "")
                     instantiation_data["vim_id"] = \
                         NFVO_DEFAULT_DOCKER_DATACENTER
         instantiation_data["om-datacenter"] = instantiation_data["vim_id"]
@@ -284,6 +296,9 @@ class VnsfoNs:
             headers=osm_eps.get_default_headers(),
             verify=False,
             json=nsr_data)
+        print("BODY")
+        print(nsr_data)
+        print("BODY END")
         if resp.status_code in(200, 201, 202):
             success_msg = {"instance_name": nsr_data["nsr"][0]["name"],
                            "instance_id": nsr_data["nsr"][0]["id"],
