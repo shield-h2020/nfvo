@@ -113,6 +113,7 @@ class MockNs:
                             "operational_status": "running",
                             "vendor": "POLITO",
                             "vim": "openstack-orion",
+                            "vnfd_id": "6c358c6b-2807-4988-826e-6c601e674e0d",
                             "vnfr_id": "6c358c6b-2807-4988-826e-6c601e674e0d",
                             "vnfr_name": "fl7f_test25__fl7filter_vnfd__1"
                         }
@@ -204,6 +205,8 @@ class MockNs:
                         primitive["name"] = And(Use(str))
                 vnf["config_status"] = And(Use(str))
                 vnf["ip"] = And(Use(str))
+                vnf["vnfd_id"] = \
+                    And(Use(str), lambda n: regex.uuid4(n) is not None)
                 vnf["vnfr_id"] = \
                     And(Use(str), lambda n: regex.uuid4(n) is not None)
                 vnf["ns_id"] = \
