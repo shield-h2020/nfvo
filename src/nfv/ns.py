@@ -171,14 +171,16 @@ class VnsfoNs:
                      "mgmt-network": x["mgmt-network"],
                      "name": x["name"],
                      "type": x["type"],
-                     "vnfd-connection-point-ref": x["vnfd-connection-point-ref"],
+                     "vnfd-connection-point-ref":
+                     x["vnfd-connection-point-ref"],
                      "vim-network-name": instantiation_data["vim_net"]}
                     for x in configuration[0]["vld"]
                     if x.get("mgmt-network", "") == "true"]
             # Add vld information despite it's explicit or not
             non_managed_vlds = [{"id": x["id"],
                                  "mgmt-network": "false",
-                                 "vnfd-connection-point-ref": x["vnfd-connection-point-ref"],
+                                 "vnfd-connection-point-ref":
+                                 x["vnfd-connection-point-ref"],
                                  "name": x["name"]}
                                 for x in configuration[0]["vld"]
                                 if x.get("mgmt-network", "") == "false"]
