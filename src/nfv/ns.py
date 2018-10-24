@@ -154,18 +154,18 @@ class VnsfoNs:
 
     def build_nsr_data(self, instantiation_data):
         nsr_id = str(uuid.uuid4())
-        # need to retrieve vnfds of the nsd
+        # Need to retrieve vnfds of the nsd
         configuration = self.get_nsr_config(instantiation_data["ns_name"])
         if len(configuration) == 0 or configuration is None:
-            # in case payload is None rift.io will throw a 404
+            # In case payload is None rift.io will throw a 404
             return None
-        # filtering by start-by-default (field seems to be there for this)
+        # Filtering by start-by-default (field seems to be there for this)
         vnfss = [{"vnfd-id-ref": x["vnfd-id-ref"],
                   "member-vnf-index": x["member-vnf-index"]} for
                  x in configuration[0]["constituent_vnfs"]
                  if x["start-by-default"] == "true"]
         if "vim_net" in instantiation_data:
-            # In case it's already specified inside request
+            # In case it is already specified inside request
             # apply vim_net on mgmt
             vlds = [{"id": x["id"],
                      "mgmt-network": x["mgmt-network"],
@@ -276,9 +276,9 @@ class VnsfoNs:
                 NFVO_DEFAULT_KVM_DATACENTER
             if "virt_type" in instantiation_data:
                 if instantiation_data["virt_type"] == "docker":
-                    # Replacing instance_name in case it's
-                    #    a docker deployment to avoid naming
-                    #    overlap
+                    # Replacing instance_name in case it is
+                    # a Docker deployment to avoid naming
+                    # overlap
                     instantiation_data["instance_name"] = \
                         str(uuid.uuid4()).replace("-", "")
                     instantiation_data["vim_id"] = \
