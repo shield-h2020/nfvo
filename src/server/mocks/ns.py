@@ -205,8 +205,7 @@ class MockNs:
                         primitive["name"] = And(Use(str))
                 vnf["config_status"] = And(Use(str))
                 vnf["ip"] = And(Use(str))
-                vnf["vnfd_id"] = \
-                    And(Use(str), lambda n: regex.uuid4(n) is not None)
+                vnf["vnfd_id"] = And(Use(str))
                 vnf["vnfr_id"] = \
                     And(Use(str), lambda n: regex.uuid4(n) is not None)
                 vnf["ns_id"] = \
