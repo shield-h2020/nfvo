@@ -97,8 +97,8 @@ class VnsfoNs:
         return config_map
 
     def join_vnfr_with_config_jobs(self, vnfr, config_map):
-        if vnfr["vnf_id"] in config_map:
-            vnfr["config_jobs"] = config_map[vnfr["vnf_id"]]
+        if vnfr["vnfr_id"] in config_map:
+            vnfr["config_jobs"] = config_map[vnfr["vnfr_id"]]
         else:
             vnfr["config_jobs"] = []
         return vnfr
@@ -117,7 +117,7 @@ class VnsfoNs:
             "constituent_vnf_instances":
             [self.join_vnfr_with_config_jobs(y, config_agent_job_map)
                 for y in vnsf.get_vnfr_running().get("vnsf", "")
-                if y.get("vnf_id", "")
+                if y.get("vnfr_id", "")
                 in [z.get("vnfr-id", "")
                     for z in x.get("constituent-vnfr-ref", "")]],
             "vlrs": [
@@ -237,10 +237,10 @@ class VnsfoNs:
                 for vnsf_instance in nss["ns"][0]["constituent_vnf_instances"]:
                     vnsf = VnsfoVnsf()
                     exec_tmpl = vnsf.fill_vnf_action_request_encoded(
-                        vnsf_instance["vnf_id"], action, params)
+                        vnsf_instance["vnfr_id"], action, params)
                     output = vnsf.exec_action_on_vnf(exec_tmpl)
                     if action is not None:
-                        app.mongo.store_vnf_action(vnsf_instance["vnf_id"],
+                        app.mongo.store_vnf_action(vnsf_instance["vnfr_id"],
                                                    action,
                                                    params,
                                                    json.loads(output))
