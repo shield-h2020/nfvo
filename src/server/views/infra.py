@@ -16,10 +16,12 @@
 
 
 from core.exception import Exception
+from flask import abort
 from flask import Blueprint
 from flask import current_app
 from flask import request
 from infra.node import Node
+from infra.node import NodeSSHException
 from server.endpoints import VnsfoEndpoints as endpoints
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
@@ -114,7 +116,10 @@ def config_node(node_id):
     if bson.objectid.ObjectId.is_valid(node_id) is False:
         Exception.improper_usage("Bad node_id: {0}".format(node_id))
     if action == "isolated" and config_data[action] is True:
-        Node(node_id).isolate()
+        try:
+            Node(node_id).isolate()
+        except NodeSSHException:
+            abort(500)
     if action == "disabled" and config_data[action] is True:
         Node(node_id).disable()
     return ('', HttpCode.NO_CONTENT)

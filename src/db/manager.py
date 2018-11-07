@@ -184,6 +184,7 @@ class DBManager():
                 last_record = node["isolation_policy"]["records"][-1]
                 node_resp["timestamp"] = last_record["date"]
                 node_resp["configuration"] = last_record["output"]
+                node_resp["isolation_errors"] = last_record["error"]
             else:
                 node_resp["status"] = "connected"
             if node["disabled"] is False:

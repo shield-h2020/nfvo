@@ -24,12 +24,18 @@ from db.models.isolation.isolation_policy import InterfaceDown
 from db.models.isolation.isolation_policy import DeleteFlow
 from db.models.isolation.isolation_policy import Shutdown
 from db.models.isolation.isolation_record import IsolationRecord
+from io import StringIO
 from jinja2 import Template
 from tm.tm_client import TMClient
 
 import configparser
 import paramiko
+import socket
 import uuid
+
+
+class NodeSSHException(BaseException):
+    pass
 
 
 class Node:
@@ -68,9 +74,19 @@ class Node:
                         username=self._node["authentication"]["username"],
                         password=self._node["authentication"]["password"])
         else:
-            ssh.connect(self._node["host_name"],
-                        username=self._node["authentication"]["username"],
-                        pkey=self._node["authentication"]["private_key"])
+            try:
+                self._node["host_name"].rstrip()
+                pkey_from_auth = StringIO(
+                    self._node["authentication"]["private_key"])
+                pkey = paramiko.RSAKey.from_private_key(
+                    pkey_from_auth)
+                pkey_from_auth.close()
+                ssh.connect(self._node["host_name"],
+                            username=self._node["authentication"]["username"],
+                            pkey=pkey)
+            except socket.gaierror as exc:
+                print("Error connecting {0}".format(exc))
+                raise NodeSSHException
         scp = ssh.open_sftp()
         file_id = str(uuid.uuid4())
         if isinstance(self._node["isolation_policy"], Shutdown):
