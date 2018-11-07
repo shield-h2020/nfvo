@@ -76,11 +76,11 @@ class Node:
         else:
             try:
                 self._node["host_name"].rstrip()
-                not_really_a_file = StringIO(
+                pkey_from_auth = StringIO(
                     self._node["authentication"]["private_key"])
                 pkey = paramiko.RSAKey.from_private_key(
-                    not_really_a_file)
-                not_really_a_file.close()
+                    pkey_from_auth)
+                pkey_from_auth.close()
                 ssh.connect(self._node["host_name"],
                             username=self._node["authentication"]["username"],
                             pkey=pkey)

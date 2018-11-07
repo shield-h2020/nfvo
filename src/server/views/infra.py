@@ -20,7 +20,8 @@ from flask import abort
 from flask import Blueprint
 from flask import current_app
 from flask import request
-from infra.node import Node, NodeSSHException
+from infra.node import Node
+from infra.node import NodeSSHException
 from server.endpoints import VnsfoEndpoints as endpoints
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
