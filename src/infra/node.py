@@ -29,7 +29,13 @@ from tm.tm_client import TMClient
 
 import configparser
 import paramiko
+import socket
+from io import StringIO
 import uuid
+
+
+class NodeSSHException(BaseException):
+    pass
 
 
 class Node:
@@ -68,9 +74,19 @@ class Node:
                         username=self._node["authentication"]["username"],
                         password=self._node["authentication"]["password"])
         else:
-            ssh.connect(self._node["host_name"],
-                        username=self._node["authentication"]["username"],
-                        pkey=self._node["authentication"]["private_key"])
+            try:
+                self._node["host_name"].rstrip()
+                not_really_a_file = StringIO(
+                    self._node["authentication"]["private_key"])
+                pkey = paramiko.RSAKey.from_private_key(
+                    not_really_a_file)
+                not_really_a_file.close()
+                ssh.connect(self._node["host_name"],
+                            username=self._node["authentication"]["username"],
+                            pkey=pkey)
+            except socket.gaierror as exc:
+                print("Error connecting {0}".format(exc))
+                raise NodeSSHException
         scp = ssh.open_sftp()
         file_id = str(uuid.uuid4())
         if isinstance(self._node["isolation_policy"], Shutdown):
