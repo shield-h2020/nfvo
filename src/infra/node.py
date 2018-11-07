@@ -24,13 +24,13 @@ from db.models.isolation.isolation_policy import InterfaceDown
 from db.models.isolation.isolation_policy import DeleteFlow
 from db.models.isolation.isolation_policy import Shutdown
 from db.models.isolation.isolation_record import IsolationRecord
+from io import StringIO
 from jinja2 import Template
 from tm.tm_client import TMClient
 
 import configparser
 import paramiko
 import socket
-from io import StringIO
 import uuid
 
 
