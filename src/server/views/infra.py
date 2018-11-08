@@ -104,7 +104,7 @@ def config_node(node_id):
     if exp_ct not in request.headers.get("Content-Type", ""):
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
     config_data = request.get_json()
-    fields = ["isolated", "disabled"]
+    fields = ["isolated", "disabled", "terminated"]
     action = None
     for field in fields:
         if field in config_data:
@@ -118,6 +118,11 @@ def config_node(node_id):
     if action == "isolated" and config_data[action] is True:
         try:
             Node(node_id).isolate()
+        except NodeSSHException:
+            abort(500)
+    if action == "terminated" and config_data[action] is True:
+        try:
+            Node(node_id).terminate()
         except NodeSSHException:
             abort(500)
     if action == "disabled" and config_data[action] is True:
@@ -144,6 +149,11 @@ def register_node():
     if len(missing_isolation_params) > 0:
         Exception.improper_usage("Missing isolation parameters: {0}".format(
             ", ".join(missing_isolation_params)))
+    missing_termination_params = check_isolation_params(
+        node_data["termination_policy"])
+    if len(missing_termination_params) > 0:
+        Exception.improper_usage("Missing termination parameters: {0}".format(
+            ", ".join(missing_termination_params)))
     node_id = current_app.mongo.store_node_information(node_data)
     trust_monitor_client = TMClient()
     trust_monitor_client.register_node(node_data)
@@ -196,7 +206,7 @@ def check_auth_params(auth_data):
 def check_node_params(node_data):
     params = ["host_name", "ip_address", "pcr0", "driver",
               "analysis_type", "authentication",
-              "isolation_policy", "distribution"]
+              "isolation_policy", "termination_policy", "distribution"]
     missing_params = []
     for param in params:
         if param not in node_data:

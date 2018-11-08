@@ -54,6 +54,7 @@ class Node:
         self._delflow_path = config["scripts"]["delflow"]
         self._ifdown_path = config["scripts"]["ifdown"]
         self._node = nodes[0]
+        self._node["termination_policy"]
 
     def disable(self):
         self._node.disabled = True
@@ -66,7 +67,69 @@ class Node:
         trust_monitor_client.delete_node(self._node.host_name)
         self._node.delete()
 
-    def isolate(self):
+    def execute_shutdown(self, file_id, ssh, scp, policy):
+        # Process shutdown by command template
+        with open("{0}/{1}".format(self._scripts_path,
+                                   self._shutdown_path)) as fhandle:
+            sd_templ = Template(fhandle.read())
+            # Send script to node and render template with policy command
+            with scp.open("{0}.sh".format(file_id), "w") as rfhandle:
+                rfhandle.write(sd_templ.render(command=policy["command"]))
+        # ssh.exec_command("chmod u+x {0}.sh".format(file_id))
+        # Execute isolation commmand
+        (stdin, stdout, stderr) = ssh.exec_command("source ./{0}.sh".
+                                                   format(file_id))
+        # Store isolation record
+        record = IsolationRecord(output=stdout.read(), error=stderr.read())
+        record.save()
+        # Remove tmp file
+        ssh.exec_command("rm {0}.sh".format(file_id))
+        return record
+
+    def execute_interface_down(self, file_id, ssh, scp, policy):
+        # Process interface down template
+        with open("{0}/{1}".format(self._scripts_path,
+                                   self._ifdown_path)) as fhandle:
+            sd_templ = Template(fhandle.read())
+            # Send script to node and render template with policy command
+            with scp.open("{0}.sh".format(file_id), "w") as rfhandle:
+                rfhandle.write(sd_templ.render(
+                    interface_name=policy["interface_name"]))
+        # ssh.exec_command("chmod u+x {0}.sh".format(file_id))
+        # Execute isolation script
+        (stdin, stdout, stderr) = ssh.exec_command("source ./{0}.sh".
+                                                   format(file_id))
+        # Store isolation record
+        record = IsolationRecord(output=stdout.read(), error=stderr.read())
+        record.save()
+        # Remove tmp file
+        ssh.exec_command("rm {0}.sh".format(file_id))
+        return record
+
+    def execute_delete_flow(self, file_id, ssh, scp, policy):
+            # Process delete flow template
+            with open("{0}/{1}".format(self._scripts_path,
+                                       self._delflow_path)) as fhandle:
+                sd_templ = Template(fhandle.read())
+                # Send script to node and render template with policy command
+                with scp.open("{0}.sh".format(file_id), "w") as rfhandle:
+                    rfhandle.write(sd_templ.render(flow_id=policy["flow_id"],
+                                                   rule=policy["rule"]))
+            # ssh.exec_command("chmod u+x {0}.sh".format(file_id))
+            # Execute isolation script
+            (stdin, stdout, stderr) = ssh.exec_command("source ./{0}.sh".
+                                                       format(file_id))
+            # Store isolation record
+            record = IsolationRecord(output=stdout.read(), error=stderr.read())
+            record.save()
+            # Remove tmp file
+            ssh.exec_command("rm {0}.sh".format(file_id))
+            return record
+
+    def terminate(self):
+        self.isolate(terminated=True)
+
+    def isolate(self, terminated=False):
         ssh = paramiko.client.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
         if isinstance(self._node["authentication"], PasswordAuth):
@@ -89,71 +152,18 @@ class Node:
                 raise NodeSSHException
         scp = ssh.open_sftp()
         file_id = str(uuid.uuid4())
-        if isinstance(self._node["isolation_policy"], Shutdown):
-            # Process shutdown by command template
-            with open("{0}/{1}".format(self._scripts_path,
-                                       self._shutdown_path)) as fhandle:
-                sd_templ = Template(fhandle.read())
-                # Send script to node and render template with policy command
-                with scp.open("{0}.sh".format(file_id), "w") as rfhandle:
-                    command = self._node["isolation_policy"]["command"]
-                    rfhandle.write(sd_templ.render(command=command))
-            ssh.exec_command("chmod u+x {0}.sh".format(file_id))
-            # Execute isolation commmand
-            (stdin, stdout, stderr) = ssh.exec_command("./{0}.sh".
-                                                       format(file_id))
-            # Store isolation record
-            record = IsolationRecord(output=stdout.read(), error=stderr.read())
-            record.save()
-            # Remove tmp file
-            ssh.exec_command("rm {0}.sh".format(file_id))
-            self._node["isolation_policy"]["records"].append(record)
-            self._node["isolation_policy"].save()
-            self._node["isolated"] = True
-            self._node.save()
-        if isinstance(self._node["isolation_policy"], InterfaceDown):
-            # Process interface down template
-            with open("{0}/{1}".format(self._scripts_path,
-                                       self._ifdown_path)) as fhandle:
-                sd_templ = Template(fhandle.read())
-                # Send script to node and render template with policy command
-                with scp.open("{0}.sh".format(file_id), "w") as rfhandle:
-                    ifname = self._node["isolation_policy"]["interface_name"]
-                    rfhandle.write(sd_templ.render(interface_name=ifname))
-            ssh.exec_command("chmod u+x {0}.sh".format(file_id))
-            # Execute isolation script
-            (stdin, stdout, stderr) = ssh.exec_command("./{0}.sh".
-                                                       format(file_id))
-            # Store isolation record
-            record = IsolationRecord(output=stdout.read(), error=stderr.read())
-            record.save()
-            # Remove tmp file
-            ssh.exec_command("rm {0}.sh".format(file_id))
-            self._node["isolation_policy"]["records"].append(record)
-            self._node["isolation_policy"].save()
-            self._node["isolated"] = True
-            self._node.save()
-        if isinstance(self._node["isolation_policy"], DeleteFlow):
-            # Process delete flow template
-            with open("{0}/{1}".format(self._scripts_path,
-                                       self._delflow_path)) as fhandle:
-                sd_templ = Template(fhandle.read())
-                # Send script to node and render template with policy command
-                with scp.open("{0}.sh".format(file_id), "w") as rfhandle:
-                    flow_id = self._node["isolation_policy"]["flow_id"]
-                    rule = self._node["isolation_policy"]["rule"]
-                    rfhandle.write(sd_templ.render(flow_id=flow_id,
-                                                   rule=rule))
-            ssh.exec_command("chmod u+x {0}.sh".format(file_id))
-            # Execute isolation script
-            (stdin, stdout, stderr) = ssh.exec_command("./{0}.sh".
-                                                       format(file_id))
-            # Store isolation record
-            record = IsolationRecord(output=stdout.read(), error=stderr.read())
-            record.save()
-            # Remove tmp file
-            ssh.exec_command("rm {0}.sh".format(file_id))
-            self._node["isolation_policy"]["records"].append(record)
-            self._node["isolation_policy"].save()
-            self._node["isolated"] = True
-            self._node.save()
+        policy = self._node["isolation_policy"]
+        if terminated:
+            policy = self._node["termination_policy"]
+        if isinstance(policy, Shutdown):
+            record = self.execute_shutdown(file_id, ssh, scp, policy)
+        if isinstance(policy, InterfaceDown):
+            record = self.execute_interface_down(file_id, ssh, scp, policy)
+        elif isinstance(policy, DeleteFlow):
+            record = self.execute_delete_flow(file_id, ssh, scp, policy)
+        self._node["isolation_policy"]["records"].append(record)
+        self._node["isolation_policy"].save()
+        self._node["isolated"] = True
+        if terminated:
+            self._node["terminated"] = True
+        self._node.save()

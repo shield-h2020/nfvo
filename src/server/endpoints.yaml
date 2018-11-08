@@ -164,9 +164,9 @@ paths:
     put:
       tags:
         - nfvi
-      summary: Isolates a node
+      summary: Isolates/Terminates a node
       description: >-
-        Isolates a compromised node according to isolation policy
+        Isolates or terminates a compromised node according to isolation policy
       operationId: isolateNode
       consumes:
         - application/json
@@ -182,7 +182,10 @@ paths:
           description: The body of the request
           required: true
           schema:
-            $ref: "#/definitions/IsolateNodeInput"
+            oneOf:
+              - $ref: "#/definitions/IsolateNodeInput"
+              - $ref: "#/definitions/DisableNodeInput"
+              - $ref: "#/definitions/TerminateNodeInput"
       responses:
         204:
           description: Request accepted
@@ -848,7 +851,7 @@ definitions:
         example: FULL
       status:
         type: string
-        example: isolated, connected
+        example: isolated, connected, terminated
       configuration:
         type: string
         example: inet addr:127.0.0.1  Mask:255.0.0.0
@@ -894,7 +897,7 @@ definitions:
         example: FULL
       status:
         type: string
-        example: isolated, connected
+        example: isolated, connected, terminated
       configuration:
         type: string
         example: inet addr:127.0.0.1  Mask:255.0.0.0
@@ -923,6 +926,15 @@ definitions:
         type: boolean
         example: true
 
+  TerminateNodeInput:
+    type: object
+    required:
+      - isolated
+    properties:
+      isolated:
+        type: boolean
+        example: true
+
   RegisterNodeInput:
     type: object
     required:
@@ -934,6 +946,7 @@ definitions:
       - distribution
       - authentication
       - isolation_policy
+      - termination_policy
     properties:
       host_name:
         type: string
@@ -975,6 +988,30 @@ definitions:
             type: string
             example: -----BEGIN RSA PRIVATE KEY-----\nMIIEqAIBAAKCAQEAnaSdeeE/bcAxgsivLliDhRE017ZK74m2QYg58QNbfdzoNba2 ...
       isolation_policy:
+        type: object
+        required:
+          - name
+          - type
+        properties:
+          name:
+            type: string
+            example: DownEth0
+          type:
+            type: string
+            example: ifdown, delflow, shutdown
+          interface_name:
+            type: string
+            example: eth0
+          command:
+            type: string
+            example: sudo poweroff
+          flow_id:
+            type: string
+            example: 21
+          rule:
+            type: string
+            example: rule1
+      termination_policy:
         type: object
         required:
           - name

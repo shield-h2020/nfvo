@@ -254,12 +254,12 @@ curl -ki https://127.0.0.1:8448/nfvi/node -X POST \
      -d '{ "host_name": "node.test", "ip_address": "192.168.10.2", "pcr0": "??", "driver": "OAT", "analysis_type": "FULL", "distribution": "xenial", "authentication": { "username": "user", "type": "password", "password": "password" }, "isolation_policy": { "name": "Eth0Down", "type": "ifdown", "interface_name": "eth0" } }'
 ```
 
-#### Register a new node using password and shutdown isolation policy
+#### Register a new node using password, ifdown isolation policy and shutdown termination policy
 
 ```
 curl -ki https://127.0.0.1:8448/nfvi/node -X POST \
      -H 'Content-Type: application/json' \
-     -d '{ "host_name": "node.test", "ip_address": "192.168.10.2", "pcr0": "??", "driver": "OAT", "analysis_type": "FULL", "distribution": "xenial", "authentication": { "username": "user", "type": "password", "password": "password" }, "isolation_policy": { "name": "shutdown", "type": "shutdown", "command": "sudo poweroff" } }'
+     -d '{ "host_name": "node.test", "ip_address": "192.168.10.2", "pcr0": "??", "driver": "OAT", "analysis_type": "FULL", "distribution": "xenial", "authentication": { "username": "user", "type": "password", "password": "password" }, "isolation_policy": { "name": "ifdown", "type": "ifdown", "interface_name": "ens2f0" }, "termination_policy": { "name": "shutdown", "type": "shutdown", "command": "sudo poweroff" } }'
 ```
 
 #### Delete a node and associated data
@@ -274,6 +274,14 @@ curl -ki https://127.0.0.1:8448/nfvi/node/5b2908871745ba000163bf9e -X DELETE
 curl -ki https://127.0.0.1:8448/nfvi/node/5b2908871745ba000163bf9e -X PUT \
      -H 'Content-Type: application/json' \
      -d '{ "isolated": true }'
+```
+
+#### Terminate a node
+
+```
+curl -ki https://127.0.0.1:8448/nfvi/node/5b2908871745ba000163bf9e -X PUT \
+     -H 'Content-Type: application/json' \
+     -d '{ "terminated": true }'
 ```
 
 #### Get information and isolation status for all or specific nodes
