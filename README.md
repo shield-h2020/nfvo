@@ -262,7 +262,7 @@ curl -ki https://127.0.0.1:8448/nfvi/node -X POST \
      -d '{ "host_name": "node.test", "ip_address": "192.168.10.2", "pcr0": "??", "driver": "OAT", "analysis_type": "FULL", "distribution": "xenial", "authentication": { "username": "user", "type": "password", "password": "password" }, "isolation_policy": { "name": "ifdown", "type": "ifdown", "interface_name": "ens2f0" }, "termination_policy": { "name": "shutdown", "type": "shutdown", "command": "sudo poweroff" } }'
 ```
 
-#### Delete a node and associated data
+#### Deregister a node and associated data
 
 ```
 curl -ki https://127.0.0.1:8448/nfvi/node/5b2908871745ba000163bf9e -X DELETE
