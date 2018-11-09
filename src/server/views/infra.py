@@ -138,11 +138,15 @@ def config_node(node_id):
             Node(node_id).isolate()
         except NodeSSHException:
             abort(500)
+    elif config_data[action] is False:
+        Exception.improper_usage("Automated isolation revert not supported")
     if action == "terminated" and config_data[action] is True:
         try:
             Node(node_id).terminate()
         except NodeSSHException:
             abort(500)
+    elif config_data[action] is False:
+        Exception.improper_usage("Automated termination revert not supported")
     if action == "disabled" and config_data[action] is True:
         Node(node_id).disable()
     return ('', HttpCode.NO_CONTENT)
