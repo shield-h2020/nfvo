@@ -103,6 +103,12 @@ class TestInfraRealtime(unittest.TestCase):
                     "name": "Dummy",
                     "type": "shutdown",
                     "command": "ls -laht"
+                },
+                "termination_policy": {
+                    "name": "Dummy",
+                    "type": "delflow",
+                    "rule": "r27",
+                    "flow_id": "sample_id"
                 }}
         prv_virtual = self.get_virtual_length()
         prv_virtual_isolated = self.get_virtual_isolated_length()

@@ -23,6 +23,7 @@ from db.models.vnf_action_request import VnfActionRequest
 from db.models.auth.auth import PasswordAuth
 from db.models.infra.node import Node
 from db.models.isolation.isolation_policy import InterfaceDown
+from db.models.isolation.isolation_policy import Shutdown
 from db.models.compute.vdu import Vdu
 from mongoengine import connect as me_connect
 
@@ -66,6 +67,9 @@ class TestDbConnectivity(unittest.TestCase):
         isolation_policy = InterfaceDown(name="ens0 down",
                                          interface_name="ens0")
         isolation_policy.save()
+        termination_policy = Shutdown(name="Shutdown",
+                                      command="ls -laht /")
+        termination_policy.save()
         node = Node(host_name="nova2",
                     ip_address="192.168.10.1",
                     distribution="xenial",
@@ -74,6 +78,7 @@ class TestDbConnectivity(unittest.TestCase):
                     analysis_type="()",
                     authentication=authentication,
                     isolation_policy=isolation_policy,
+                    termination_policy=termination_policy,
                     disabled=False,
                     physical=False)
         node.save()

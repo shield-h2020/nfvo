@@ -150,7 +150,10 @@ class DBManager():
         Get physical or virtual nodes
         """
         if isolated is not None:
-            nodes = Node.objects(physical=physical, isolated=isolated)
+            # Get isolated nodes (terminated also)
+            nodes = Node.objects(physical=physical,
+                                 isolated=isolated,
+                                 terminated__in=[True, False])
         else:
             nodes = Node.objects(physical=physical)
         return self.__format_nodes(nodes)
@@ -185,6 +188,8 @@ class DBManager():
                 node_resp["timestamp"] = last_record["date"]
                 node_resp["configuration"] = last_record["output"]
                 node_resp["isolation_errors"] = last_record["error"]
+                if node["terminated"]:
+                    node_resp["status"] = "terminated"
             else:
                 node_resp["status"] = "connected"
             if node["disabled"] is False:
@@ -238,6 +243,26 @@ class DBManager():
             auth.delete()
             e = "Cannot store node information (isolation)"
             raise Exception(e)
+        termination_policy = node_data["termination_policy"]
+        if termination_policy["type"] == "ifdown":
+            termination = InterfaceDown(
+                name=str(termination_policy["name"]),
+                interface_name=str(termination_policy["interface_name"]))
+        if termination_policy["type"] == "delflow":
+            termination = DeleteFlow(
+                name=str(termination_policy["name"]),
+                flow_id=str(termination_policy["flow_id"]),
+                rule=str(termination_policy["rule"]))
+        if termination_policy["type"] == "shutdown":
+            termination = Shutdown(name=str(termination_policy["name"]),
+                                   command=str(termination_policy["command"]))
+        try:
+            termination.save()
+        except (OperationError, ValidationError):
+            # Rolling back
+            auth.delete()
+            e = "Cannot store node information (termination)"
+            raise Exception(e)
         physical = False
         if ("physical" in node_data) and (node_data["physical"] is True):
             physical = True
@@ -249,6 +274,7 @@ class DBManager():
                     analysis_type=str(node_data["analysis_type"]),
                     authentication=auth,
                     isolation_policy=isolation,
+                    termination_policy=termination,
                     disabled=False,
                     physical=physical)
         try:

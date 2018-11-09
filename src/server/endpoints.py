@@ -36,6 +36,8 @@ class VnsfoEndpoints:
     NFVI_TOPO = "{}/network".format(NFVI)
     # - Nodes
     NFVI_NODE_ID = "{}/<node_id>".format(NFVI_NODE)
+    NFVI_NODE_ISOLATE = "{}/isolate".format(NFVI_NODE_ID)
+    NFVI_NODE_TERMINATE = "{}/terminate".format(NFVI_NODE_ID)
     NFVI_NODE_PHYSICAL = "{}/physical".format(NFVI_NODE)
     NFVI_NODE_PHYSICAL_ISOLATED = "{}/isolated".format(NFVI_NODE_PHYSICAL)
     NFVI_NODE_PHYSICAL_TRUSTED = "{}/trusted".format(NFVI_NODE_PHYSICAL)
