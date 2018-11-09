@@ -271,17 +271,25 @@ curl -ki https://127.0.0.1:8448/nfvi/node/5b2908871745ba000163bf9e -X DELETE
 #### Isolate a node
 
 ```
+# Option 1: using {"isolated": true} as body in a PUT request
 curl -ki https://127.0.0.1:8448/nfvi/node/5b2908871745ba000163bf9e -X PUT \
      -H 'Content-Type: application/json' \
      -d '{ "isolated": true }'
+# Option 2: isolate POST endpoint
+curl -ki https://127.0.0.1:8448/nfvi/node/5b2908871745ba000163bf9e/isolate -X POST \
+     -H 'Content-Type: application/json'
 ```
 
 #### Terminate a node
 
 ```
+# Option 1: using {"terminated": true} as body in a PUT request
 curl -ki https://127.0.0.1:8448/nfvi/node/5b2908871745ba000163bf9e -X PUT \
      -H 'Content-Type: application/json' \
      -d '{ "terminated": true }'
+# Option 2: terminate POST endpoint
+curl -ki https://127.0.0.1:8448/nfvi/node/5b2908871745ba000163bf9e/terminate -X POST \
+     -H 'Content-Type: application/json'
 ```
 
 #### Get information and isolation status for all or specific nodes

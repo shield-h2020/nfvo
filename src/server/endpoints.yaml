@@ -191,6 +191,34 @@ paths:
           description: Request accepted
         <<: *API_RESPONSES
 
+  /nfvi/node/{node_id}/isolate:
+    post:
+      tags:
+        - nfvi
+      summary: Isolates a node
+      description: >-
+        Isolates a compromised node according to isolation policy
+      operationId: isolateNodeEndpoint
+      parameters:
+        - node_id: node_id
+          in: path
+          required: true
+          type: string
+
+  /nfvi/node/{node_id}/terminate:
+    post:
+      tags:
+        - nfvi
+      summary: Terminates a node
+      description: >-
+        Terminates a compromised node according to termination policy
+      operationId: terminateNodeEndpoint
+      parameters:
+        - node_id: node_id
+          in: path
+          required: true
+          type: string
+
   /nfvi/node:
     get:
       tags:

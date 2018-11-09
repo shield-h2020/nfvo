@@ -98,6 +98,24 @@ def get_nodes_virtual_trusted(node_id=None):
     return HttpResponse.json(HttpCode.OK, nodes)
 
 
+@nfvo_views.route(endpoints.NFVI_NODE_ISOLATE, methods=["POST"])
+def isolate(node_id):
+    try:
+        Node(node_id).isolate()
+    except NodeSSHException:
+        abort(500)
+    return ('', HttpCode.NO_CONTENT)
+
+
+@nfvo_views.route(endpoints.NFVI_NODE_TERMINATE, methods=["POST"])
+def terminate(node_id):
+    try:
+        Node(node_id).terminate()
+    except NodeSSHException:
+        abort(500)
+    return ('', HttpCode.NO_CONTENT)
+
+
 @nfvo_views.route(endpoints.NFVI_NODE_ID, methods=["PUT"])
 def config_node(node_id):
     exp_ct = "application/json"
