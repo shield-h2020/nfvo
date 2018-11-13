@@ -196,7 +196,7 @@ def check_isolation_params(isolation_policy):
         if "interface_name" not in isolation_policy:
             missing_params.append("interface_name")
     if isolation_policy["type"] == "delflow":
-        df_params = ["flow_id", "rule"]
+        df_params = ["switch", "target_filter"]
         for param in df_params:
             if param not in isolation_policy:
                 missing_params.append(param)

@@ -107,8 +107,8 @@ class TestInfraRealtime(unittest.TestCase):
                 "termination_policy": {
                     "name": "Dummy",
                     "type": "delflow",
-                    "rule": "r27",
-                    "flow_id": "sample_id"
+                    "switch": "mybr",
+                    "target_filter": "nw_dst=192.168.2.1,arp_tpa=192.168.2.1"
                 }}
         prv_virtual = self.get_virtual_length()
         prv_virtual_isolated = self.get_virtual_isolated_length()

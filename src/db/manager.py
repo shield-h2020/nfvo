@@ -184,10 +184,10 @@ class DBManager():
                          "physical": node["physical"]}
             if node["isolated"]:
                 node_resp["status"] = "isolated"
-                last_record = node["isolation_policy"]["records"][-1]
-                node_resp["timestamp"] = last_record["date"]
-                node_resp["configuration"] = last_record["output"]
-                node_resp["isolation_errors"] = last_record["error"]
+                records = [{"configuration": x["output"],
+                            "date": x["date"]} for x in
+                           node["isolation_policy"]["records"]]
+                node_resp["configuration"] = records
                 if node["terminated"]:
                     node_resp["status"] = "terminated"
             else:
@@ -230,9 +230,10 @@ class DBManager():
                 name=str(isolation_policy["name"]),
                 interface_name=str(isolation_policy["interface_name"]))
         if isolation_policy["type"] == "delflow":
-            isolation = DeleteFlow(name=str(isolation_policy["name"]),
-                                   flow_id=str(isolation_policy["flow_id"]),
-                                   rule=str(isolation_policy["rule"]))
+            isolation = DeleteFlow(
+                name=str(isolation_policy["name"]),
+                switch=str(isolation_policy["switch"]),
+                target_filter=str(isolation_policy["target_filter"]))
         if isolation_policy["type"] == "shutdown":
             isolation = Shutdown(name=str(isolation_policy["name"]),
                                  command=str(isolation_policy["command"]))
@@ -251,8 +252,8 @@ class DBManager():
         if termination_policy["type"] == "delflow":
             termination = DeleteFlow(
                 name=str(termination_policy["name"]),
-                flow_id=str(termination_policy["flow_id"]),
-                rule=str(termination_policy["rule"]))
+                switch=str(termination_policy["switch"]),
+                target_filter=str(termination_policy["target_filter"]))
         if termination_policy["type"] == "shutdown":
             termination = Shutdown(name=str(termination_policy["name"]),
                                    command=str(termination_policy["command"]))

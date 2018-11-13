@@ -46,8 +46,8 @@ class DeleteFlow(IsolationPolicy):
     """
     Isolation policy (delete flow from controller)
     """
-    flow_id = StringField()
-    rule = StringField()
+    switch = StringField()
+    target_filter = StringField()
 
 
 class Shutdown(IsolationPolicy):
