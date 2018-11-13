@@ -184,10 +184,10 @@ class DBManager():
                          "physical": node["physical"]}
             if node["isolated"]:
                 node_resp["status"] = "isolated"
-                last_record = node["isolation_policy"]["records"][-1]
-                node_resp["timestamp"] = last_record["date"]
-                node_resp["configuration"] = last_record["output"]
-                node_resp["isolation_errors"] = last_record["error"]
+                records = [{"configuration": x["output"],
+                            "date": x["date"]} for x in
+                           node["isolation_policy"]["records"]]
+                node_resp["configuration"] = records
                 if node["terminated"]:
                     node_resp["status"] = "terminated"
             else:
