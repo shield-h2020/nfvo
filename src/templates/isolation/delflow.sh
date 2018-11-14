@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
 # Get previous information
-sudo ovs-ofctl dump-flows {{ flow_id }}
+sudo ovs-ofctl dump-flows {{ switch }}
 # Delete flow
-sudo ovs-ofctl del-flows {{ flow_id }} {{ rule }}
+sudo ovs-ofctl del-flows {{ switch }} {{ target_filter }}
