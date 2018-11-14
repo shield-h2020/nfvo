@@ -24,6 +24,7 @@ from nfvo.osm import \
     NFVO_DEFAULT_KVM_DATACENTER, NFVO_DEFAULT_KVM_DATACENTER_NET
 from nfvo.osm import \
     NFVO_DEFAULT_DOCKER_DATACENTER, NFVO_DEFAULT_DOCKER_DATACENTER_NET
+from nfvo.osm.osm_r2 import OSMR2
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from server.http import content
 from server.mocks.ns import MockNs as ns_m
@@ -48,22 +49,11 @@ class VnsfoNs:
         self.monitoring_target_status = self.\
             mspl_monitoring.get("target_status")
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+        self.orchestrator = OSMR2()
 
     @content.on_mock(ns_m().get_nsr_config_mock)
     def get_nsr_config(self, ns_name=None):
-        resp = requests.get(
-                osm_eps.NS_CATALOG_C,
-                headers=osm_eps.get_default_headers(),
-                verify=False)
-        # Yep, this could be insecure - but the output comes from NFVO
-        catalog = eval(resp.text) if resp.text else []
-        if ns_name is None:
-            # Returning all ns_catalog_descriptors
-            return self.format_ns_catalog_descriptors(catalog)
-        else:
-            # Filtering by name
-            fcatalog = self.format_ns_catalog_descriptors(catalog)
-            return [x for x in fcatalog["ns"] if x["ns_name"] == ns_name]
+        return self.orchestrator.get_ns_descriptors(ns_name)
 
     def build_config_agent_job_map(self, data):
         config_map = {}
