@@ -70,7 +70,7 @@ class OSMR2():
     def delete_ns_instance(self, instance_id):
         pass
 
-    def get_ns_instance(self, instance_id=None):
+    def get_ns_instances(self, instance_id=None):
         resp = requests.get(
                 endpoints.NS_OPERATIONAL,
                 headers=endpoints.get_default_headers(),
@@ -135,10 +135,49 @@ class OSMR2():
                     })
         return output
 
+    def build_config_agent_job_map(self, data):
+        config_map = {}
+        for nsr in data:
+            if "config-agent-job" in nsr:
+                for config_job in nsr["config-agent-job"]:
+                    if "vnfr" in config_job:
+                        for vnfr_job in config_job["vnfr"]:
+                            data_record = {
+                                "triggered_by":
+                                config_job["triggered-by"],
+                                "create_time":
+                                config_job["create-time"],
+                                "job_status":
+                                config_job["job-status"],
+                                "job_id":
+                                config_job["job-id"],
+                                "primitives":
+                                [{
+                                    "execution_status":
+                                    x["execution-status"],
+                                    "name":
+                                    x["name"],
+                                    "execution_id":
+                                    x["execution-id"]
+                                } for x in vnfr_job["primitive"]]}
+                            if vnfr_job["id"] in config_map:
+                                config_map[vnfr_job["id"]].append(data_record)
+                            else:
+                                config_map[vnfr_job["id"]] = [data_record]
+        return config_map
+
+    def join_vnfr_with_config_jobs(self, vnfr, config_map):
+        if vnfr["vnfr_id"] in config_map:
+            vnfr["config_jobs"] = config_map[vnfr["vnfr_id"]]
+        else:
+            vnfr["config_jobs"] = []
+        return vnfr
+
 
 if __name__ == "__main__":
     OSM = OSMR2()
     print(OSM.get_ns_descriptors())
+    print(OSM.get_ns_instances())
     # NSD_IDS = [x["_id"] for x in OSM.get_ns_descriptors()]
     # print(random.choice(NSD_IDS))
     # NSR = OSM.post_ns_instance("833bb02c-92e4-4fdb-ac55-cc927acfd2e7",
