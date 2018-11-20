@@ -15,7 +15,6 @@
 # limitations under the License.
 
 
-from core import regex
 from core.config import FullConfParser
 from flask import current_app
 from nfv.vnf import VnsfoVnsf
@@ -55,92 +54,9 @@ class VnsfoNs:
     def get_nsr_config(self, ns_name=None):
         return self.orchestrator.get_ns_descriptors(ns_name)
 
-    def build_config_agent_job_map(self, data):
-        config_map = {}
-        for nsr in data:
-            if "config-agent-job" in nsr:
-                for config_job in nsr["config-agent-job"]:
-                    if "vnfr" in config_job:
-                        for vnfr_job in config_job["vnfr"]:
-                            data_record = {
-                                "triggered_by":
-                                config_job["triggered-by"],
-                                "create_time":
-                                config_job["create-time"],
-                                "job_status":
-                                config_job["job-status"],
-                                "job_id":
-                                config_job["job-id"],
-                                "primitives":
-                                [{
-                                    "execution_status":
-                                    x["execution-status"],
-                                    "name":
-                                    x["name"],
-                                    "execution_id":
-                                    x["execution-id"]
-                                } for x in vnfr_job["primitive"]]}
-                            if vnfr_job["id"] in config_map:
-                                config_map[vnfr_job["id"]].append(data_record)
-                            else:
-                                config_map[vnfr_job["id"]] = [data_record]
-        return config_map
-
-    def join_vnfr_with_config_jobs(self, vnfr, config_map):
-        if vnfr["vnfr_id"] in config_map:
-            vnfr["config_jobs"] = config_map[vnfr["vnfr_id"]]
-        else:
-            vnfr["config_jobs"] = []
-        return vnfr
-
-    def format_nsr_running_data(self, data):
-        nsrs = data["collection"]["nsr:nsr"]
-        config_agent_job_map = self.build_config_agent_job_map(nsrs)
-        vnsf = VnsfoVnsf()
-        return [{
-            "config_status": x["config-status"],
-            "operational_status": x["operational-status"],
-            "instance_name": x["name-ref"],
-            "ns_name": x["nsd-name-ref"],
-            "instance_id": x["ns-instance-config-ref"],
-            "nsd_id": x["nsd-ref"],
-            "constituent_vnf_instances":
-            [self.join_vnfr_with_config_jobs(y, config_agent_job_map)
-                for y in vnsf.get_vnfr_running().get("vnsf", "")
-                if y.get("vnfr_id", "")
-                in [z.get("vnfr-id", "")
-                    for z in x.get("constituent-vnfr-ref", "")]],
-            "vlrs": [
-                {"vlr_id": y["vlr-ref"],
-                 "vim_id": y["om-datacenter"]} for y in
-                x.get("vlr", [])]
-        } for x in nsrs if "config-status" in x]
-
     @content.on_mock(ns_m().get_nsr_running_mock)
     def get_nsr_running(self, instance_id=None):
-        resp = requests.get(
-                osm_eps.NS_OPERATIONAL,
-                headers=osm_eps.get_default_headers(),
-                verify=False)
-        if resp.status_code == 204:
-            return {"ns": []}
-        if instance_id is None:
-            return {
-                "ns": [x for x in
-                       self.format_nsr_running_data(json.loads(resp.text))]
-            }
-        if regex.uuid4(instance_id) is not None:
-            return {
-                "ns": [x for x in
-                       self.format_nsr_running_data(json.loads(resp.text))
-                       if x.get("instance_id", "") == instance_id]
-            }
-        else:
-            return {
-                "ns": [x for x in
-                       self.format_nsr_running_data(json.loads(resp.text))
-                       if x.get("instance_name", "") == instance_id]
-            }
+        return self.orchestrator.get_ns_instances(instance_id)
 
     def build_nsr_data(self, instantiation_data):
         nsr_id = str(uuid.uuid4())
@@ -325,20 +241,3 @@ class VnsfoNs:
     def fetch_config_nss(self):
         catalog = self.get_nsr_config()
         return catalog
-
-    def format_ns_catalog_descriptors(self, catalog):
-        output = {self.res_key: list()}
-        nss = output.get(self.res_key)
-        for n in catalog:
-            for nd in n["descriptors"]:
-                constituent_vnfs = nd.get("constituent-vnfd", None)
-                if constituent_vnfs is not None:
-                    nss.append({
-                        "constituent_vnfs": constituent_vnfs,
-                        "description": nd.get("description"),
-                        "ns_name": nd.get("name"),
-                        "vendor": nd.get("vendor"),
-                        "version": nd.get("version"),
-                        "vld": nd.get("vld")
-                    })
-        return output
