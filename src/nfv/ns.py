@@ -15,26 +15,14 @@
 # limitations under the License.
 
 
-from nfvo.osm import endpoints as osm_eps
 from nfvo.osm.osm_r2 import OSMR2
 from server.http import content
 from server.mocks.ns import MockNs as ns_m
-
-import requests
 
 
 class VnsfoNs:
 
     def __init__(self):
-        self.res_key = "ns"
-        # self.config = FullConfParser()
-        # self.nfvo_mspl_category = self.config.get("nfvo.mspl.conf")
-        # self.mspl_monitoring = self.nfvo_mspl_category.get("monitoring")
-        # self.monitoring_timeout = int(self.mspl_monitoring.get("timeout"))
-        # self.monitoring_interval = int(self.mspl_monitoring.get("interval"))
-        # self.monitoring_target_status = self.\
-        #     mspl_monitoring.get("target_status")
-        # requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
         self.orchestrator = OSMR2()
 
     @content.on_mock(ns_m().get_nsr_config_mock)
@@ -51,20 +39,7 @@ class VnsfoNs:
 
     @content.on_mock(ns_m().delete_nsr_mock)
     def delete_ns(self, instance_id):
-        url = "{0}/{1}".format(osm_eps.NS_RUNNING, instance_id)
-        headers = osm_eps.get_default_headers()
-        resp = requests.delete(url,
-                               headers=headers,
-                               verify=False)
-        if resp.status_code in(200, 201, 202):
-            success_msg = {"instance_id": instance_id,
-                           "action": "delete",
-                           "result": "success"}
-            return success_msg
-        else:
-            error_msg = {"result": "error",
-                         "error_response": resp}
-            return error_msg
+        return self.orchestrator.delete_ns_instance(instance_id)
 
     def fetch_config_nss(self):
         catalog = self.get_nsr_config()

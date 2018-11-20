@@ -119,7 +119,20 @@ class OSMR2():
             return error_msg
 
     def delete_ns_instance(self, instance_id):
-        pass
+        url = "{0}/{1}".format(endpoints.NS_RUNNING, instance_id)
+        headers = endpoints.get_default_headers()
+        resp = requests.delete(url,
+                               headers=headers,
+                               verify=False)
+        if resp.status_code in(200, 201, 202):
+            success_msg = {"instance_id": instance_id,
+                           "action": "delete",
+                           "result": "success"}
+            return success_msg
+        else:
+            error_msg = {"result": "error",
+                         "error_response": resp}
+            return error_msg
 
     def get_ns_instances(self, instance_id=None):
         resp = requests.get(
