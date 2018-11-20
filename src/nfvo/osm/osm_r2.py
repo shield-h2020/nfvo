@@ -17,12 +17,12 @@
 from core.config import FullConfParser
 from core import regex
 from flask import current_app
+from nfvi.vim import VnsfoVim as vim_s
 from nfvo.osm import endpoints
 from nfvo.osm import \
     NFVO_DEFAULT_KVM_DATACENTER, NFVO_DEFAULT_KVM_DATACENTER_NET
 from nfvo.osm import \
     NFVO_DEFAULT_DOCKER_DATACENTER, NFVO_DEFAULT_DOCKER_DATACENTER_NET
-from nfv.vnf import VnsfoVnsf
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from templates import nfvo as nfvo_tmpl
 
@@ -42,7 +42,6 @@ class OSMR2():
     """
 
     def __init__(self):
-        self.res_key = "ns"
         self.config = FullConfParser()
         self.nfvo_mspl_category = self.config.get("nfvo.mspl.conf")
         self.mspl_monitoring = self.nfvo_mspl_category.get("monitoring")
@@ -50,6 +49,7 @@ class OSMR2():
         self.monitoring_interval = int(self.mspl_monitoring.get("interval"))
         self.monitoring_target_status = self.\
             mspl_monitoring.get("target_status")
+        self.vnfo_vim = vim_s()
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
     def get_ns_descriptors(self, ns_name=None):
@@ -159,10 +159,20 @@ class OSMR2():
                        if x.get("instance_name", "") == instance_id]
             }
 
+    def get_vnf_instances(self):
+        catalog = self.__get_vnfr_running()
+        return self.format_vnsf_catalog_records(catalog)
+
+    def __get_vnfr_running(self):
+        resp = requests.get(
+                endpoints.VNF_CATALOG_O,
+                headers=endpoints.get_default_headers(),
+                verify=False)
+        return json.loads(resp.text) if resp.text else {}
+
     def format_nsr_running_data(self, data):
         nsrs = data["collection"]["nsr:nsr"]
         config_agent_job_map = self.build_config_agent_job_map(nsrs)
-        vnsf = VnsfoVnsf()
         return [{
             "config_status": x["config-status"],
             "operational_status": x["operational-status"],
@@ -172,7 +182,7 @@ class OSMR2():
             "nsd_id": x["nsd-ref"],
             "constituent_vnf_instances":
             [self.join_vnfr_with_config_jobs(y, config_agent_job_map)
-                for y in vnsf.get_vnfr_running().get("vnsf", "")
+                for y in self.get_vnf_instances().get("vnsf", "")
                 if y.get("vnfr_id", "")
                 in [z.get("vnfr-id", "")
                     for z in x.get("constituent-vnfr-ref", "")]],
@@ -183,8 +193,8 @@ class OSMR2():
         } for x in nsrs if "config-status" in x]
 
     def format_ns_catalog_descriptors(self, catalog):
-        output = {self.res_key: list()}
-        nss = output.get(self.res_key)
+        output = {"ns": list()}
+        nss = output.get("ns")
         for n in catalog:
             for nd in n["descriptors"]:
                 constituent_vnfs = nd.get("constituent-vnfd", None)
@@ -337,10 +347,9 @@ class OSMR2():
                "constituent_vnf_instances" in nss["ns"][0]:
                 # Perform action on all vnf instances?
                 for vnsf_instance in nss["ns"][0]["constituent_vnf_instances"]:
-                    vnsf = VnsfoVnsf()
-                    exec_tmpl = vnsf.fill_vnf_action_request_encoded(
+                    exec_tmpl = self.fill_vnf_action_request_encoded(
                         vnsf_instance["vnfr_id"], action, params)
-                    output = vnsf.exec_action_on_vnf(exec_tmpl)
+                    output = self.exec_action_on_vnf(exec_tmpl)
                     if action is not None:
                         app.mongo.store_vnf_action(vnsf_instance["vnfr_id"],
                                                    action,
@@ -352,6 +361,128 @@ class OSMR2():
                 print("Operational status: {0}, waiting ...".
                       format(operational_status))
         return
+
+    def fill_vnf_action_request_encoded(self, vnfr_id=None,
+                                        primitive=None, params=None):
+        exec_tmpl = nfvo_tmpl.exec_action_encoded.strip()
+        exec_tmpl_vnf = ""
+        catalog = self.__get_vnfr_running()
+        nsr_id, vnf_idx, vnf_prim_idx = self.__fetch_indexes(
+            catalog, vnfr_id, primitive)
+
+        i = 0
+        for key, val in params.items():
+            exec_tmpl_param = nfvo_tmpl.exec_action_vnf_encoded.strip()
+            val = val.replace("\"", '\\"')
+            exec_tmpl_vnf += exec_tmpl_param.format(
+                    idx=i,
+                    param_name=key,
+                    param_value=val)
+            i += 1
+
+        # Data from the vNSF to be replaced in the template of the action
+        values = {
+                "name": "",
+                "action_data": "{action_data}",
+                "ns_id": nsr_id,
+                "vnf_id": vnfr_id,
+                "vnf_index": vnf_idx,
+                "action_name": primitive,
+                "action_idx": vnf_prim_idx
+                }
+
+        exec_tmpl = exec_tmpl.format(**values)
+        exec_tmpl = exec_tmpl.format(action_data=exec_tmpl_vnf)
+        return exec_tmpl
+
+    def exec_action_on_vnf(self, payload):
+        # JSON
+        # resp = requests.post(
+        #        endpoints.VNF_ACTION_EXEC,
+        #        headers=endpoints.post_default_headers(),
+        #        data=json.dumps(payload),
+        #        verify=False)
+
+        # Encoded
+        # payload = payload.replace('\\"', '"').strip()
+        resp = requests.post(
+                endpoints.VNF_ACTION_L_EXEC,
+                headers=endpoints.post_encoded_headers(),
+                data=payload,
+                verify=False)
+
+        # output = json.loads(resp.text)
+        output = resp.text
+        return output
+
+    def get_vnf_descriptors(self):
+        catalog = self.__get_vnfr_config()
+        print(catalog)
+        return self.format_vnsf_catalog_descriptors(catalog)
+
+    def __get_vnfr_config(self):
+        resp = requests.get(
+                endpoints.VNF_CATALOG_C,
+                headers=endpoints.get_default_headers(),
+                verify=False)
+        # Yep, this could be insecure - but the output comes from NFVO
+        return eval(resp.text) if resp.text else []
+
+    def format_vnsf_catalog_descriptors(self, catalog):
+        output = {"vnsf": list()}
+        vnsfs = output.get("vnsf")
+        for n in catalog:
+            for nd in n["descriptors"]:
+                if "constituent-vnfd" not in nd.keys():
+                    charm = {}
+                    if "vnf-configuration" in nd:
+                        charm = nd.get("vnf-configuration")\
+                                   .get("juju").get("charm")
+                    vnsfs.append({
+                        "charm": charm,
+                        "description": nd.get("description"),
+                        "ns_name": nd.get("name"),
+                        "vendor": nd.get("vendor"),
+                        "version": nd.get("version"),
+                    })
+        return output
+
+    def format_vnsf_catalog_records(self, catalog):
+        output = {"vnsf": list()}
+        vnsfs = output.get("vnsf")
+        vim_list = self.vnfo_vim.get_vim_list()
+        if len(catalog.keys()) == 0:
+            return output
+        for vnf in catalog["collection"]["vnfr:vnfr"]:
+            # Parse content of vnf-data first
+            vnf_name = vnf.get("name")
+            ns_name = vnf_name.split("__")
+            if len(ns_name) >= 1:
+                ns_name = ns_name[0]
+            else:
+                ns_name = vnf_name
+            vim_name = self.vnfo_vim.get_vim_name_by_uuid(
+                vim_list, vnf.get("om-datacenter"))
+            ip_address = ""
+            if "connection-point" in vnf.keys()\
+                    and len(vnf.get("connection-point")) > 0\
+                    and "ip-address" in vnf.get("connection-point")[0].keys():
+                ip_address = vnf.get("connection-point")[0].get("ip-address")
+
+            vnsf_dict = {
+                "config_status": vnf.get("config-status"),
+                "ip": ip_address,
+                "ns_id": vnf.get("nsr-id-ref"),
+                "ns_name": ns_name,
+                "operational_status": vnf.get("operational-status"),
+                "vendor": vnf.get("vendor"),
+                "vnfr_id": vnf.get("id"),
+                "vnfd_id": vnf.get("vnfd").get("id"),
+                "vnfr_name": vnf_name,
+                "vim": vim_name,
+            }
+            vnsfs.append(vnsf_dict)
+        return output
 
 
 if __name__ == "__main__":

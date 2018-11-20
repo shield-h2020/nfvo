@@ -17,6 +17,7 @@
 
 from flask import current_app
 from nfvi.vim import VnsfoVim as vim_s
+from nfvo.osm.osm_r2 import OSMR2
 from nfvo.osm import endpoints as osm_eps
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from server.http import content
@@ -32,20 +33,12 @@ class VnsfoVnsf:
     def __init__(self):
         self.res_key = "vnsf"
         self.vnfo_vim = vim_s()
+        self.orchestrator = OSMR2()
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-
-    def __get_vnfr_config(self):
-        resp = requests.get(
-                osm_eps.VNF_CATALOG_C,
-                headers=osm_eps.get_default_headers(),
-                verify=False)
-        # Yep, this could be insecure - but the output comes from NFVO
-        return eval(resp.text) if resp.text else []
 
     @content.on_mock(vnfs_m().get_vnfr_config_mock)
     def get_vnfr_config(self):
-        catalog = self.__get_vnfr_config()
-        return self.format_vnsf_catalog_descriptors(catalog)
+        return self.orchestrator.get_vnf_descriptors()
 
     def __get_vnfr_running(self):
         resp = requests.get(
