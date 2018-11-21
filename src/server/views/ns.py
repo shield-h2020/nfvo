@@ -84,8 +84,8 @@ def instantiate_ns_r4():
 
 @nfvo_views.route(endpoints.NS_R_NSS, methods=["GET"])
 @nfvo_views.route(endpoints.NS_R_NSS_ID, methods=["GET"])
-@nfvo_views.route(endpoints.NS_R_NSS_R4, methods=["GET"])
-@nfvo_views.route(endpoints.NS_R_NSS_ID_R4, methods=["GET"])
+@nfvo_views.route(endpoints.NS_R_NSS_R2, methods=["GET"])
+@nfvo_views.route(endpoints.NS_R_NSS_ID_R2, methods=["GET"])
 def fetch_running_nss(instance_id=None):
     ns_business = VnsfoNs()
     nss = ns_business.get_nsr_running(instance_id)
