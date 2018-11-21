@@ -56,6 +56,22 @@ class VnsfoEndpoints:
     NS_DELETE = "{}/running/<instance_id>".format(NS)
     NS_R_NSS = "{}/running".format(NS)
     NS_R_NSS_ID = "{}/<instance_id>".format(NS_R_NSS)
+    # Network service (explicit release 2)
+    NS_R2 = "/ns/r2"
+    NS_C_NSS_R2 = "{}/config".format(NS_R2)
+    NS_C_NSS_R2 = "{}/config".format(NS_R2)
+    NS_INSTANTIATE_R2 = "{}/instantiate".format(NS_R2)
+    NS_DELETE_R2 = "{}/running/<instance_id>".format(NS_R2)
+    NS_R_NSS_R2 = "{}/running".format(NS_R2)
+    NS_R_NSS_ID_R2 = "{}/<instance_id>".format(NS_R_NSS_R2)
+    # Network service (release 4)
+    NS_R4 = "/ns/r4"
+    NS_C_NSS_R4 = "{}/config".format(NS_R4)
+    NS_C_NSS_R4 = "{}/config".format(NS_R4)
+    NS_INSTANTIATE_R4 = "{}/instantiate".format(NS_R4)
+    NS_DELETE_R4 = "{}/running/<instance_id>".format(NS_R4)
+    NS_R_NSS_R4 = "{}/running".format(NS_R4)
+    NS_R_NSS_ID_R4 = "{}/<instance_id>".format(NS_R_NSS_R4)
     # Package
     PKG = "/package"
     PKG_ONBOARD = "{}/onboard".format(PKG)

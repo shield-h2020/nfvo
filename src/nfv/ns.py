@@ -16,14 +16,17 @@
 
 
 from nfvo.osm.osm_r2 import OSMR2
+from nfvo.osm.osm_r4 import OSMR4
 from server.http import content
 from server.mocks.ns import MockNs as ns_m
 
 
 class VnsfoNs:
 
-    def __init__(self):
+    def __init__(self, release=None):
         self.orchestrator = OSMR2()
+        if release == 4:
+            self.orchestrator = OSMR4()
 
     @content.on_mock(ns_m().get_nsr_config_mock)
     def get_nsr_config(self, ns_name=None):
