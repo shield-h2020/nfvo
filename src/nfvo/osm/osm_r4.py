@@ -21,7 +21,12 @@ import requests
 import time
 import urllib3
 
+from core.log import setup_custom_logger
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+
+LOGGER = setup_custom_logger(__name__)
 
 
 def check_authorization(f):
@@ -32,7 +37,7 @@ def check_authorization(f):
         response = requests.get(args[0].ns_descriptors_url,
                                 headers=args[0].headers,
                                 verify=False)
-        if response.status_code == 401:
+        if response.status_code in (401, 500):
             args[0].new_token(args[0].username,
                               args[0].password)
         return f(*args)
@@ -46,7 +51,7 @@ class OSMR4():
 
     def __init__(self):
         config = configparser.ConfigParser()
-        config.read('conf/nfvo.conf')
+        config.read('../conf/nfvo.conf')
         self.base_url = "{0}://{1}:{2}".format(
             config["nbi"]["protocol"],
             config["nbi"]["host"],
@@ -59,10 +64,14 @@ class OSMR4():
         self.ns_descriptors_content_url = \
             "{0}/osm/nsd/v1/ns_descriptors_content".\
             format(self.base_url)
-        self.pnf_descriptors_url = "{0}/osm/nsd/v1/pnf_descriptors".\
+        self.vnf_descriptors_url = "{0}/osm/vnfpkgm/v1/vnf_packages".\
                                    format(self.base_url)
+        self.vnf_instances_url = "{0}/osm/nslcm/v1/vnfrs".\
+                                 format(self.base_url)
         self.instantiate_url = "{0}/osm/nslcm/v1/ns_instances".\
                                format(self.base_url)
+        self.vim_accounts_url = "{0}/osm/admin/v1/vim_accounts".\
+                                format(self.base_url)
         self.headers = {"Accept": "application/json"}
         self.token = None
         self.username = config["nbi"]["username"]
@@ -140,7 +149,7 @@ class OSMR4():
                         verify=False)
 
     @check_authorization
-    def get_ns_instance(self, nsr_id=None):
+    def get_ns_instances(self, nsr_id=None):
         if nsr_id is not None:
             inst_url = "{0}/{1}".format(self.instantiate_url,
                                         nsr_id)
@@ -149,7 +158,90 @@ class OSMR4():
         response = requests.get(inst_url,
                                 headers=self.headers,
                                 verify=False)
-        return json.loads(response.text)
+        ns_instances = json.loads(response.text)
+        ns_data = {"ns":
+                   [self.translate_ns_instance(x) for x in ns_instances]}
+        return ns_data
+
+    def translate_ns_instance(self, nsi):
+        tnsi = {}
+        tnsi["config_status"] = nsi["config-status"]
+        tnsi["constituent_vnf_instances"] = []
+        for vnfi in self.get_vnf_instances(nsi["_id"]):
+            vnfi.update({"ns_name": nsi.get("ns_name", nsi.get("name"))})
+            vnfi.update({"vnfr_name": "{0}__{1}__1".format(nsi["nsd-name-ref"],
+                                                           vnfi["vnfd_id"])})
+            tnsi["constituent_vnf_instances"].append(vnfi)
+        tnsi["instance_id"] = nsi["id"]
+        tnsi["name"] = nsi["name"]
+        tnsi["ns_name"] = nsi["nsd-name-ref"]
+        tnsi["nsd_id"] = nsi["nsd-ref"]
+        tnsi["operational_status"] = nsi["operational-status"]
+        if tnsi["operational_status"] == "ACTIVE":
+            tnsi["operational_status"] = "running"
+        tnsi["vlrs"] = []
+        return tnsi
+
+    @check_authorization
+    def get_vnf_instances(self, ns_instance_id):
+        url = "{0}?nsr-id-ref={1}".format(
+            self.vnf_instances_url, ns_instance_id)
+        response = requests.get(url,
+                                headers=self.headers,
+                                verify=False)
+        vnfis = json.loads(response.text)
+        return [self.translate_vnf_instance(x) for x in vnfis]
+
+    def translate_vnf_instance(self, vnfi):
+        tvnfi = {}
+        vdur = {}
+        if len(vnfi["vdur"]) > 0:
+            vdur = vnfi["vdur"][0]
+        tvnfi["operational_status"] = vdur.get("status", None)
+        tvnfi["config_jobs"] = []
+        if tvnfi["operational_status"] == "ACTIVE":
+            tvnfi["operational_status"] = "running"
+        tvnfi["config_status"] = "config-not-needed"
+        tvnfi["ip"] = vdur.get("ip-address", None)
+        tvnfi["ns_id"] = vnfi.get("nsr-id-ref")
+        vnfd = self.get_vnf_descriptor(vnfi.get("vnfd-ref", None))
+        if vnfd:
+            tvnfi["vendor"] = vnfd["vendor"]
+        else:
+            tvnfi["vendor"] = None
+        vim = self.get_vim_account(vnfi.get("vim-account-id"))
+        if vim:
+            tvnfi["vim"] = vim["name"]
+        else:
+            tvnfi["vim"] = None
+        tvnfi["vnfd_id"] = vnfi["vnfd-ref"]
+        tvnfi["vnfr_id"] = vnfi["id"]
+        return tvnfi
+
+    def get_vnf_descriptor(self, vnf_name):
+        url = "{0}?name={1}".format(
+            self.vnf_descriptors_url, vnf_name)
+        response = requests.get(url,
+                                headers=self.headers,
+                                verify=False)
+        vnfds = json.loads(response.text)
+        target_vnfd = None
+        for vnfd in vnfds:
+            if vnfd["name"] == vnf_name:
+                target_vnfd = vnfd
+        return target_vnfd
+
+    def get_vim_account(self, vim_account_id):
+        url = "{0}".format(self.vim_accounts_url)
+        response = requests.get(url,
+                                headers=self.headers,
+                                verify=False)
+        vims = json.loads(response.text)
+        target_vim = None
+        for vim in vims:
+            if str(vim["_id"]) == str(vim_account_id):
+                target_vim = vim
+        return target_vim
 
 
 if __name__ == "__main__":

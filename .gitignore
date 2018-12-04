@@ -10,3 +10,4 @@ conf/*.conf
 venv
 docker/data/*
 !docker/data/.gitkeep
+logs/*
