@@ -92,11 +92,48 @@ class OSMR4():
         return token
 
     @check_authorization
-    def get_ns_descriptors(self):
+    def get_ns_descriptors(self, ns_name=None):
         response = requests.get(self.ns_descriptors_url,
                                 headers=self.headers,
                                 verify=False)
-        return json.loads(response.text)
+        nsds = json.loads(response.text)
+        if ns_name:
+            return {"ns": [self.translate_ns_descriptor(x) for x in nsds
+                           if x["name"] == ns_name]}
+        return {"ns": [self.translate_ns_descriptor(x) for x in nsds]}
+
+    def translate_ns_descriptor(self, nsd):
+        tnsd = {}
+        tnsd["constituent_vnfs"] = []
+        for cvnf in nsd["constituent-vnfd"]:
+            cvnf["member-vnf-index"] = int(cvnf["member-vnf-index"])
+            cvnf.update({"start-by-default": "true"})
+            tnsd["constituent_vnfs"].append(cvnf)
+        tnsd["description"] = nsd["description"]
+        tnsd["ns_name"] = nsd["name"]
+        tnsd["vendor"] = nsd.get("vendor", None)
+        tnsd["version"] = nsd.get("version", None)
+        tnsd["vld"] = [self.translate_virtual_link_descriptor(x,
+                                                              tnsd["vendor"],
+                                                              tnsd["version"])
+                       for x in nsd["vld"]]
+        return tnsd
+
+    def translate_virtual_link_descriptor(self, vld, vendor, version):
+        tvld = {}
+        tvld["id"] = vld["id"]
+        tvld["description"] = vld["name"]
+        tvld["mgmt-network"] = vld.get("mgmt-network", "false")
+        tvld["short-name"] = vld.get("shortname", vld["name"])
+        tvld["name"] = vld["name"]
+        tvld["type"] = vld["type"]
+        tvld["version"] = version
+        tvld["vendor"] = vendor
+        tvld["vnfd-connection-point-ref"] = []
+        for cpref in vld["vnfd-connection-point-ref"]:
+            cpref["member-vnf-index-ref"] = int(cpref["member-vnf-index-ref"])
+            tvld["vnfd-connection-point-ref"].append(cpref)
+        return tvld
 
     @check_authorization
     def get_ns_descriptors_content(self):
