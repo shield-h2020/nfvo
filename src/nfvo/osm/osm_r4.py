@@ -167,19 +167,21 @@ class OSMR4():
         tnsi = {}
         tnsi["config_status"] = nsi["config-status"]
         tnsi["constituent_vnf_instances"] = []
-        for vnfi in self.get_vnf_instances(nsi["_id"]):
+        vnfis = self.get_vnf_instances(nsi["_id"])
+        for vnfi in vnfis:
             vnfi.update({"ns_name": nsi.get("ns_name", nsi.get("name"))})
             vnfi.update({"vnfr_name": "{0}__{1}__1".format(nsi["nsd-name-ref"],
                                                            vnfi["vnfd_id"])})
             tnsi["constituent_vnf_instances"].append(vnfi)
         tnsi["instance_id"] = nsi["id"]
+        tnsi["instance_name"] = nsi["name"]
         tnsi["name"] = nsi["name"]
         tnsi["ns_name"] = nsi["nsd-name-ref"]
         tnsi["nsd_id"] = nsi["nsd-ref"]
         tnsi["operational_status"] = nsi["operational-status"]
         if tnsi["operational_status"] == "ACTIVE":
             tnsi["operational_status"] = "running"
-        tnsi["vlrs"] = []
+        tnsi["vlrs"] = vnfis[0].get("vlrs", [])
         return tnsi
 
     @check_authorization
