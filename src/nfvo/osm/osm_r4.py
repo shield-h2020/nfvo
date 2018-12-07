@@ -22,11 +22,16 @@ import time
 import urllib3
 
 from core.log import setup_custom_logger
+from flask import current_app
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 LOGGER = setup_custom_logger(__name__)
+
+
+class OSMException(Exception):
+    pass
 
 
 def check_authorization(f):
@@ -92,6 +97,28 @@ class OSMR4():
         return token
 
     @check_authorization
+    def get_ns_descriptor_id(self, ns_name):
+        response = requests.get(self.ns_descriptors_url,
+                                headers=self.headers,
+                                verify=False)
+        nsds = json.loads(response.text)
+        for nsd in nsds:
+            if nsd["name"] == ns_name:
+                return nsd["_id"]
+        return
+
+    @check_authorization
+    def get_ns_r4__descriptors(self, ns_name=None):
+        response = requests.get(self.ns_descriptors_url,
+                                headers=self.headers,
+                                verify=False)
+        nsds = json.loads(response.text)
+        if ns_name:
+            return {"ns": [x for x in nsds
+                           if x["name"] == ns_name]}
+        return {"ns": [x for x in nsds]}
+
+    @check_authorization
     def get_ns_descriptors(self, ns_name=None):
         response = requests.get(self.ns_descriptors_url,
                                 headers=self.headers,
@@ -113,6 +140,7 @@ class OSMR4():
         tnsd["ns_name"] = nsd["name"]
         tnsd["vendor"] = nsd.get("vendor", None)
         tnsd["version"] = nsd.get("version", None)
+        tnsd["id"] = nsd["id"]
         tnsd["vld"] = [self.translate_virtual_link_descriptor(x,
                                                               tnsd["vendor"],
                                                               tnsd["version"])
@@ -150,29 +178,41 @@ class OSMR4():
         return json.loads(response.text)
 
     @check_authorization
-    def post_ns_instance(self, nsd_id, name, description,
-                         vim_account_id=None, flavor=None):
-        if vim_account_id is None:
+    def post_ns_instance(self, instantiation_data):
+        if "vim_id" not in instantiation_data:
             vim_account_id = self.default_dc
-        if flavor is None:
-            flavor = self.default_flavor
+        if "description" not in instantiation_data:
+            description = instantiation_data["ns_name"]
+        if "nsd_id" not in instantiation_data:
+            nsd_id = self.get_ns_descriptor_id(instantiation_data["ns_name"])
         ns_data = {"nsdId": nsd_id,
-                   "nsName": name,
+                   "nsName": instantiation_data["ns_name"],
                    "nsDescription": description,
-                   "vimAccountId": vim_account_id,
-                   "flavourId": flavor}
+                   "vimAccountId": vim_account_id}
         response = requests.post(self.instantiate_url,
                                  headers=self.headers,
                                  verify=False,
                                  json=ns_data)
-        instantiation_data = json.loads(response.text)
+        response_data = json.loads(response.text)
         inst_url = "{0}/{1}/instantiate".format(self.instantiate_url,
-                                                instantiation_data["id"])
-        requests.post(inst_url,
-                      headers=self.headers,
-                      verify=False,
-                      json=ns_data)
-        return instantiation_data
+                                                response_data["id"])
+        resp = requests.post(inst_url,
+                             headers=self.headers,
+                             verify=False,
+                             json=ns_data)
+        print(resp.text)
+        if resp.status_code in(200, 201, 202):
+            success_msg = {"instance_name":
+                           instantiation_data["instance_name"],
+                           "instance_id": response_data["id"],
+                           "ns_name": instantiation_data["ns_name"],
+                           "vim_id": vim_account_id,
+                           "result": "success"}
+            return success_msg
+        else:
+            error_msg = {"result": "error",
+                         "error_response": resp}
+            return error_msg
 
     @check_authorization
     def delete_ns_instance(self, nsr_id):
@@ -181,9 +221,56 @@ class OSMR4():
         requests.post("{0}/terminate".format(inst_url),
                       headers=self.headers,
                       verify=False)
-        requests.delete(inst_url,
+        requests.delete("{0}".format(inst_url),
                         headers=self.headers,
                         verify=False)
+        # Uncomment next lines in case do you want asynchronous behavior
+        # t = threading.Thread(target=self.monitor_ns_deletion,
+        #                      args=(nsr_id,
+        #                            current_app._get_current_object()))
+        # t.start()
+        # Comment next line in case you want asynchronous behavior
+        self.monitor_ns_deletion(nsr_id, current_app._get_current_object())
+        success_msg = {"instance_id": nsr_id,
+                       "action": "delete",
+                       "result": "success"}
+        return success_msg
+
+    @check_authorization
+    def monitor_ns_deletion(self, ns_instance_id, app):
+        timeout = 90
+        inst_url = "{0}/{1}".format(self.instantiate_url,
+                                    ns_instance_id)
+        while True and timeout > 0:
+            try:
+                ns_status = self.get_ns_r4_instances(ns_instance_id)
+                status = ns_status["operational-status"]
+                LOGGER.info("Operational Status = {0}".format(status))
+                if status == "terminated":
+                    LOGGER.info("Terminated already")
+                    break
+            except OSMException:
+                break
+            timeout = timeout - 1
+            time.sleep(1)
+        delete = requests.delete(inst_url,
+                                 headers=self.headers,
+                                 verify=False)
+        LOGGER.info("Terminating {0}".format(delete.text))
+
+    @check_authorization
+    def get_ns_r4_instances(self, nsr_id=None):
+        if nsr_id is not None:
+            inst_url = "{0}/{1}".format(self.instantiate_url,
+                                        nsr_id)
+        else:
+            inst_url = "{0}".format(self.instantiate_url)
+        response = requests.get(inst_url,
+                                headers=self.headers,
+                                verify=False)
+        if response.status_code not in (200, 201, 202):
+            raise OSMException
+        return json.loads(response.text)
 
     @check_authorization
     def get_ns_instances(self, nsr_id=None):
