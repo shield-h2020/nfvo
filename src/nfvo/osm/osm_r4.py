@@ -18,6 +18,7 @@ import configparser
 import json
 import random
 import requests
+import threading
 import time
 import urllib3
 import uuid
@@ -62,6 +63,12 @@ class OSMR4():
             config["nbi"]["protocol"],
             config["nbi"]["host"],
             config["nbi"]["port"])
+        nfvo_mspl_category = configparser.ConfigParser()
+        nfvo_mspl_category.read("../conf/nfvo.mspl.conf")
+        mspl_monitoring = nfvo_mspl_category["monitoring"]
+        self.monitoring_timeout = int(mspl_monitoring["timeout"])
+        self.monitoring_interval = int(mspl_monitoring["interval"])
+        self.monitoring_target_status = mspl_monitoring["target_status"]
         self.default_kvm_datacenter = \
             config["nbi"]["default_kvm_datacenter"]
         self.default_docker_datacenter = \
@@ -181,6 +188,69 @@ class OSMR4():
                                 verify=False)
         return json.loads(response.text)
 
+    def apply_mspl_action(self, instance_id, instantiation_data):
+        if ("action" not in instantiation_data) or ("params"
+                                                    not in instantiation_data):
+            return
+        print("Configuring instance, starting thread ...")
+        target_status = None
+        if "target_status" in instantiation_data:
+            target_status = instantiation_data["target_status"]
+        # Passing also current_app._get_current_object() (flask global context)
+        t = threading.Thread(target=self.deployment_monitor_thread,
+                             args=(instance_id,
+                                   instantiation_data["action"],
+                                   instantiation_data["params"],
+                                   current_app._get_current_object(),
+                                   target_status))
+        t.start()
+
+    def deployment_monitor_thread(self, instance_id, action,
+                                  params, app, target_status=None):
+        timeout = self.monitoring_timeout
+        action_submitted = False
+        if target_status is None:
+            target_status = self.monitoring_target_status
+        while not action_submitted:
+            time.sleep(self.monitoring_interval)
+            timeout = timeout-self.monitoring_interval
+            print("Checking {0} {1} {2}".format(instance_id, action, params))
+            try:
+                nss = self.get_ns_r4_instances(instance_id)
+            except OSMException:
+                LOGGER.info("No instance found, aborting configuration")
+                break
+            if timeout < 0:
+                print("Timeout reached, aborting thread")
+                break
+            if not nss:
+                print("No instance found, aborting thread")
+                break
+            operational_status = nss.get("operational-status", "")
+            if operational_status == "failed":
+                print("Instance failed, aborting")
+                break
+            if operational_status == target_status and \
+               "constituent-vnfr-ref" in nss:
+                # Perform action on all vnf instances?
+                for vnsf_instance in nss["constituent-vnfr-ref"]:
+                    LOGGER.info(vnsf_instance)
+                    # exec_tmpl = self.fill_vnf_action_request_encoded(
+                    #     vnsf_instance["vnfr_id"], action, params)
+                    # output = self.exec_action_on_vnf(exec_tmpl)
+                    output = "{}"
+                    if action is not None:
+                        app.mongo.store_vnf_action(vnsf_instance,
+                                                   action,
+                                                   params,
+                                                   json.loads(output))
+                        print("Action performed and stored, exiting thread")
+                    action_submitted = True
+            else:
+                print("Operational status: {0}, waiting ...".
+                      format(operational_status))
+        return
+
     @check_authorization
     def post_ns_instance(self, instantiation_data):
         if "vim_id" not in instantiation_data:
@@ -221,6 +291,8 @@ class OSMR4():
                            "ns_name": instantiation_data["ns_name"],
                            "vim_id": vim_account_id,
                            "result": "success"}
+            self.apply_mspl_action(response_data["id"],
+                                   instantiation_data)
             return success_msg
         else:
             error_msg = {"result": "error",
@@ -302,6 +374,7 @@ class OSMR4():
 
     def translate_ns_instance(self, nsi):
         tnsi = {}
+        LOGGER.info(nsi)
         tnsi["config_status"] = nsi["config-status"]
         tnsi["constituent_vnf_instances"] = []
         vnfis = self.get_vnf_instances(nsi["_id"])
@@ -337,7 +410,6 @@ class OSMR4():
         if len(vnfi["vdur"]) > 0:
             vdur = vnfi["vdur"][0]
         tvnfi["operational_status"] = vdur.get("status", None)
-        tvnfi["config_jobs"] = []
         if tvnfi["operational_status"] == "ACTIVE":
             tvnfi["operational_status"] = "running"
         tvnfi["config_status"] = "config-not-needed"
@@ -355,6 +427,7 @@ class OSMR4():
             tvnfi["vim"] = None
         tvnfi["vnfd_id"] = vnfi["vnfd-ref"]
         tvnfi["vnfr_id"] = vnfi["id"]
+        tvnfi["config_jobs"] = []
         return tvnfi
 
     def get_vnf_descriptor(self, vnf_name):
