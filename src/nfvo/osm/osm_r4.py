@@ -20,6 +20,7 @@ import random
 import requests
 import time
 import urllib3
+import uuid
 
 from core.log import setup_custom_logger
 from flask import current_app
@@ -61,7 +62,10 @@ class OSMR4():
             config["nbi"]["protocol"],
             config["nbi"]["host"],
             config["nbi"]["port"])
-        self.default_dc = config["nbi"]["default_om_datacenter"]
+        self.default_kvm_datacenter = \
+            config["nbi"]["default_kvm_datacenter"]
+        self.default_docker_datacenter = \
+            config["nbi"]["default_docker_datacenter"]
         self.default_flavor = config["nbi"]["default_flavor"]
         self.token_url = "{0}/osm/admin/v1/tokens".format(self.base_url)
         self.ns_descriptors_url = "{0}/osm/nsd/v1/ns_descriptors".\
@@ -180,7 +184,16 @@ class OSMR4():
     @check_authorization
     def post_ns_instance(self, instantiation_data):
         if "vim_id" not in instantiation_data:
-            vim_account_id = self.default_dc
+            vim_account_id = self.default_kvm_datacenter
+            if "virt_type" in instantiation_data:
+                if instantiation_data["virt_type"] == "docker":
+                    # Replacing instance_name in case it is
+                    # a Docker deployment to avoid naming
+                    # overlap
+                    instantiation_data["instance_name"] = \
+                        str(uuid.uuid4()).replace("-", "")
+                    instantiation_data["vim_id"] = \
+                        vim_account_id = self.default_docker_datacenter
         if "description" not in instantiation_data:
             description = instantiation_data["ns_name"]
         if "nsd_id" not in instantiation_data:
