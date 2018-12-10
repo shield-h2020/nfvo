@@ -20,34 +20,57 @@ import json
 from core.exception import Exception
 from flask import Blueprint
 from flask import request
-from nfv.vnf import VnsfoVnsf as vnsf_s
+from nfv.vnf import VnsfoVnsf
 from server.http import content
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
 from server.endpoints import VnsfoEndpoints as endpoints
 
 nfvo_views = Blueprint("nfvo_vnf_views", __name__)
-nfvo_vnf = vnsf_s()
 
 
 @nfvo_views.route(endpoints.VNSF_C_VNSFS, methods=["GET"])
+@nfvo_views.route(endpoints.VNSF_C_VNSFS_R2, methods=["GET"])
 def fetch_config_vnsfs():
-    return HttpResponse.json(HttpCode.OK, nfvo_vnf.get_vnfr_config())
+    vnf_business = VnsfoVnsf()
+    return HttpResponse.json(HttpCode.OK, vnf_business.get_vnfr_config())
+
+
+@nfvo_views.route(endpoints.VNSF_C_VNSFS_R4, methods=["GET"])
+def fetch_config_vnsfs_r4():
+    vnf_business = VnsfoVnsf(4)
+    return HttpResponse.json(HttpCode.OK, vnf_business.get_vnfr_config())
 
 
 @nfvo_views.route(endpoints.VNSF_R_VNSFS, methods=["GET"])
+@nfvo_views.route(endpoints.VNSF_R_VNSFS_R2, methods=["GET"])
 def fetch_running_vnsfs():
-    return HttpResponse.json(HttpCode.OK, nfvo_vnf.get_vnfr_running())
+    vnf_business = VnsfoVnsf()
+    return HttpResponse.json(HttpCode.OK, vnf_business.get_vnfr_running())
+
+
+@nfvo_views.route(endpoints.VNSF_R_VNSFS_R4, methods=["GET"])
+def fetch_running_vnsfs_r4():
+    vnf_business = VnsfoVnsf(4)
+    return HttpResponse.json(HttpCode.OK, vnf_business.get_vnfr_running())
 
 
 @nfvo_views.route(endpoints.VNSF_VNSF_TENANT, methods=["GET"])
+@nfvo_views.route(endpoints.VNSF_VNSF_TENANT_R2, methods=["GET"])
 def fetch_running_vnsfs_per_tenant(tenant_id):
     Exception.not_implemented()
 
 
+@nfvo_views.route(endpoints.VNSF_VNSF_TENANT_R4, methods=["GET"])
+def fetch_running_vnsfs_per_tenant_r4(tenant_id):
+    Exception.not_implemented()
+
+
 @nfvo_views.route(endpoints.VNSF_ACTION_EXEC, methods=["POST"])
+@nfvo_views.route(endpoints.VNSF_ACTION_EXEC_R2, methods=["POST"])
 @content.expect_json_content
 def exec_primitive_on_vnsf():
+    vnf_business = VnsfoVnsf()
     exp_ct = "application/json"
     if exp_ct not in request.headers.get("Content-Type", ""):
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
@@ -57,7 +80,33 @@ def exec_primitive_on_vnsf():
         Exception.improper_usage("Missing parameters: any of {}"
                                  .format(exp_params))
     # Extract params, respecting the specific ordering
-    payload = nfvo_vnf.submit_action_request(
+    payload = vnf_business.submit_action_request(
+        *[request.json.get(x) for x in exp_params])
+    try:
+        pldata = json.loads(payload)
+    except json.decoder.JSONDecodeError:
+        return HttpResponse.json(HttpCode.INTERNAL_ERROR,
+                                 "{0} bad json".format(payload))
+    if "statusCode" in pldata:
+        return HttpResponse.json(pldata["statusCode"], payload)
+    else:
+        return HttpResponse.json(HttpCode.ACCEPTED, payload)
+
+
+@nfvo_views.route(endpoints.VNSF_ACTION_EXEC_R4, methods=["POST"])
+@content.expect_json_content
+def exec_primitive_on_vnsf_r4():
+    vnf_business = VnsfoVnsf(4)
+    exp_ct = "application/json"
+    if exp_ct not in request.headers.get("Content-Type", ""):
+        Exception.invalid_content_type("Expected: {}".format(exp_ct))
+    exp_params = ["vnsf_id", "action", "params"]
+    if not content.data_in_request(
+            request, exp_params):
+        Exception.improper_usage("Missing parameters: any of {}"
+                                 .format(exp_params))
+    # Extract params, respecting the specific ordering
+    payload = vnf_business.submit_action_request(
         *[request.json.get(x) for x in exp_params])
     try:
         pldata = json.loads(payload)

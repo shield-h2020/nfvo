@@ -83,6 +83,18 @@ class VnsfoEndpoints:
     VNSF_C_VNSFS = "{}/config".format(VNSF)
     VNSF_R_VNSFS = "{}/running".format(VNSF)
     VNSF_VNSF_TENANT = "{}/<tenant_id>".format(VNSF_R_VNSFS)
+    # Network function (explicit release 2)
+    VNSF_R2 = "/vnsf/r2"
+    VNSF_ACTION_EXEC_R2 = "{}/action".format(VNSF_R2)
+    VNSF_C_VNSFS_R2 = "{}/config".format(VNSF_R2)
+    VNSF_R_VNSFS_R2 = "{}/running".format(VNSF_R2)
+    VNSF_VNSF_TENANT_R2 = "{}/<tenant_id>".format(VNSF_R_VNSFS_R2)
+    # Network function (release 4)
+    VNSF_R4 = "/vnsf/r4"
+    VNSF_ACTION_EXEC_R4 = "{}/action".format(VNSF_R4)
+    VNSF_C_VNSFS_R4 = "{}/config".format(VNSF_R4)
+    VNSF_R_VNSFS_R4 = "{}/running".format(VNSF_R4)
+    VNSF_VNSF_TENANT_R4 = "{}/<tenant_id>".format(VNSF_R_VNSFS_R4)
 
     def __init__(self):
         self.get_api_endpoints_mock = endpoints_m().get_api_endpoints_mock

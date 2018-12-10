@@ -140,6 +140,18 @@ class OSMR4():
                            if x["name"] == ns_name]}
         return {"ns": [self.translate_ns_descriptor(x) for x in nsds]}
 
+    @check_authorization
+    def get_vnf_descriptors(self, vnf_name=None):
+        response = requests.get(self.vnf_descriptors_url,
+                                headers=self.headers,
+                                verify=False)
+        vnfs = json.loads(response.text)
+        print(vnfs)
+        if vnf_name:
+            return {"vnsf": [self.translate_vnf_descriptor(x) for x in vnfs
+                             if x["name"] == vnf_name]}
+        return {"vnsf": [self.translate_vnf_descriptor(x) for x in vnfs]}
+
     def translate_ns_descriptor(self, nsd):
         tnsd = {}
         tnsd["constituent_vnfs"] = []
@@ -157,6 +169,24 @@ class OSMR4():
                                                               tnsd["version"])
                        for x in nsd["vld"]]
         return tnsd
+
+    def translate_vnf_descriptor(self, vnf):
+        tvnfd = {}
+        tvnfd["charm"] = ""
+        tvnfd["description"] = vnf["description"]
+        tvnfd["vendor"] = vnf.get("vendor", None)
+        tvnfd["version"] = vnf.get("version", None)
+        tvnfd["charm"] = {}
+        if vnf["vnf-configuration"].get("juju", None):
+            tvnfd["charm"] = \
+                vnf["vnf-configuration"].get("juju", None)["charm"]
+        nss = self.get_ns_descriptors()
+        tvnfd["ns_name"] = None
+        for ns in nss["ns"]:
+            for cvnf in ns["constituent_vnfs"]:
+                if cvnf["vnfd-id-ref"] == vnf["name"]:
+                    tvnfd["ns_name"] = ns["ns_name"]
+        return tvnfd
 
     def translate_virtual_link_descriptor(self, vld, vendor, version):
         tvld = {}

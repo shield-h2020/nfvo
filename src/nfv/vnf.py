@@ -16,6 +16,7 @@
 
 
 from nfvo.osm.osm_r2 import OSMR2
+from nfvo.osm.osm_r4 import OSMR4
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from server.http import content
 from server.mocks.vnf import MockVnsf as vnfs_m
@@ -25,8 +26,10 @@ import requests
 
 class VnsfoVnsf:
 
-    def __init__(self):
+    def __init__(self, release=None):
         self.orchestrator = OSMR2()
+        if release == 4:
+            self.orchestrator = OSMR4()
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
     @content.on_mock(vnfs_m().get_vnfr_config_mock)
