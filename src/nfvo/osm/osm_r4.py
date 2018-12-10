@@ -283,7 +283,6 @@ class OSMR4():
                              headers=self.headers,
                              verify=False,
                              json=ns_data)
-        print(resp.text)
         if resp.status_code in(200, 201, 202):
             success_msg = {"instance_name":
                            instantiation_data["instance_name"],
