@@ -402,7 +402,6 @@ class OSMR4():
 
     def translate_ns_instance(self, nsi):
         tnsi = {}
-        LOGGER.info(nsi)
         tnsi["config_status"] = nsi["config-status"]
         tnsi["constituent_vnf_instances"] = []
         vnfis = self.get_vnf_instances(nsi["_id"])
