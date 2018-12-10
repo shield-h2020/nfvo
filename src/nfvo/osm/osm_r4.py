@@ -422,7 +422,20 @@ class OSMR4():
         return tnsi
 
     @check_authorization
-    def get_vnf_instances(self, ns_instance_id):
+    def get_vnf_instances(self, ns_instance_id=None):
+        if ns_instance_id is None:
+            nss = self.get_ns_instances()
+            nss_ids = [x["instance_id"] for x in nss["ns"]]
+            vnsfs = []
+            for ns_instance_id in nss_ids:
+                url = "{0}?nsr-id-ref={1}".format(
+                    self.vnf_instances_url, ns_instance_id)
+                response = requests.get(url,
+                                        headers=self.headers,
+                                        verify=False)
+                for vnsf in json.loads(response.text):
+                    vnsfs.append(vnsf)
+            return [self.translate_vnf_instance(x) for x in vnsfs]
         url = "{0}?nsr-id-ref={1}".format(
             self.vnf_instances_url, ns_instance_id)
         response = requests.get(url,
