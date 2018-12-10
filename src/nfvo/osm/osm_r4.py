@@ -435,7 +435,9 @@ class OSMR4():
                                         verify=False)
                 for vnsf in json.loads(response.text):
                     vnsfs.append(vnsf)
-            return [self.translate_vnf_instance(x) for x in vnsfs]
+            return {"vnsf":
+                    [self.translate_vnf_instance(x)
+                     for x in vnsfs]}
         url = "{0}?nsr-id-ref={1}".format(
             self.vnf_instances_url, ns_instance_id)
         response = requests.get(url,
