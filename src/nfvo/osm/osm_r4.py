@@ -146,7 +146,6 @@ class OSMR4():
                                 headers=self.headers,
                                 verify=False)
         vnfs = json.loads(response.text)
-        print(vnfs)
         if vnf_name:
             return {"vnsf": [self.translate_vnf_descriptor(x) for x in vnfs
                              if x["name"] == vnf_name]}
