@@ -58,13 +58,13 @@ class OSMR4():
 
     def __init__(self):
         config = configparser.ConfigParser()
-        config.read('../conf/nfvo.conf')
+        config.read('./conf/nfvo.conf')
         self.base_url = "{0}://{1}:{2}".format(
             config["nbi"]["protocol"],
             config["nbi"]["host"],
             config["nbi"]["port"])
         nfvo_mspl_category = configparser.ConfigParser()
-        nfvo_mspl_category.read("../conf/nfvo.mspl.conf")
+        nfvo_mspl_category.read("./conf/nfvo.mspl.conf")
         mspl_monitoring = nfvo_mspl_category["monitoring"]
         self.monitoring_timeout = int(mspl_monitoring["timeout"])
         self.monitoring_interval = int(mspl_monitoring["interval"])
@@ -419,7 +419,7 @@ class OSMR4():
             tnsi["constituent_vnf_instances"].append(vnfi)
         tnsi["instance_id"] = nsi["id"]
         tnsi["instance_name"] = nsi["name"]
-        tnsi["name"] = nsi["name"]
+        # tnsi["name"] = nsi["name"]
         tnsi["ns_name"] = nsi["nsd-name-ref"]
         tnsi["nsd_id"] = nsi["nsd-ref"]
         tnsi["operational_status"] = nsi["operational-status"]
@@ -476,7 +476,8 @@ class OSMR4():
         else:
             tvnfi["vim"] = None
         tvnfi["vnfd_id"] = vnfi["vnfd-ref"]
-        tvnfi["vnfr_id"] = vnfi["id"]
+        tvnfi["vnfd_name"] = vnfi["vnfd-ref"]
+        tvnfi["vnfr_name"] = tvnfi["vnfd_name"]
         tvnfi["config_jobs"] = []
         return tvnfi
 
