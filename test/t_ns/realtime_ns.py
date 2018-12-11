@@ -60,6 +60,7 @@ class TestNfvNsRealtime(unittest.TestCase):
         time.sleep(5)
         self.utils.test_delete(del_url, del_schema, {}, exp_code)
 
+    @unittest.skip
     def test_post_docker_nsr_instantiate(self):
         url = self.post_nsr_instantiate
         exp_code = HttpCode.OK
