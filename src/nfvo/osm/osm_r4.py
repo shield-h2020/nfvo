@@ -88,6 +88,9 @@ class OSMR4():
                                format(self.base_url)
         self.vim_accounts_url = "{0}/osm/admin/v1/vim_accounts".\
                                 format(self.base_url)
+        self.exec_action_url = \
+            "{0}/osm/nslcm/v1/ns_instances/<ns_instance_id>/action".\
+            format(self.base_url)
         self.headers = {"Accept": "application/json"}
         self.token = None
         self.username = config["nbi"]["username"]
@@ -266,14 +269,18 @@ class OSMR4():
                     LOGGER.info(vnsf_instance)
                     # exec_tmpl = self.fill_vnf_action_request_encoded(
                     #     vnsf_instance["vnfr_id"], action, params)
-                    # output = self.exec_action_on_vnf(exec_tmpl)
+                    payload = {"action": action,
+                               "params": params}
+                    output = self.exec_action_on_vnf(payload)
                     output = "{}"
                     if action is not None:
                         app.mongo.store_vnf_action(vnsf_instance,
                                                    action,
                                                    params,
                                                    json.loads(output))
-                        print("Action performed and stored, exiting thread")
+                        LOGGER.info(
+                            "Action performed and stored, exiting thread")
+                        LOGGER.info(output)
                     action_submitted = True
             else:
                 print("Operational status: {0}, waiting ...".
@@ -446,6 +453,7 @@ class OSMR4():
         vnfis = json.loads(response.text)
         return [self.translate_vnf_instance(x) for x in vnfis]
 
+    @check_authorization
     def translate_vnf_instance(self, vnfi):
         tvnfi = {}
         vdur = {}
@@ -472,6 +480,7 @@ class OSMR4():
         tvnfi["config_jobs"] = []
         return tvnfi
 
+    @check_authorization
     def get_vnf_descriptor(self, vnf_name):
         url = "{0}?name={1}".format(
             self.vnf_descriptors_url, vnf_name)
@@ -485,6 +494,7 @@ class OSMR4():
                 target_vnfd = vnfd
         return target_vnfd
 
+    @check_authorization
     def get_vim_account(self, vim_account_id):
         url = "{0}".format(self.vim_accounts_url)
         response = requests.get(url,
@@ -496,6 +506,60 @@ class OSMR4():
             if str(vim["_id"]) == str(vim_account_id):
                 target_vim = vim
         return target_vim
+
+    @check_authorization
+    def exec_action_on_vnf(self, payload):
+        # JSON
+        # resp = requests.post(
+        #        endpoints.VNF_ACTION_EXEC,
+        #        headers=endpoints.post_default_headers(),
+        #        data=json.dumps(payload),
+        #        verify=False)
+
+        # Encoded
+        # payload = payload.replace('\\"', '"').strip()
+        # Find out which ns_id holds the vnf:
+        nsis = self.get_ns_instances()["ns"]
+        nsi_id = None
+        for nsi in nsis:
+            for vnfi in nsi["constituent_vnf_instances"]:
+                print(vnfi)
+                if vnfi["vnfr_id"] == payload["vnfr_id"]:
+                    nsi_id = nsi["instance_id"]
+        url = self.exec_action_url
+        url.replace("<ns_instance_id>", nsi_id)
+        r4_payload = {
+            "primitive": payload["action"],
+            "primitive_params": payload["params"]}
+        resp = requests.post(
+            url,
+            headers=self.headers,
+            data=r4_payload,
+            verify=False)
+        # output = json.loads(resp.text)
+        output = resp.text
+        return output
+
+    def submit_action_request(self, vnfr_id=None, action=None, params=list()):
+        params_exist = all(map(lambda x: x is not None,
+                               [vnfr_id, action, params]))
+        if not params_exist:
+            return {"Error": "Missing argument"}
+        exec_tmpl = self.fill_vnf_action_request_encoded(
+            vnfr_id, action, params)
+        output = self.exec_action_on_vnf(exec_tmpl)
+        try:
+            output_dict = json.loads(output)
+        except Exception:
+            return {"Error": "SO-ub output is not valid JSON",
+                    "output": output}
+        # Keep track of remote action per vNSF
+        if action is not None:
+            current_app.mongo.store_vnf_action(vnfr_id,
+                                               action,
+                                               params,
+                                               output_dict)
+        return output
 
 
 if __name__ == "__main__":

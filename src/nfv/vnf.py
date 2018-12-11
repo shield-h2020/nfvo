@@ -43,3 +43,10 @@ class VnsfoVnsf:
     @content.on_mock(vnfs_m().exec_action_on_vnf_mock)
     def exec_action_on_vnf(self, payload):
         return self.orchestrator.exec_action_on_vnf(payload)
+
+    @content.on_mock(vnfs_m().exec_action_on_vnf_mock)
+    def submit_action_request(self, vnfr_id=None, action=None, params=list()):
+        payload = {"vnfr_id": vnfr_id,
+                   "action": action,
+                   "params": params}
+        return self.orchestrator.exec_action_on_vnf(payload)
