@@ -379,7 +379,93 @@ paths:
             $ref: "#/definitions/ConfigNssOutput"
         <<: *API_RESPONSES
 
+  /ns/r2/config:
+    get:
+      tags:
+        - ns
+      summary: Provides available NSs
+      description: >-
+        Returns the available NSs.
+      operationId: getAvailableNss
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/ConfigNssOutput"
+        <<: *API_RESPONSES
+
+  /ns/r4/config:
+    get:
+      tags:
+        - ns
+      summary: Provides available NSs (OSM R4)
+      description: >-
+        Returns the available NSs.
+      operationId: getAvailableNss
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/ConfigNssOutput"
+        <<: *API_RESPONSES
+
   /ns/instantiate:
+    post:
+      tags:
+        - ns
+      summary: Instantiates a NS
+      consumes:
+        - application/json
+      parameters:
+      - in: body
+        name: body
+        description: The body of the request
+        required: true
+        schema:
+          $ref: "#/definitions/InstantiateNSInput"
+      description: >-
+        Instantiates a NS
+      operationId: instantiateNS
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/InstantiateNSOutput"
+        <<: *API_RESPONSES
+
+  /ns/r2/instantiate:
+    post:
+      tags:
+        - ns
+      summary: Instantiates a NS
+      consumes:
+        - application/json
+      parameters:
+      - in: body
+        name: body
+        description: The body of the request
+        required: true
+        schema:
+          $ref: "#/definitions/InstantiateNSInput"
+      description: >-
+        Instantiates a NS
+      operationId: instantiateNS
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/InstantiateNSOutput"
+        <<: *API_RESPONSES
+
+  /ns/r4/instantiate:
     post:
       tags:
         - ns
@@ -422,7 +508,89 @@ paths:
             $ref: "#/definitions/RunningNsOutput"
         <<: *API_RESPONSES
 
+  /ns/r2/running:
+    get:
+      tags:
+        - ns
+      summary: Provides running NSs
+      description: >-
+        Returns the instantiated NS.
+      operationId: getDeployedNss
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/RunningNsOutput"
+        <<: *API_RESPONSES
+
+  /ns/r4/running:
+    get:
+      tags:
+        - ns
+      summary: Provides running NSs
+      description: >-
+        Returns the instantiated NS.
+      operationId: getDeployedNss
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/RunningNsOutput"
+        <<: *API_RESPONSES
+
   /ns/running/{instance_id}:
+    get:
+      parameters:
+        - in: path
+          name: instance_id
+          required: false
+          schema:
+            type: string
+          description: Instance id or name
+      tags:
+        - ns
+      summary: Provides specific running NSs
+      description: >-
+        Returns the specific instantiated NS.
+      operationId: getDeployedNssPerId
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/RunningNsOutput"
+        <<: *API_RESPONSES
+
+  /ns/r2/running/{instance_id}:
+    get:
+      parameters:
+        - in: path
+          name: instance_id
+          required: false
+          schema:
+            type: string
+          description: Instance id or name
+      tags:
+        - ns
+      summary: Provides specific running NSs
+      description: >-
+        Returns the specific instantiated NS.
+      operationId: getDeployedNssPerId
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/RunningNsOutput"
+        <<: *API_RESPONSES
+
+  /ns/r4/running/{instance_id}:
     get:
       parameters:
         - in: path
@@ -573,6 +741,7 @@ paths:
           schema:
             $ref: "#/definitions/VimListImageOutput"
         <<: *API_RESPONSES
+
   /vim/image/{vim_id}:
     post:
       tags:
@@ -617,6 +786,41 @@ paths:
           schema:
             $ref: "#/definitions/ConfigVnsfOutput"
         <<: *API_RESPONSES
+
+  /vnsf/r2/config:
+    get:
+      tags:
+        - vnsf
+      summary: Provides available vNSFs
+      description: >-
+        Returns the available vNSFs.
+      operationId: getAvailableVnsfs
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/ConfigVnsfOutput"
+        <<: *API_RESPONSES
+
+  /vnsf/r4/config:
+    get:
+      tags:
+        - vnsf
+      summary: Provides available vNSFs
+      description: >-
+        Returns the available vNSFs.
+      operationId: getAvailableVnsfs
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/ConfigVnsfOutput"
+        <<: *API_RESPONSES
+
   /vnsf/running:
     get:
       tags:
@@ -633,7 +837,76 @@ paths:
           schema:
             $ref: "#/definitions/RunningVnsfOutput"
         <<: *API_RESPONSES
+
+  /vnsf/r2/running:
+    get:
+      tags:
+        - vnsf
+      summary: Provides running vNSFs
+      description: >-
+        Returns the instantiated vNSFs.
+      operationId: getDeployedVnsfs
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/RunningVnsfOutput"
+        <<: *API_RESPONSES
+
+  /vnsf/r4/running:
+    get:
+      tags:
+        - vnsf
+      summary: Provides running vNSFs
+      description: >-
+        Returns the instantiated vNSFs.
+      operationId: getDeployedVnsfs
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/RunningVnsfOutput"
+        <<: *API_RESPONSES
+
   /vnsf/running/{tenant}:
+    get:
+      tags:
+        - vnsf
+      summary: Provides the deployed vNSFs per tenant
+      description: >-
+        TBD. Returns the deployed vNSFs per tenant.
+      operationId: getDeployedVnsfsPerTenant
+      produces:
+        - application/json
+      parameters:
+        - name: tenant
+          in: path
+          required: true
+          type: string
+      responses: *API_RESPONSES
+
+  /vnsf/r2/running/{tenant}:
+    get:
+      tags:
+        - vnsf
+      summary: Provides the deployed vNSFs per tenant
+      description: >-
+        TBD. Returns the deployed vNSFs per tenant.
+      operationId: getDeployedVnsfsPerTenant
+      produces:
+        - application/json
+      parameters:
+        - name: tenant
+          in: path
+          required: true
+          type: string
+      responses: *API_RESPONSES
+
+  /vnsf/r4/running/{tenant}:
     get:
       tags:
         - vnsf
@@ -675,6 +948,59 @@ paths:
           schema:
             $ref: "#/definitions/VnsfActionOutput"
         <<: *API_RESPONSES
+
+  /vnsf/r2/action:
+    post:
+      tags:
+        - vnsf
+      summary: Executes pre-defined action from a specific vNSF
+      description: >-
+        Triggers the remote execution of data into a specific vNSF.
+      operationId: executeVnsfAction
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+      - in: body
+        name: body
+        description: The body of the request
+        required: true
+        schema:
+          $ref: "#/definitions/VnsfActionInput"
+      responses:
+        202:
+          description: Request accepted
+          schema:
+            $ref: "#/definitions/VnsfActionOutput"
+        <<: *API_RESPONSES
+
+  /vnsf/r4/action:
+    post:
+      tags:
+        - vnsf
+      summary: Executes pre-defined action from a specific vNSF
+      description: >-
+        Triggers the remote execution of data into a specific vNSF.
+      operationId: executeVnsfAction
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+      - in: body
+        name: body
+        description: The body of the request
+        required: true
+        schema:
+          $ref: "#/definitions/VnsfActionInput"
+      responses:
+        202:
+          description: Request accepted
+          schema:
+            $ref: "#/definitions/VnsfActionOutput"
+        <<: *API_RESPONSES
+
 
 definitions:
 
