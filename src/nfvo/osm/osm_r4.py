@@ -477,7 +477,11 @@ class OSMR4():
             tvnfi["vim"] = None
         tvnfi["vnfd_id"] = vnfi["vnfd-ref"]
         tvnfi["vnfd_name"] = vnfi["vnfd-ref"]
+        LOGGER.info("VNFI")
+        LOGGER.info(vnfi)
         tvnfi["vnfr_name"] = tvnfi["vnfd_name"]
+        # Reminder: populate existing config jobs from the
+        #    model
         tvnfi["config_jobs"] = []
         return tvnfi
 
