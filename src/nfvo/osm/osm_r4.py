@@ -24,6 +24,7 @@ import urllib3
 import uuid
 
 from core.log import setup_custom_logger
+from db.manager import DBManager
 from flask import current_app
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -432,7 +433,8 @@ class OSMR4():
                                                            vnfi["vnfd_id"])})
             # Reminder: populate existing config jobs from the
             #    model
-            vnfi.update({"config_jobs": []})
+            dbm = DBManager()
+            vnfi.update({"config_jobs": dbm.get_vnf_actions(vnfi["vnfr_id"])})
             tnsi["constituent_vnf_instances"].append(vnfi)
         tnsi["instance_id"] = nsi["id"]
         tnsi["instance_name"] = nsi["name"]
@@ -476,13 +478,13 @@ class OSMR4():
         vdur = {}
         if len(vnfi["vdur"]) > 0:
             vdur = vnfi["vdur"][0]
-        tvnfi["operational_status"] = vdur.get("status", None)
+        tvnfi["operational_status"] = vdur.get("status", "null")
         if tvnfi["operational_status"] == "ACTIVE":
             tvnfi["operational_status"] = "running"
         tvnfi["config_status"] = "config-not-needed"
-        tvnfi["ip"] = vdur.get("ip-address", None)
+        tvnfi["ip"] = vdur.get("ip-address", "null")
         tvnfi["ns_id"] = vnfi.get("nsr-id-ref")
-        vnfd = self.get_vnf_descriptor(vnfi.get("vnfd-ref", None))
+        vnfd = self.get_vnf_descriptor(vnfi.get("vnfd-ref", "null"))
         if vnfd:
             tvnfi["vendor"] = vnfd["vendor"]
         else:
