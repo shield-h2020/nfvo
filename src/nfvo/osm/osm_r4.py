@@ -30,6 +30,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 LOGGER = setup_custom_logger(__name__)
+CONFIG_PATH = "./"
 
 
 class OSMException(Exception):
@@ -58,13 +59,13 @@ class OSMR4():
 
     def __init__(self):
         config = configparser.ConfigParser()
-        config.read('./conf/nfvo.conf')
+        config.read('{0}conf/nfvo.conf'.format(CONFIG_PATH))
         self.base_url = "{0}://{1}:{2}".format(
             config["nbi"]["protocol"],
             config["nbi"]["host"],
             config["nbi"]["port"])
         nfvo_mspl_category = configparser.ConfigParser()
-        nfvo_mspl_category.read("./conf/nfvo.mspl.conf")
+        nfvo_mspl_category.read("{0}conf/nfvo.mspl.conf".format(CONFIG_PATH))
         mspl_monitoring = nfvo_mspl_category["monitoring"]
         self.monitoring_timeout = int(mspl_monitoring["timeout"])
         self.monitoring_interval = int(mspl_monitoring["interval"])
@@ -266,7 +267,6 @@ class OSMR4():
                "constituent-vnfr-ref" in nss:
                 # Perform action on all vnf instances?
                 for vnsf_instance in nss["constituent-vnfr-ref"]:
-                    LOGGER.info(vnsf_instance)
                     # exec_tmpl = self.fill_vnf_action_request_encoded(
                     #     vnsf_instance["vnfr_id"], action, params)
                     payload = {"action": action,
@@ -393,6 +393,20 @@ class OSMR4():
         return json.loads(response.text)
 
     @check_authorization
+    def get_ns_instance_name(self, nsr_id):
+        inst_url = "{0}/{1}".format(self.instantiate_url,
+                                    nsr_id)
+        response = requests.get(inst_url,
+                                headers=self.headers,
+                                verify=False)
+        ns_instances = json.loads(response.text)
+        iparams = ns_instances.get("instantiate_params", None)
+        if iparams:
+            return iparams.get("nsName", None)
+        else:
+            return None
+
+    @check_authorization
     def get_ns_instances(self, nsr_id=None):
         if nsr_id is not None:
             inst_url = "{0}/{1}".format(self.instantiate_url,
@@ -416,6 +430,9 @@ class OSMR4():
             vnfi.update({"ns_name": nsi.get("ns_name", nsi.get("name"))})
             vnfi.update({"vnfr_name": "{0}__{1}__1".format(nsi["nsd-name-ref"],
                                                            vnfi["vnfd_id"])})
+            # Reminder: populate existing config jobs from the
+            #    model
+            vnfi.update({"config_jobs": []})
             tnsi["constituent_vnf_instances"].append(vnfi)
         tnsi["instance_id"] = nsi["id"]
         tnsi["instance_name"] = nsi["name"]
@@ -476,13 +493,9 @@ class OSMR4():
         else:
             tvnfi["vim"] = None
         tvnfi["vnfd_id"] = vnfi["vnfd-ref"]
-        tvnfi["vnfd_name"] = vnfi["vnfd-ref"]
-        LOGGER.info("VNFI")
-        LOGGER.info(vnfi)
-        tvnfi["vnfr_name"] = tvnfi["vnfd_name"]
-        # Reminder: populate existing config jobs from the
-        #    model
-        tvnfi["config_jobs"] = []
+        tvnfi["vnfr_name"] = vnfi["vnfd-ref"]
+        tvnfi["vnfr_id"] = vnfi["id"]
+        tvnfi["ns_name"] = self.get_ns_instance_name(tvnfi["ns_id"])
         return tvnfi
 
     @check_authorization

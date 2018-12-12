@@ -50,7 +50,7 @@ class MockVnsf:
                     "vim": "openstack-vim1",
                     "vnfr_id": str(uuid.uuid4()),
                     "vnfd_id": "cirros_2vnfd",
-                    "vnfr_name": "vnf_name__cirros_2vnfd__1",
+                    "vnfr_name": "vnf_name__cirros_2vnfd__1"
                 }
             ]
         }
