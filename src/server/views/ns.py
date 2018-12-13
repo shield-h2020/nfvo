@@ -30,15 +30,15 @@ nfvo_views = Blueprint("nfvo_ns_views", __name__)
 @nfvo_views.route(endpoints.NS_C_NSS, methods=["GET"])
 @nfvo_views.route(endpoints.NS_C_NSS_R2, methods=["GET"])
 def fetch_config_nss():
-    ns_business = VnsfoNs()
-    return HttpResponse.json(HttpCode.OK, ns_business.fetch_config_nss())
+    ns_object = VnsfoNs()
+    return HttpResponse.json(HttpCode.OK, ns_object.fetch_config_nss())
 
 
 @nfvo_views.route(endpoints.NS_C_NSS_R4, methods=["GET"])
 def fetch_config_nss_r4():
-    ns_business = VnsfoNs(4)
+    ns_object = VnsfoNs(4)
     return HttpResponse.json(HttpCode.OK,
-                             ns_business.fetch_config_nss())
+                             ns_object.fetch_config_nss())
 
 
 @nfvo_views.route(endpoints.NS_INSTANTIATE, methods=["POST"])
@@ -53,8 +53,8 @@ def instantiate_ns():
     if not content.data_in_request(request, exp_params):
         Exception.improper_usage("Missing parameters: any of {}"
                                  .format(exp_params))
-    ns_business = VnsfoNs()
-    result = ns_business.instantiate_ns(instantiation_data)
+    ns_object = VnsfoNs()
+    result = ns_object.instantiate_ns(instantiation_data)
     if result.get("result", "") == "success":
         return HttpResponse.json(HttpCode.OK, result)
     else:
@@ -73,8 +73,8 @@ def instantiate_ns_r4():
     if not content.data_in_request(request, exp_params):
         Exception.improper_usage("Missing parameters: any of {}"
                                  .format(exp_params))
-    ns_business = VnsfoNs(4)
-    result = ns_business.instantiate_ns(instantiation_data)
+    ns_object = VnsfoNs(4)
+    result = ns_object.instantiate_ns(instantiation_data)
     if result.get("result", "") == "success":
         return HttpResponse.json(HttpCode.OK, result)
     else:
@@ -87,16 +87,16 @@ def instantiate_ns_r4():
 @nfvo_views.route(endpoints.NS_R_NSS_R2, methods=["GET"])
 @nfvo_views.route(endpoints.NS_R_NSS_ID_R2, methods=["GET"])
 def fetch_running_nss(instance_id=None):
-    ns_business = VnsfoNs()
-    nss = ns_business.get_nsr_running(instance_id)
+    ns_object = VnsfoNs()
+    nss = ns_object.get_nsr_running(instance_id)
     return HttpResponse.json(HttpCode.OK, nss)
 
 
 @nfvo_views.route(endpoints.NS_R_NSS_R4, methods=["GET"])
 @nfvo_views.route(endpoints.NS_R_NSS_ID_R4, methods=["GET"])
 def fetch_running_nss_r4(instance_id=None):
-    ns_business = VnsfoNs(4)
-    nss = ns_business.get_nsr_running(instance_id)
+    ns_object = VnsfoNs(4)
+    nss = ns_object.get_nsr_running(instance_id)
     return HttpResponse.json(HttpCode.OK, nss)
 
 
@@ -105,8 +105,8 @@ def fetch_running_nss_r4(instance_id=None):
 @nfvo_views.route(endpoints.NS_R_NSS_R2)
 @nfvo_views.route(endpoints.NS_R_NSS_ID_R2, methods=["DELETE"])
 def delete_ns(instance_id=None):
-    ns_business = VnsfoNs()
-    result = ns_business.delete_ns(instance_id)
+    ns_object = VnsfoNs()
+    result = ns_object.delete_ns(instance_id)
     if result.get("result", "") == "success":
         return HttpResponse.json(HttpCode.OK, result)
     else:
@@ -117,8 +117,8 @@ def delete_ns(instance_id=None):
 @nfvo_views.route(endpoints.NS_R_NSS_R4)
 @nfvo_views.route(endpoints.NS_R_NSS_ID_R4, methods=["DELETE"])
 def delete_ns_r4(instance_id=None):
-    ns_business = VnsfoNs(4)
-    result = ns_business.delete_ns(instance_id)
+    ns_object = VnsfoNs(4)
+    result = ns_object.delete_ns(instance_id)
     if result.get("result", "") == "success":
         return HttpResponse.json(HttpCode.OK, result)
     else:

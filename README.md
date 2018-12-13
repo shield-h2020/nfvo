@@ -74,6 +74,8 @@ It is defined in the [endpoints.yaml](src/server/endpoints.yaml) file; and can b
 
 Refer to the samples below for easy testing of the REST methods. You can find the full reference in the OpenAPI definition.
 
+**Important**: some methods are OSM-release specific. If no release is provided in the URL, it defaults to OSMr2.
+
 ### Common
 
 #### List all API methods
@@ -94,25 +96,17 @@ curl -ik https://127.0.0.1:8448/ns/config
 
 ##### Specific deployment location and provider network
 
-OSM release TWO (default)
-
 ```
+# OSM release TWO (default and explicit modes)
 curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd", "vim_id": "f9acd550-9d48-11e7-ae4c-00163e3afbe5", "vim_net": "provider"}'
-```
 
-OSM release TWO (explicit)
-
-```
 curl -ik https://127.0.0.1:8448/ns/r2/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd", "vim_id": "f9acd550-9d48-11e7-ae4c-00163e3afbe5", "vim_net": "provider"}'
-```
 
-OSM release FOUR (explicit)
-
-```
+# OSM release FOUR
 curl -ik https://127.0.0.1:8448/ns/r4/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd", "vim_id": "f9acd550-9d48-11e7-ae4c-00163e3afbe5", "vim_net": "provider"}'
@@ -120,25 +114,17 @@ curl -ik https://127.0.0.1:8448/ns/r4/instantiate -X POST \
 
 ##### Random deployment location and provider network
 
-OSM release TWO (default)
-
 ```
+# OSM release TWO (default and explicit modes)
 curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd"}'
-```
 
-OSM release TWO (explicit)
-
-```
 curl -ik https://127.0.0.1:8448/ns/r2/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd"}'
-```
 
-OSM release FOUR (explicit)
-
-```
+# OSM release FOUR
 curl -ik https://127.0.0.1:8448/ns/r4/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd"}'
@@ -146,26 +132,17 @@ curl -ik https://127.0.0.1:8448/ns/r4/instantiate -X POST \
 
 ##### Using a vim supporting Docker
 
-
-OSM release TWO (default)
-
 ```
+# OSM release TWO (default and explicit modes)
 curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd", "virt_type": "docker"}'
-```
 
-OSM release TWO (explicit)
-
-```
 curl -ik https://127.0.0.1:8448/ns/r2/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd", "virt_type": "docker"}'
-```
 
-OSM release FOUR (explicit)
-
-```
+# OSM release FOUR
 curl -ik https://127.0.0.1:8448/ns/r4/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd", "virt_type": "docker"}'
@@ -173,25 +150,17 @@ curl -ik https://127.0.0.1:8448/ns/r4/instantiate -X POST \
 
 ##### Deploy explicitly using a kvm vim (default behavior)
 
-OSM release TWO (default)
-
 ```
+# OSM release TWO (default and explicit modes)
 curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd", "virt_type": "kvm"}'
-```
 
-OSM release TWO (explicit)
-
-```
 curl -ik https://127.0.0.1:8448/ns/r2/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd", "virt_type": "kvm"}'
-```
 
-OSM release FOUR (explicit)
-
-```
+# OSM release FOUR
 curl -ik https://127.0.0.1:8448/ns/r4/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd", "virt_type": "kvm"}'
@@ -203,25 +172,17 @@ curl -ik https://127.0.0.1:8448/ns/r4/instantiate -X POST \
 
 Default target status (target_status) is defined in conf/nfvo.mspl.conf.sample
 
-OSM release TWO (default)
-
 ```
+# OSM release TWO (default and explicit modes)
 curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "fl7filter_test", "ns_name": "fl7filter_nsd", "action": "set-policies", "params": {"policies": "test-policy"}}'
-```
 
-OSM release TWO (explicit)
-
-```
 curl -ik https://127.0.0.1:8448/ns/r2/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "fl7filter_test", "ns_name": "fl7filter_nsd", "action": "set-policies", "params": {"policies": "test-policy"}}'
-```
 
-OSM release FOUR (explicit)
-
-```
+# OSM release FOUR
 curl -ik https://127.0.0.1:8448/ns/r4/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "fl7filter_test", "ns_name": "fl7filter_nsd", "action": "set-policies", "params": {"policies": "test-policy"}}'
@@ -229,25 +190,17 @@ curl -ik https://127.0.0.1:8448/ns/r4/instantiate -X POST \
 
 ###### Waiting for NS custom target_status
 
-OSM release TWO (default)
-
 ```
+# OSM release TWO (default and explicit modes)
 curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "fl7filter_test", "ns_name": "fl7filter_nsd", "action": "set-policies", "params": {"policies": "test-policy"}, "target_status": "active"}'
-```
 
-OSM release TWO (explicit)
-
-```
 curl -ik https://127.0.0.1:8448/ns/r2/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "fl7filter_test", "ns_name": "fl7filter_nsd", "action": "set-policies", "params": {"policies": "test-policy"}, "target_status": "active"}'
-```
 
-OSM release FOUR (explicit)
-
-```
+# OSM release FOUR
 curl -ik https://127.0.0.1:8448/ns/r4/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "fl7filter_test", "ns_name": "fl7filter_nsd", "action": "set-policies", "params": {"policies": "test-policy"}, "target_status": "active"}'
@@ -255,21 +208,13 @@ curl -ik https://127.0.0.1:8448/ns/r4/instantiate -X POST \
 
 #### Delete an already instantiated NS
 
-OSM release TWO (default)
-
 ```
+# OSM release TWO (default and explicit modes)
 curl -ik -X DELETE https://127.0.0.1:8448/ns/running/c3fea13a-cc52-4bf9-bf12-3ed20bfb8259
-```
 
-OSM release TWO (explicit)
-
-```
 curl -ik -X DELETE https://127.0.0.1:8448/ns/r2/running/c3fea13a-cc52-4bf9-bf12-3ed20bfb8259
-```
 
-OSM release FOUR (explicit)
-
-```
+# OSM release FOUR
 curl -ik -X DELETE https://127.0.0.1:8448/ns/r4/running/c3fea13a-cc52-4bf9-bf12-3ed20bfb8259
 ```
 
@@ -277,50 +222,36 @@ curl -ik -X DELETE https://127.0.0.1:8448/ns/r4/running/c3fea13a-cc52-4bf9-bf12-
 
 ##### All NSs
 
-OSM release TWO (default)
-
 ```
+# OSM release TWO (default and explicit modes)
 curl -ik https://127.0.0.1:8448/ns/running
-```
 
-OSM release TWO (explicit)
-
-```
 curl -ik https://127.0.0.1:8448/ns/r2/running
-```
 
-OSM release FOUR (explicit)
-
-```
+# OSM release FOUR
 curl -ik https://127.0.0.1:8448/ns/r4/running
 ```
 
 ##### Specific NS instance
 
-OSM release TWO (default)
-
 ```
-# Option 1: using NSR ID
+# OSM release TWO (default and explicit modes)
+
+# Option A1: using NSR ID
 curl -ik https://127.0.0.1:8448/ns/running/c3fea13a-cc52-4bf9-bf12-3ed20bfb8259
-# Option 2: using name of the NS instance
+# Option A2: using name of the NS instance
 curl -ik https://127.0.0.1:8448/ns/running/fl7f_test
-```
 
-OSM release TWO (explicit)
-
-```
-# Option 1: using NSR ID
+# Option B1: using NSR ID
 curl -ik https://127.0.0.1:8448/ns/r2/running/c3fea13a-cc52-4bf9-bf12-3ed20bfb8259
-# Option 2: using name of the NS instance
+# Option B2: using name of the NS instance
 curl -ik https://127.0.0.1:8448/ns/r2/running/fl7f_test
-```
 
-OSM release FOUR (explicit)
+# OSM release FOUR
 
-```
-# Option 1: using NSR ID
+# Option C1: using NSR ID
 curl -ik https://127.0.0.1:8448/ns/r4/running/c3fea13a-cc52-4bf9-bf12-3ed20bfb8259
-# Option 2: using name of the NS instance
+# Option C2: using name of the NS instance
 curl -ik https://127.0.0.1:8448/ns/r4/running/fl7f_test
 ```
 
@@ -375,65 +306,41 @@ curl -ik https://127.0.0.1:8448/vim/image/${vim_id} -X POST \
 
 #### Provide the available vNSFs
 
-OSM release TWO (default)
-
 ```
+# OSM release TWO (default and explicit modes)
 curl -ik https://127.0.0.1:8448/vnsf/config
-```
 
-OSM release TWO (explicit)
-
-```
 curl -ik https://127.0.0.1:8448/vnsf/r2/config
-```
 
-OSM release FOUR (explicit)
-
-```
+# OSM release FOUR
 curl -ik https://127.0.0.1:8448/vnsf/r4/config
 ```
 
 #### Provide the running vNSFs
 
-OSM release TWO (default)
-
 ```
+# OSM release TWO (default and explicit modes)
 curl -ik https://127.0.0.1:8448/vnsf/running
-```
 
-OSM release TWO (explicit)
-
-```
 curl -ik https://127.0.0.1:8448/vnsf/r2/running
-```
 
-OSM release FOUR (explicit)
-
-```
+# OSM release FOUR
 curl -ik https://127.0.0.1:8448/vnsf/r4/running
 ```
 
 #### Execute pre-defined action from a specific vNSF
 
-OSM release TWO (default)
-
 ```
+# OSM release TWO (default and explicit modes)
 curl -ki https://127.0.0.1:8448/vnsf/action -X POST \
      -H 'Content-Type: application/json' \
      -d '{ "vnsf_id": "2145d576-1b91-4cb1-9b76-77f2aeab21cd", "action": "set-policies", "params": { "policies": "<mspl-set xmlns=\"http://security.polito.it/shield/mspl\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://security.polito.it/shield/mspl mspl.xsd\"><it-resource id=\"2145d576-1b91-4cb1-9b76-77f2aeab21cd\"><configuration xsi:type=\"filtering-configuration\"><default-action>drop</default-action><resolution-strategy>FMR</resolution-strategy><rule><priority>101</priority><action>drop</action><condition><packet-filter-condition><direction>inbound</direction><direction>inbound</direction><source-address>10.30.0.190</source-address><protocol>UDP</protocol></packet-filter-condition><traffic-flow-condition><rate-limit>36kbit</rate-limit></traffic-flow-condition></condition></rule></configuration></it-resource></mspl-set>" } }'
-```
 
-OSM release TWO (explicit)
-
-```
 curl -ki https://127.0.0.1:8448/vnsf/r2/action -X POST \
      -H 'Content-Type: application/json' \
      -d '{ "vnsf_id": "2145d576-1b91-4cb1-9b76-77f2aeab21cd", "action": "set-policies", "params": { "policies": "<mspl-set xmlns=\"http://security.polito.it/shield/mspl\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://security.polito.it/shield/mspl mspl.xsd\"><it-resource id=\"2145d576-1b91-4cb1-9b76-77f2aeab21cd\"><configuration xsi:type=\"filtering-configuration\"><default-action>drop</default-action><resolution-strategy>FMR</resolution-strategy><rule><priority>101</priority><action>drop</action><condition><packet-filter-condition><direction>inbound</direction><direction>inbound</direction><source-address>10.30.0.190</source-address><protocol>UDP</protocol></packet-filter-condition><traffic-flow-condition><rate-limit>36kbit</rate-limit></traffic-flow-condition></condition></rule></configuration></it-resource></mspl-set>" } }'
-```
 
-OSM release FOUR (explicit)
-
-```
+# OSM release FOUR
 curl -ki https://127.0.0.1:8448/vnsf/r4/action -X POST \
      -H 'Content-Type: application/json' \
      -d '{ "vnsf_id": "2145d576-1b91-4cb1-9b76-77f2aeab21cd", "action": "set-policies", "params": { "policies": "<mspl-set xmlns=\"http://security.polito.it/shield/mspl\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://security.polito.it/shield/mspl mspl.xsd\"><it-resource id=\"2145d576-1b91-4cb1-9b76-77f2aeab21cd\"><configuration xsi:type=\"filtering-configuration\"><default-action>drop</default-action><resolution-strategy>FMR</resolution-strategy><rule><priority>101</priority><action>drop</action><condition><packet-filter-condition><direction>inbound</direction><direction>inbound</direction><source-address>10.30.0.190</source-address><protocol>UDP</protocol></packet-filter-condition><traffic-flow-condition><rate-limit>36kbit</rate-limit></traffic-flow-condition></condition></rule></configuration></it-resource></mspl-set>" } }'

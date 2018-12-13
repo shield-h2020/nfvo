@@ -32,27 +32,27 @@ nfvo_views = Blueprint("nfvo_vnf_views", __name__)
 @nfvo_views.route(endpoints.VNSF_C_VNSFS, methods=["GET"])
 @nfvo_views.route(endpoints.VNSF_C_VNSFS_R2, methods=["GET"])
 def fetch_config_vnsfs():
-    vnf_business = VnsfoVnsf()
-    return HttpResponse.json(HttpCode.OK, vnf_business.get_vnfr_config())
+    vnf_object = VnsfoVnsf()
+    return HttpResponse.json(HttpCode.OK, vnf_object.get_vnfr_config())
 
 
 @nfvo_views.route(endpoints.VNSF_C_VNSFS_R4, methods=["GET"])
 def fetch_config_vnsfs_r4():
-    vnf_business = VnsfoVnsf(4)
-    return HttpResponse.json(HttpCode.OK, vnf_business.get_vnfr_config())
+    vnf_object = VnsfoVnsf(4)
+    return HttpResponse.json(HttpCode.OK, vnf_object.get_vnfr_config())
 
 
 @nfvo_views.route(endpoints.VNSF_R_VNSFS, methods=["GET"])
 @nfvo_views.route(endpoints.VNSF_R_VNSFS_R2, methods=["GET"])
 def fetch_running_vnsfs():
-    vnf_business = VnsfoVnsf()
-    return HttpResponse.json(HttpCode.OK, vnf_business.get_vnfr_running())
+    vnf_object = VnsfoVnsf()
+    return HttpResponse.json(HttpCode.OK, vnf_object.get_vnfr_running())
 
 
 @nfvo_views.route(endpoints.VNSF_R_VNSFS_R4, methods=["GET"])
 def fetch_running_vnsfs_r4():
-    vnf_business = VnsfoVnsf(4)
-    return HttpResponse.json(HttpCode.OK, vnf_business.get_vnfr_running())
+    vnf_object = VnsfoVnsf(4)
+    return HttpResponse.json(HttpCode.OK, vnf_object.get_vnfr_running())
 
 
 @nfvo_views.route(endpoints.VNSF_VNSF_TENANT, methods=["GET"])
@@ -70,7 +70,7 @@ def fetch_running_vnsfs_per_tenant_r4(tenant_id):
 @nfvo_views.route(endpoints.VNSF_ACTION_EXEC_R2, methods=["POST"])
 @content.expect_json_content
 def exec_primitive_on_vnsf():
-    vnf_business = VnsfoVnsf()
+    vnf_object = VnsfoVnsf()
     exp_ct = "application/json"
     if exp_ct not in request.headers.get("Content-Type", ""):
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
@@ -80,15 +80,15 @@ def exec_primitive_on_vnsf():
         Exception.improper_usage("Missing parameters: any of {}"
                                  .format(exp_params))
     # Extract params, respecting the specific ordering
-    payload = vnf_business.submit_action_request(
+    payload = vnf_object.submit_action_request(
         *[request.json.get(x) for x in exp_params])
     try:
-        pldata = json.loads(payload)
+        payload_data = json.loads(payload)
     except json.decoder.JSONDecodeError:
         return HttpResponse.json(HttpCode.INTERNAL_ERROR,
                                  "{0} bad json".format(payload))
-    if "statusCode" in pldata:
-        return HttpResponse.json(pldata["statusCode"], payload)
+    if "statusCode" in payload_data:
+        return HttpResponse.json(payload_data["statusCode"], payload)
     else:
         return HttpResponse.json(HttpCode.ACCEPTED, payload)
 
@@ -96,7 +96,7 @@ def exec_primitive_on_vnsf():
 @nfvo_views.route(endpoints.VNSF_ACTION_EXEC_R4, methods=["POST"])
 @content.expect_json_content
 def exec_primitive_on_vnsf_r4():
-    vnf_business = VnsfoVnsf(4)
+    vnf_object = VnsfoVnsf(4)
     exp_ct = "application/json"
     if exp_ct not in request.headers.get("Content-Type", ""):
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
@@ -106,14 +106,14 @@ def exec_primitive_on_vnsf_r4():
         Exception.improper_usage("Missing parameters: any of {}"
                                  .format(exp_params))
     # Extract params, respecting the specific ordering
-    payload = vnf_business.submit_action_request(
+    payload = vnf_object.submit_action_request(
         *[request.json.get(x) for x in exp_params])
     try:
-        pldata = json.loads(payload)
+        payload_data = json.loads(payload)
     except json.decoder.JSONDecodeError:
         return HttpResponse.json(HttpCode.INTERNAL_ERROR,
                                  "{0} bad json".format(payload))
-    if "statusCode" in pldata:
-        return HttpResponse.json(pldata["statusCode"], payload)
+    if "statusCode" in payload_data:
+        return HttpResponse.json(payload_data["statusCode"], payload)
     else:
         return HttpResponse.json(HttpCode.ACCEPTED, payload)

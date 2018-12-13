@@ -431,8 +431,7 @@ class OSMR4():
             vnfi.update({"ns_name": nsi.get("ns_name", nsi.get("name"))})
             vnfi.update({"vnfr_name": "{0}__{1}__1".format(nsi["nsd-name-ref"],
                                                            vnfi["vnfd_id"])})
-            # Reminder: populate existing config jobs from the
-            #    model
+            # Reminder: populate existing config jobs from the model
             dbm = DBManager()
             vnfi.update({"config_jobs": dbm.get_vnf_actions(vnfi["vnfr_id"])})
             tnsi["constituent_vnf_instances"].append(vnfi)
