@@ -345,7 +345,7 @@ class OSMR4():
         requests.delete("{0}".format(inst_url),
                         headers=self.headers,
                         verify=False)
-        # Uncomment next lines in case do you want asynchronous behavior
+        # Uncomment next lines in case asynchronous behavior is preferred
         # t = threading.Thread(target=self.monitor_ns_deletion,
         #                      args=(nsr_id,
         #                            current_app._get_current_object()))
@@ -362,7 +362,7 @@ class OSMR4():
         timeout = 90
         inst_url = "{0}/{1}".format(self.instantiate_url,
                                     ns_instance_id)
-        while True and timeout > 0:
+        while timeout > 0:
             try:
                 ns_status = self.get_ns_r4_instances(ns_instance_id)
                 status = ns_status["operational-status"]
@@ -372,7 +372,7 @@ class OSMR4():
                     break
             except OSMException:
                 break
-            timeout = timeout - 1
+            timeout -= 1
             time.sleep(1)
         delete = requests.delete(inst_url,
                                  headers=self.headers,
