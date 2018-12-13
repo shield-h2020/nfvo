@@ -26,13 +26,13 @@ import time
 import unittest
 
 
-class TestNfvNsRealtime(unittest.TestCase):
+class TestNfvNsRealtimeR2(unittest.TestCase):
 
     def setUp(self):
-        self.get_nsr_config = endpoints_s.NS_C_NSS
-        self.post_nsr_instantiate = endpoints_s.NS_INSTANTIATE
-        self.delete_nsr = endpoints_s.NS_DELETE
-        self.get_nsr_running = endpoints_s.NS_R_NSS
+        self.get_nsr_config = endpoints_s.NS_C_NSS_R2
+        self.post_nsr_instantiate = endpoints_s.NS_INSTANTIATE_R2
+        self.delete_nsr = endpoints_s.NS_DELETE_R2
+        self.get_nsr_running = endpoints_s.NS_R_NSS_R2
         self.utils = TestUtils()
 
     @unittest.expectedFailure

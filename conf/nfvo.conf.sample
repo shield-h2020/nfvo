@@ -20,5 +20,8 @@
     port = 9999
     username = admin
     password = admin
-    default_om_datacenter = {{default_om_datacenter}}
+    default_kvm_datacenter = {{default_kvm_datacenter}}
+    default_docker_datacenter = {{default_docker_datacenter}}
+    default_kvm_datacenter_net = {{default_kvm_datacenter_net}}
+    default_docker_datacenter_net = {{default_docker_datacenter_net}}
     default_flavor = m1.small

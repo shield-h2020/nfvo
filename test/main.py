@@ -23,8 +23,13 @@ from t_core.regex import TestRegex
 from t_db.realtime_db import TestDbConnectivity
 from t_nfv.mocked_nfv import TestNfvVnfMocked
 from t_nfv.realtime_nfv import TestNfvVnfRealtime
+from t_nfv.realtime_nfv_r2 import TestNfvVnfRealtimeR2
+from t_nfv.realtime_nfv_r4 import TestNfvVnfRealtimeR4
 from t_ns.mocked_ns import TestNfvNsMocked
+from t_ns.mocked_ns_r2 import TestNfvNsMockedR2
 from t_ns.realtime_ns import TestNfvNsRealtime
+from t_ns.realtime_ns_r2 import TestNfvNsRealtimeR2
+from t_ns.realtime_ns_r4 import TestNfvNsRealtimeR4
 from t_package.mocked_package import TestPackageMocked
 from t_package.realtime_package import TestPackageRealtime
 from t_server.mocked_endpoints import TestServerEndpointsMocked
@@ -60,7 +65,11 @@ class TestSuite:
         return [
             TestInfraRealtime,
             TestNfvNsRealtime,
+            TestNfvNsRealtimeR2,
+            TestNfvNsRealtimeR4,
             TestNfvVnfRealtime,
+            TestNfvVnfRealtimeR2,
+            TestNfvVnfRealtimeR4,
             TestPackageRealtime,
             TestRegex,
             TestServerEndpointsRealtime,
@@ -71,6 +80,7 @@ class TestSuite:
     def __define_tests_mocked(self):
         return [
             TestNfvNsMocked,
+            TestNfvNsMockedR2,
             TestNfvVnfMocked,
             TestPackageMocked,
             TestServerEndpointsMocked,

@@ -288,6 +288,13 @@ class DBManager():
             raise Exception(e)
         return str(node.id)
 
+    def get_vnf_actions(self, vnsfr_id):
+        """
+        Get remote action executed per vNSF.
+        """
+        vnf_action_requests = VnfActionRequest.objects(vnsfr_id=vnsfr_id)
+        return vnf_action_requests
+
     def store_vnf_action(self, vnsfr_id, primitive, params, output):
         """
         Track remote action executed per vNSF.

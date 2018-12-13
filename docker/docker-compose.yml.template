@@ -4,6 +4,7 @@ services:
 
     # MongoDB
     nfvo-db:
+      container_name: docker_nfvo-db_1
       image: mongo:3.4
       labels:
         project: shield-nfvo
@@ -18,6 +19,7 @@ services:
 
     # vNSFO
     nfvo:
+      container_name: docker_nfvo_1
       labels:
         project: shield-nfvo
       env_file: .env.base
