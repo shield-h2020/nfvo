@@ -18,12 +18,12 @@
 from bson import json_util
 from bson.objectid import ObjectId
 from core.config import FullConfParser
-from db.models.vnf_action_request import VnfActionRequest
-from db.models.infra.node import Node
 from db.models.auth.auth import PasswordAuth, KeyAuth
+from db.models.infra.node import Node
 from db.models.isolation.isolation_policy import InterfaceDown
 from db.models.isolation.isolation_policy import DeleteFlow
 from db.models.isolation.isolation_policy import Shutdown
+from db.models.vnf_action_request import VnfActionRequest
 from mongoengine import connect as me_connect
 from mongoengine.errors import OperationError, ValidationError
 
@@ -294,6 +294,33 @@ class DBManager():
         """
         vnf_action_requests = VnfActionRequest.objects(vnsfr_id=vnsfr_id)
         return vnf_action_requests
+
+    def store_vdu(self, name, management_ip,
+                  isolation_command, username, private_key):
+        """
+        Register VDU as node
+        """
+        isolation = Shutdown(name=str(name),
+                             command=str(isolation_command))
+        termination = Shutdown(name=str(name),
+                               command=str(isolation_command))
+        auth = KeyAuth(username=str(username),
+                       private_key=str(private_key))
+        auth.save()
+        isolation.save()
+        termination.save()
+        vdu = Node(host_name=name,
+                   ip_address=management_ip,
+                   authentication=auth,
+                   pcr0="",
+                   driver="",
+                   analysis_type="",
+                   distribution="",
+                   disabled=False,
+                   physical=False,
+                   isolation_policy=isolation,
+                   termination_policy=termination)
+        vdu.save()
 
     def store_vnf_action(self, vnsfr_id, primitive, params, output):
         """

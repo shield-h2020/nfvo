@@ -418,13 +418,15 @@ class OSMR4():
                                 headers=self.headers,
                                 verify=False)
         ns_instances = json.loads(response.text)
+        if nsr_id is not None:
+            return {"ns": [self.translate_ns_instance(ns_instances)]}
         ns_data = {"ns":
                    [self.translate_ns_instance(x) for x in ns_instances]}
         return ns_data
 
     def translate_ns_instance(self, nsi):
         tnsi = {}
-        tnsi["config_status"] = nsi["config-status"]
+        tnsi["config_status"] = nsi.get("config-status", "null")
         tnsi["constituent_vnf_instances"] = []
         vnfis = self.get_vnf_instances(nsi["_id"])
         for vnfi in vnfis:

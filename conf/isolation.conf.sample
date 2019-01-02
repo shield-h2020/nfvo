@@ -3,3 +3,7 @@
     shutdown = shutdown.sh
     delflow = delflow.sh
     ifdown = ifdown.sh
+
+[keys]
+    default_username = ubuntu
+    default_key = keys/default.pem
