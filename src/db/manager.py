@@ -296,7 +296,8 @@ class DBManager():
         return vnf_action_requests
 
     def store_vdu(self, name, management_ip,
-                  isolation_command, username, private_key):
+                  isolation_command, username, private_key,
+                  analysis_type, pcr0, distribution, driver):
         """
         Register VDU as node
         """
@@ -312,10 +313,10 @@ class DBManager():
         vdu = Node(host_name=name,
                    ip_address=management_ip,
                    authentication=auth,
-                   pcr0="",
-                   driver="",
-                   analysis_type="",
-                   distribution="",
+                   pcr0=pcr0,
+                   driver=driver,
+                   analysis_type=analysis_type,
+                   distribution=distribution,
                    disabled=False,
                    physical=False,
                    isolation_policy=isolation,

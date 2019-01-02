@@ -2,3 +2,7 @@
     host = {{general_host}}
     port = 8888
     protocol = https
+    default_analysis_type = load-time+cont-check,l_req=l4_ima_all_ok|==,cont-list=
+    default_pcr0 = example
+    default_distribution = CentOS7
+    default_driver = linux

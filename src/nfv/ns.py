@@ -21,6 +21,7 @@ from nfvo.osm.osm_r2 import OSMR2
 from nfvo.osm.osm_r4 import OSMR4
 from server.http import content
 from server.mocks.ns import MockNs as ns_m
+from tm.tm_client import TMClient
 
 import threading
 import time
@@ -45,6 +46,17 @@ class VnsfoNs:
         self.keys = self.isolation_category.get("keys")
         self.default_username = self.keys.get("default_username")
         self.default_key = self.keys.get("default_key")
+        self.tm_config = FullConfParser()
+        self.tm_category = self.tm_config.get("tm.conf")
+        self.tm_general = self.tm_category.get("general")
+        self.default_analysis_type = \
+            self.tm_general.get("default_analysis_type")
+        self.default_pcr0 = \
+            self.tm_general.get("default_pcr0")
+        self.default_distribution = \
+            self.tm_general.get("default_distribution")
+        self.default_driver = \
+            self.tm_general.get("default_driver")
         if release == 4:
             self.orchestrator = OSMR4()
 
@@ -91,20 +103,52 @@ class VnsfoNs:
                 app.mongo.store_vdu(vnfr_name, vdu_ip,
                                     "sudo poweroff",
                                     self.default_username,
-                                    key)
+                                    key,
+                                    instantiation_data["analysis_type"],
+                                    instantiation_data["pcr0"],
+                                    instantiation_data["distribution"],
+                                    instantiation_data["driver"])
+                node_data = {
+                    "host_name": vnfr_name,
+                    "ip_address": vdu_ip,
+                    "distribution": instantiation_data["distribution"],
+                    "pcr0": instantiation_data["pcr0"],
+                    "driver": instantiation_data["driver"]}
+                trust_monitor_client = TMClient()
+                trust_monitor_client.register_node(node_data)
                 break
             timeout -= self.monitoring_interval
 
     @content.on_mock(ns_m().post_nsr_instantiate_mock)
     def instantiate_ns(self, instantiation_data):
-        instantiation_data = self.orchestrator.post_ns_instance(
+        nsi_data = self.orchestrator.post_ns_instance(
             instantiation_data)
+        nsi_data["analysis_type"] = \
+            self.default_analysis_type
+        if "analysis_type" in instantiation_data:
+            nsi_data["analysis_type"] = \
+                instantiation_data["analysis_type"]
+        nsi_data["pcr0"] = \
+            self.default_pcr0
+        if "pcr0" in instantiation_data:
+            nsi_data["pcr0"] = \
+                instantiation_data["pcr0"]
+        nsi_data["distribution"] = \
+            self.default_distribution
+        if "distribution" in instantiation_data:
+            nsi_data["distribution"] = \
+                instantiation_data["distribution"]
+        nsi_data["driver"] = \
+            self.default_driver
+        if "driver" in instantiation_data:
+            nsi_data["driver"] = \
+                instantiation_data["driver"]
         t = threading.Thread(target=self.monitor_deployment,
-                             args=(instantiation_data,
+                             args=(nsi_data,
                                    current_app._get_current_object(),
                                    self.monitoring_target_status))
         t.start()
-        return instantiation_data
+        return nsi_data
 
     @content.on_mock(ns_m().delete_nsr_mock)
     def delete_ns(self, instance_id):
