@@ -18,6 +18,7 @@
 from bson import json_util
 from bson.objectid import ObjectId
 from core.config import FullConfParser
+from core.log import setup_custom_logger
 from db.models.auth.auth import PasswordAuth, KeyAuth
 from db.models.infra.node import Node
 from db.models.isolation.isolation_policy import InterfaceDown
@@ -28,12 +29,11 @@ from mongoengine import connect as me_connect
 from mongoengine.errors import OperationError, ValidationError
 
 import json
-import logging
 import pymongo
 import threading
 import time
 
-logger = logging.getLogger("db-manager")
+LOGGER = setup_custom_logger(__name__)
 
 
 class DBManager():
@@ -296,17 +296,54 @@ class DBManager():
         return vnf_action_requests
 
     def store_vdu(self, name, management_ip,
-                  isolation_command, username, private_key,
+                  isolation_policy,
+                  termination_policy,
+                  authentication,
                   analysis_type, pcr0, distribution, driver):
         """
         Register VDU as node
         """
-        isolation = Shutdown(name=str(name),
-                             command=str(isolation_command))
-        termination = Shutdown(name=str(name),
-                               command=str(isolation_command))
-        auth = KeyAuth(username=str(username),
-                       private_key=str(private_key))
+        if isolation_policy["type"] == "shutdown":
+            LOGGER.info("Storing shutdown isolation")
+            isolation = Shutdown(name=str(isolation_policy["name"]),
+                                 command=str(isolation_policy["command"]))
+        elif isolation_policy["type"] == "interface_down":
+            LOGGER.info("Storing interface down isolation")
+            isolation = InterfaceDown(
+                name=str(isolation_policy["name"]),
+                interface_name=str(isolation_policy["interface_name"]))
+        elif isolation_policy["type"] == "delete_flow":
+            LOGGER.info("Storing delete flow isolation")
+            isolation = DeleteFlow(
+                name=str(isolation_policy["name"]),
+                switch=str(isolation_policy["switch"]),
+                target_filter=str(isolation_policy["target_filter"]))
+        if termination_policy["type"] == "shutdown":
+            LOGGER.info("Storing shutdown termination")
+            termination = Shutdown(name=str(termination_policy["name"]),
+                                   command=str(termination_policy["command"]))
+        elif termination_policy["type"] == "interface_down":
+            LOGGER.info("Storing interface down termination")
+            termination = InterfaceDown(
+                name=str(termination_policy["name"]),
+                interface_name=str(termination_policy["interface_name"]))
+        elif termination_policy["type"] == "delete_flow":
+            LOGGER.info("Storing delete flow termination")
+            termination = DeleteFlow(
+                name=str(termination_policy["name"]),
+                switch=str(termination_policy["switch"]),
+                target_filter=str(termination_policy["target_filter"]))
+        if authentication["type"] == "private_key":
+            LOGGER.info("Storing private key auth")
+            auth = KeyAuth(username=str(authentication["username"]),
+                           private_key=str(authentication["private_key"]))
+        elif authentication["type"] == "password":
+            LOGGER.info("Storing password auth")
+            auth = PasswordAuth(username=str(authentication["username"]),
+                                password=str(authentication["password"]))
+        else:
+            LOGGER.info("Authentication mode not supported")
+            return
         auth.save()
         isolation.save()
         termination.save()

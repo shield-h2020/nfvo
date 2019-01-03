@@ -98,12 +98,30 @@ class VnsfoNs:
                 for vnfr in nss["ns"][0]["constituent_vnf_instances"]:
                     vnfr_name = vnfr["vnfr_name"]
                     vdu_ip = vnfr["ip"]
-                with open(self.default_key) as fhandle:
-                    key = fhandle.read()
+                if "authentication" not in instantiation_data:
+                    with open(self.default_key) as fhandle:
+                        key = fhandle.read()
+                    instantiation_data["authentication"] = {
+                        "private_key": key,
+                        "type": "private_key",
+                        "username": self.default_username
+                    }
+                if "isolation_policy" not in instantiation_data:
+                    instantiation_data["isolation_policy"] = {
+                        "command": "sudo poweroff",
+                        "name": "shutdown",
+                        "type": "shutdown"
+                    }
+                if "termination_policy" not in instantiation_data:
+                    instantiation_data["termination_policy"] = {
+                        "command": "sudo poweroff",
+                        "name": "shutdown",
+                        "type": "shutdown"
+                    }
                 app.mongo.store_vdu(vnfr_name, vdu_ip,
-                                    "sudo poweroff",
-                                    self.default_username,
-                                    key,
+                                    instantiation_data["isolation_policy"],
+                                    instantiation_data["termination_policy"],
+                                    instantiation_data["authentication"],
                                     instantiation_data["analysis_type"],
                                     instantiation_data["pcr0"],
                                     instantiation_data["distribution"],
@@ -123,6 +141,15 @@ class VnsfoNs:
     def instantiate_ns(self, instantiation_data):
         nsi_data = self.orchestrator.post_ns_instance(
             instantiation_data)
+        if "authentication" in instantiation_data:
+            nsi_data["authentication"] = \
+                instantiation_data["authentication"]
+        if "isolation_policy" in instantiation_data:
+            nsi_data["isolation_policy"] = \
+                instantiation_data["isolation_policy"]
+        if "termination_policy" in instantiation_data:
+            nsi_data["termination_policy"] = \
+                instantiation_data["termination_policy"]
         nsi_data["analysis_type"] = \
             self.default_analysis_type
         if "analysis_type" in instantiation_data:
