@@ -16,6 +16,7 @@
 
 
 from core.exception import Exception
+from core.log import setup_custom_logger
 from flask import abort
 from flask import Blueprint
 from flask import current_app
@@ -28,6 +29,10 @@ from server.http.http_response import HttpResponse
 from tm.tm_client import TMClient
 
 import bson
+
+
+LOGGER = setup_custom_logger(__name__)
+
 
 nfvo_views = Blueprint("nfvo_infra_views", __name__)
 
@@ -190,8 +195,10 @@ def check_isolation_params(isolation_policy):
             missing_params.append(param)
             return missing_params
     if isolation_policy["type"] not in ("ifdown", "delflow", "shutdown"):
+        msg = "isol. type should be ifdown, delflow or shutdown"
+        LOGGER.info(msg)
         Exception.\
-            improper_usage("isol. type should be ifdown, delflow or shutdown")
+            improper_usage(msg)
     if isolation_policy["type"] == "ifdown":
         if "interface_name" not in isolation_policy:
             missing_params.append("interface_name")
@@ -214,8 +221,10 @@ def check_auth_params(auth_data):
             missing_params.append(param)
             return missing_params
     if auth_data.get("type", "") not in ("password", "private_key"):
+        msg = "Auth type should be password or private_key"
+        LOGGER.info(msg)
         Exception.\
-            improper_usage("Auth type should be password or private_key")
+            improper_usage(msg)
     if auth_data["type"] == "password":
         if "password" not in auth_data:
             missing_params.append("password")
