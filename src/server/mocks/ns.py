@@ -75,7 +75,11 @@ class MockNs:
             "ns_name": "l23filter_nsd",
             "instance_id": str(uuid.uuid4()),
             "result": "success",
-            "vim_id": str(uuid.uuid4())
+            "vim_id": str(uuid.uuid4()),
+            "analysis_type": "example",
+            "distribution": "ubuntu",
+            "driver": "example",
+            "pcr0": "pcr0"
         }
 
         self.delete_nsr_mock = {
@@ -169,6 +173,10 @@ class MockNs:
         schema["instance_id"] = \
             And(Use(str), lambda n: regex.uuid(n) is not None)
         schema["result"] = And(Use(str))
+        schema["analysis_type"] = And(Use(str))
+        schema["distribution"] = And(Use(str))
+        schema["driver"] = And(Use(str))
+        schema["pcr0"] = And(Use(str))
         return Schema(schema)
 
     def delete_nsr_schema(self):
