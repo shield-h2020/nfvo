@@ -42,6 +42,7 @@ class TMClient:
                 "driver": node_data["driver"]}
         try:
             response = requests.post(url, json=data, verify=False)
+            LOGGER.info("Trust Monitor response {0}".format(response.text))
             return response
         except Exception as excp:
             LOGGER.error("Error registering node in trust-monitor")
@@ -55,6 +56,7 @@ class TMClient:
             response = requests.delete(url,
                                        verify=False,
                                        json=data)
+            LOGGER.info("Trust Monitor response {0}".format(response.text))
             return response
         except Exception as excp:
             LOGGER.error("Error deleting node in trust-monitor")

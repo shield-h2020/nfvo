@@ -44,3 +44,5 @@ class Node(Document):
     termination_policy = ReferenceField(IsolationPolicy, required=True)
     disabled = BooleanField(required=True)
     physical = BooleanField(required=True)
+    # Only needed in case node corresponds to VDUs
+    instance_id = StringField(required=False)

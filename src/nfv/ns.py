@@ -16,6 +16,7 @@
 
 from core.config import FullConfParser
 from core.log import setup_custom_logger
+from db.models.infra.node import Node
 from flask import current_app
 from nfvo.osm.osm_r2 import OSMR2
 from nfvo.osm.osm_r4 import OSMR4
@@ -125,7 +126,8 @@ class VnsfoNs:
                                     instantiation_data["analysis_type"],
                                     instantiation_data["pcr0"],
                                     instantiation_data["distribution"],
-                                    instantiation_data["driver"])
+                                    instantiation_data["driver"],
+                                    instantiation_data["instance_id"])
                 node_data = {
                     "host_name": vnfr_name,
                     "ip_address": vdu_ip,
@@ -179,6 +181,12 @@ class VnsfoNs:
 
     @content.on_mock(ns_m().delete_nsr_mock)
     def delete_ns(self, instance_id):
+        nodes = Node.objects(instance_id=instance_id)
+        tm_client = TMClient()
+        for node in nodes:
+            LOGGER.info(node.host_name)
+            tm_client.delete_node(node.host_name)
+            node.delete()
         return self.orchestrator.delete_ns_instance(instance_id)
 
     def fetch_config_nss(self):

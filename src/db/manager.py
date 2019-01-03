@@ -299,7 +299,8 @@ class DBManager():
                   isolation_policy,
                   termination_policy,
                   authentication,
-                  analysis_type, pcr0, distribution, driver):
+                  analysis_type, pcr0, distribution, driver,
+                  instance_id):
         """
         Register VDU as node
         """
@@ -347,6 +348,8 @@ class DBManager():
         auth.save()
         isolation.save()
         termination.save()
+        LOGGER.info(
+            "Storing node with instance_id {0}".format(str(instance_id)))
         vdu = Node(host_name=name,
                    ip_address=management_ip,
                    authentication=auth,
@@ -357,7 +360,8 @@ class DBManager():
                    disabled=False,
                    physical=False,
                    isolation_policy=isolation,
-                   termination_policy=termination)
+                   termination_policy=termination,
+                   instance_id=str(instance_id))
         vdu.save()
 
     def store_vnf_action(self, vnsfr_id, primitive, params, output):
