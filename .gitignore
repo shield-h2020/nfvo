@@ -11,4 +11,3 @@ venv
 docker/data/*
 !docker/data/.gitkeep
 logs/*
-*.pem
