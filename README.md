@@ -94,6 +94,23 @@ curl -ik https://127.0.0.1:8448/ns/config
 
 #### Instantiate an already registered NS
 
+According to Shield project requirements: VDU instances belonging to a
+network service instance should be registered as infrastructure nodes
+in nfvo. To allow the inclusion of extra configuration inside instantiation body;
+in particular, the following NFVI optional fields can be added to each instantiation
+request:
+
+- analysis_type (string)
+- pcr0 (string)
+- driver (string)
+- distribution (string)
+- authentication (see NFVI section for reference)
+- isolation_policy (see NFVI section for reference)
+- termination_policy (see NFVI section for reference)
+
+In order to provide back-compatibility all these fields
+are optional and will be filled with default values in case not provided.
+
 ##### Specific deployment location and provider network
 
 ```
