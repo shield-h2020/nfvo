@@ -350,6 +350,9 @@ class DBManager():
         termination.save()
         LOGGER.info(
             "Storing node with instance_id {0}".format(str(instance_id)))
+        LOGGER.info("hostname: {0}".format(name))
+        LOGGER.info("ip_address: {0}".format(management_ip))
+        LOGGER.info("instance_id: {0}".format(str(instance_id)))
         vdu = Node(host_name=name,
                    ip_address=management_ip,
                    authentication=auth,
