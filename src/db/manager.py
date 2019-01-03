@@ -307,12 +307,12 @@ class DBManager():
             LOGGER.info("Storing shutdown isolation")
             isolation = Shutdown(name=str(isolation_policy["name"]),
                                  command=str(isolation_policy["command"]))
-        elif isolation_policy["type"] == "interface_down":
+        elif isolation_policy["type"] == "ifdown":
             LOGGER.info("Storing interface down isolation")
             isolation = InterfaceDown(
                 name=str(isolation_policy["name"]),
                 interface_name=str(isolation_policy["interface_name"]))
-        elif isolation_policy["type"] == "delete_flow":
+        elif isolation_policy["type"] == "delflow":
             LOGGER.info("Storing delete flow isolation")
             isolation = DeleteFlow(
                 name=str(isolation_policy["name"]),
@@ -322,12 +322,12 @@ class DBManager():
             LOGGER.info("Storing shutdown termination")
             termination = Shutdown(name=str(termination_policy["name"]),
                                    command=str(termination_policy["command"]))
-        elif termination_policy["type"] == "interface_down":
+        elif termination_policy["type"] == "ifdown":
             LOGGER.info("Storing interface down termination")
             termination = InterfaceDown(
                 name=str(termination_policy["name"]),
                 interface_name=str(termination_policy["interface_name"]))
-        elif termination_policy["type"] == "delete_flow":
+        elif termination_policy["type"] == "delflow":
             LOGGER.info("Storing delete flow termination")
             termination = DeleteFlow(
                 name=str(termination_policy["name"]),
