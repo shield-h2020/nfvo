@@ -16,6 +16,7 @@
 
 
 from core.exception import Exception
+from core.log import setup_custom_logger
 from flask import Blueprint
 from flask import request
 from nfv.ns import VnsfoNs
@@ -23,6 +24,12 @@ from server.endpoints import VnsfoEndpoints as endpoints
 from server.http import content
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
+from server.views.infra import check_auth_params
+from server.views.infra import check_isolation_params
+
+
+LOGGER = setup_custom_logger(__name__)
+
 
 nfvo_views = Blueprint("nfvo_ns_views", __name__)
 
@@ -53,6 +60,30 @@ def instantiate_ns():
     if not content.data_in_request(request, exp_params):
         Exception.improper_usage("Missing parameters: any of {}"
                                  .format(exp_params))
+    if "authentication" in instantiation_data:
+        missing_params = check_auth_params(
+            instantiation_data["authentication"])
+        if len(missing_params) > 0:
+            msg = "Missing authentication parameters {0}".format(
+                ", ".join(missing_params))
+            LOGGER.info(msg)
+            Exception.improper_usage(msg)
+    if "isolation_policy" in instantiation_data:
+        missing_params = check_isolation_params(
+            instantiation_data["isolation_policy"])
+        if len(missing_params) > 0:
+            msg = "Missing isolation policy parameters {0}".format(
+                    ", ".join(missing_params))
+            LOGGER.info(msg)
+            Exception.improper_usage(msg)
+    if "termination_policy" in instantiation_data:
+        missing_params = check_isolation_params(
+            instantiation_data["termination_policy"])
+        if len(missing_params) > 0:
+            msg = "Missing termination policy parameters {0}".format(
+                    ", ".join(missing_params))
+            LOGGER.info(msg)
+            Exception.improper_usage(msg)
     ns_object = VnsfoNs()
     result = ns_object.instantiate_ns(instantiation_data)
     if result.get("result", "") == "success":

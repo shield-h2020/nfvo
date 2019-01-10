@@ -16,6 +16,7 @@
 
 
 from core.exception import Exception
+from core.log import setup_custom_logger
 from flask import abort
 from flask import Blueprint
 from flask import current_app
@@ -28,6 +29,10 @@ from server.http.http_response import HttpResponse
 from tm.tm_client import TMClient
 
 import bson
+
+
+LOGGER = setup_custom_logger(__name__)
+
 
 nfvo_views = Blueprint("nfvo_infra_views", __name__)
 
@@ -164,8 +169,9 @@ def register_node():
             ", ".join(missing_params)))
     missing_auth_params = check_auth_params(node_data["authentication"])
     if len(missing_auth_params) > 0:
-        Exception.improper_usage("Missing auth parameters: {0}".format(
-            ", ".join(missing_auth_params)))
+        Exception.improper_usage(
+            "Missing authentication parameters: {0}".format(
+                ", ".join(missing_auth_params)))
     missing_isolation_params = check_isolation_params(
         node_data["isolation_policy"])
     if len(missing_isolation_params) > 0:
@@ -190,8 +196,10 @@ def check_isolation_params(isolation_policy):
             missing_params.append(param)
             return missing_params
     if isolation_policy["type"] not in ("ifdown", "delflow", "shutdown"):
+        msg = "Isolation type should be ifdown, delflow or shutdown"
+        LOGGER.info(msg)
         Exception.\
-            improper_usage("isol. type should be ifdown, delflow or shutdown")
+            improper_usage(msg)
     if isolation_policy["type"] == "ifdown":
         if "interface_name" not in isolation_policy:
             missing_params.append("interface_name")
@@ -214,8 +222,10 @@ def check_auth_params(auth_data):
             missing_params.append(param)
             return missing_params
     if auth_data.get("type", "") not in ("password", "private_key"):
+        msg = "Authentication type should be password or private_key"
+        LOGGER.info(msg)
         Exception.\
-            improper_usage("Auth type should be password or private_key")
+            improper_usage(msg)
     if auth_data["type"] == "password":
         if "password" not in auth_data:
             missing_params.append("password")

@@ -14,11 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from core.log import setup_custom_logger
+
 import configparser
-import logging as log
 import requests
 
-logger = log.getLogger("httpserver")
+
+LOGGER = setup_custom_logger(__name__)
 
 
 class TMClient:
@@ -40,10 +42,11 @@ class TMClient:
                 "driver": node_data["driver"]}
         try:
             response = requests.post(url, json=data, verify=False)
+            LOGGER.info("Trust Monitor response {0}".format(response.text))
             return response
         except Exception as excp:
-            logger.error("Error registering node in trust-monitor")
-            logger.error(excp)
+            LOGGER.error("Error registering node in trust-monitor")
+            LOGGER.error(excp)
 
     def delete_node(self, host_name):
         url = "{0}://{1}:{2}/register_node/".format(
@@ -53,7 +56,8 @@ class TMClient:
             response = requests.delete(url,
                                        verify=False,
                                        json=data)
+            LOGGER.info("Trust Monitor response {0}".format(response.text))
             return response
         except Exception as excp:
-            logger.error("Error deleting node in trust-monitor")
-            logger.error(excp)
+            LOGGER.error("Error deleting node in trust-monitor")
+            LOGGER.error(excp)

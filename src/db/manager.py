@@ -18,22 +18,22 @@
 from bson import json_util
 from bson.objectid import ObjectId
 from core.config import FullConfParser
-from db.models.vnf_action_request import VnfActionRequest
-from db.models.infra.node import Node
+from core.log import setup_custom_logger
 from db.models.auth.auth import PasswordAuth, KeyAuth
+from db.models.infra.node import Node
 from db.models.isolation.isolation_policy import InterfaceDown
 from db.models.isolation.isolation_policy import DeleteFlow
 from db.models.isolation.isolation_policy import Shutdown
+from db.models.vnf_action_request import VnfActionRequest
 from mongoengine import connect as me_connect
 from mongoengine.errors import OperationError, ValidationError
 
 import json
-import logging
 import pymongo
 import threading
 import time
 
-logger = logging.getLogger("db-manager")
+LOGGER = setup_custom_logger(__name__)
 
 
 class DBManager():
@@ -294,6 +294,85 @@ class DBManager():
         """
         vnf_action_requests = VnfActionRequest.objects(vnsfr_id=vnsfr_id)
         return vnf_action_requests
+
+    def store_vdu(self, name, management_ip,
+                  isolation_policy,
+                  termination_policy,
+                  authentication,
+                  analysis_type, pcr0, distribution, driver,
+                  instance_id):
+        """
+        Register VDU as node.
+        Isolation and/or termination policy is stored,
+        as well as authentication policy.
+        Isolation and termination follow the precedence
+        (from highest to lowest):
+        isolate/host_shutdown, isolate/iface_down,
+        isolate/flow_delete, terminate/host_shutdown,
+        terminate/iface_down, terminate/flow_delete
+        """
+        if isolation_policy["type"] == "shutdown":
+            LOGGER.info("Storing shutdown isolation")
+            isolation = Shutdown(name=str(isolation_policy["name"]),
+                                 command=str(isolation_policy["command"]))
+        elif isolation_policy["type"] == "ifdown":
+            LOGGER.info("Storing interface down isolation")
+            isolation = InterfaceDown(
+                name=str(isolation_policy["name"]),
+                interface_name=str(isolation_policy["interface_name"]))
+        elif isolation_policy["type"] == "delflow":
+            LOGGER.info("Storing delete flow isolation")
+            isolation = DeleteFlow(
+                name=str(isolation_policy["name"]),
+                switch=str(isolation_policy["switch"]),
+                target_filter=str(isolation_policy["target_filter"]))
+        if termination_policy["type"] == "shutdown":
+            LOGGER.info("Storing shutdown termination")
+            termination = Shutdown(name=str(termination_policy["name"]),
+                                   command=str(termination_policy["command"]))
+        elif termination_policy["type"] == "ifdown":
+            LOGGER.info("Storing interface down termination")
+            termination = InterfaceDown(
+                name=str(termination_policy["name"]),
+                interface_name=str(termination_policy["interface_name"]))
+        elif termination_policy["type"] == "delflow":
+            LOGGER.info("Storing delete flow termination")
+            termination = DeleteFlow(
+                name=str(termination_policy["name"]),
+                switch=str(termination_policy["switch"]),
+                target_filter=str(termination_policy["target_filter"]))
+        if authentication["type"] == "private_key":
+            LOGGER.info("Storing private key auth")
+            auth = KeyAuth(username=str(authentication["username"]),
+                           private_key=str(authentication["private_key"]))
+        elif authentication["type"] == "password":
+            LOGGER.info("Storing password auth")
+            auth = PasswordAuth(username=str(authentication["username"]),
+                                password=str(authentication["password"]))
+        else:
+            LOGGER.info("Authentication mode not supported")
+            return
+        auth.save()
+        isolation.save()
+        termination.save()
+        LOGGER.info(
+            "Storing node with instance_id {0}".format(str(instance_id)))
+        LOGGER.info("hostname: {0}".format(name))
+        LOGGER.info("ip_address: {0}".format(management_ip))
+        LOGGER.info("instance_id: {0}".format(str(instance_id)))
+        vdu = Node(host_name=name,
+                   ip_address=management_ip,
+                   authentication=auth,
+                   pcr0=pcr0,
+                   driver=driver,
+                   analysis_type=analysis_type,
+                   distribution=distribution,
+                   disabled=False,
+                   physical=False,
+                   isolation_policy=isolation,
+                   termination_policy=termination,
+                   instance_id=str(instance_id))
+        vdu.save()
 
     def store_vnf_action(self, vnsfr_id, primitive, params, output):
         """

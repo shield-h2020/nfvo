@@ -1039,6 +1039,84 @@ definitions:
       target_status:
         type: string
         example: active
+      pcr0:
+        type: string
+        example: example
+      driver:
+        type: string
+        example: OAT
+      analysis_type:
+        type: string
+        example: FULL
+      distribution:
+        type: string
+        example: xenial
+      authentication:
+        type: object
+        required:
+          - username
+          - type
+        properties:
+          username:
+            type: string
+            example: user
+          type:
+            type: string
+            example: password, private_key
+          password:
+            type: string
+            example: password
+          private_key:
+            type: string
+            example: -----BEGIN RSA PRIVATE KEY-----\nMIIEqAIBAAKCAQEAnaSdeeE/bcAxgsivLliDhRE017ZK74m2QYg58QNbfdzoNba2 ...
+      isolation_policy:
+        type: object
+        required:
+          - name
+          - type
+        properties:
+          name:
+            type: string
+            example: DownEth0
+          type:
+            type: string
+            example: ifdown, delflow, shutdown
+          interface_name:
+            type: string
+            example: eth0
+          command:
+            type: string
+            example: sudo poweroff
+          flow_id:
+            type: string
+            example: 21
+          rule:
+            type: string
+            example: rule1
+      termination_policy:
+        type: object
+        required:
+          - name
+          - type
+        properties:
+          name:
+            type: string
+            example: DownEth0
+          type:
+            type: string
+            example: ifdown, delflow, shutdown
+          interface_name:
+            type: string
+            example: eth0
+          command:
+            type: string
+            example: sudo poweroff
+          flow_id:
+            type: string
+            example: 21
+          rule:
+            type: string
+            example: rule1
 
   InstantiateNSOutput:
     type: object
@@ -1052,6 +1130,14 @@ definitions:
       vim_id:
         type: string
       result:
+        type: string
+      analysis_type:
+        type: string
+      distribution:
+        type: string
+      pcr0:
+        type: string
+      driver:
         type: string
 
   ConfigNssOutput:
