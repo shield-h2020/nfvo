@@ -7,3 +7,6 @@
 [keys]
     default_username = ubuntu
     default_key = keys/default.pem
+
+[commands]
+    default_shutdown = sudo poweroff

@@ -58,6 +58,8 @@ class VnsfoNs:
             self.tm_general.get("default_distribution")
         self.default_driver = \
             self.tm_general.get("default_driver")
+        self.keys = self.isolation_category.get("commands")
+        self.default_shutdown = self.keys.get("default_shutdown")
         if release == 4:
             self.orchestrator = OSMR4()
 
@@ -107,15 +109,17 @@ class VnsfoNs:
                         "type": "private_key",
                         "username": self.default_username
                     }
+                # This expects a NS (VM) to be deployed, thus
+                #   the default poweroff values.
                 if "isolation_policy" not in instantiation_data:
                     instantiation_data["isolation_policy"] = {
-                        "command": "sudo poweroff",
+                        "command": self.default_shutdown,
                         "name": "shutdown",
                         "type": "shutdown"
                     }
                 if "termination_policy" not in instantiation_data:
                     instantiation_data["termination_policy"] = {
-                        "command": "sudo poweroff",
+                        "command": self.default_shutdown,
                         "name": "shutdown",
                         "type": "shutdown"
                     }

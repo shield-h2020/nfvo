@@ -302,7 +302,14 @@ class DBManager():
                   analysis_type, pcr0, distribution, driver,
                   instance_id):
         """
-        Register VDU as node
+        Register VDU as node.
+        Isolation and/or termination policy is stored,
+        as well as authentication policy.
+        Isolation and termination follow the precedence
+        (from highest to lowest):
+        isolate/host_shutdown, isolate/iface_down,
+        isolate/flow_delete, terminate/host_shutdown,
+        terminate/iface_down, terminate/flow_delete
         """
         if isolation_policy["type"] == "shutdown":
             LOGGER.info("Storing shutdown isolation")

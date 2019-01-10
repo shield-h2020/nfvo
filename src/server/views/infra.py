@@ -169,8 +169,9 @@ def register_node():
             ", ".join(missing_params)))
     missing_auth_params = check_auth_params(node_data["authentication"])
     if len(missing_auth_params) > 0:
-        Exception.improper_usage("Missing auth parameters: {0}".format(
-            ", ".join(missing_auth_params)))
+        Exception.improper_usage(
+            "Missing authentication parameters: {0}".format(
+                ", ".join(missing_auth_params)))
     missing_isolation_params = check_isolation_params(
         node_data["isolation_policy"])
     if len(missing_isolation_params) > 0:
@@ -195,7 +196,7 @@ def check_isolation_params(isolation_policy):
             missing_params.append(param)
             return missing_params
     if isolation_policy["type"] not in ("ifdown", "delflow", "shutdown"):
-        msg = "isol. type should be ifdown, delflow or shutdown"
+        msg = "Isolation type should be ifdown, delflow or shutdown"
         LOGGER.info(msg)
         Exception.\
             improper_usage(msg)
@@ -221,7 +222,7 @@ def check_auth_params(auth_data):
             missing_params.append(param)
             return missing_params
     if auth_data.get("type", "") not in ("password", "private_key"):
-        msg = "Auth type should be password or private_key"
+        msg = "Authentication type should be password or private_key"
         LOGGER.info(msg)
         Exception.\
             improper_usage(msg)
