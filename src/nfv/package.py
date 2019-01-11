@@ -15,30 +15,9 @@
 # limitations under the License.
 
 
-from core import download
-from nfvo.osm import endpoints as osm_eps
 from nfvo.osm.osm_r2 import OSMR2
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from server.http import content
 from server.mocks.package import MockPackage as package_m
-from werkzeug.datastructures import ImmutableMultiDict
-
-import json
-import os
-import requests
-
-
-def post_content(bin_file, release=None):
-    data_file = ImmutableMultiDict([("package", bin_file)])
-    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-    resp = requests.post(
-            osm_eps.PKG_ONBOARD,
-            headers=osm_eps.get_default_headers(),
-            files=data_file,
-            verify=False)
-    output = json.loads(resp.text)
-    output.update({"package": bin_file.filename})
-    return output
 
 
 @content.on_mock(package_m().onboard_package_mock)
@@ -63,22 +42,11 @@ def onboard_package_remote(pkg_path, release=None):
     @param pkg_path Remote path to the package
     @return output Structure with provided path and transaction ID
     """
-    if not os.path.isfile(pkg_path):
-        pkg_path = download.fetch_content(pkg_path)
-    return onboard_package(pkg_path)
+    orchestrator = OSMR2()
+    return orchestrator.onboard_package_remote(pkg_path)
 
 
 @content.on_mock(package_m().remove_package_mock)
 def remove_package(pkg_name, release=None):
-    remove_url = osm_eps.PKG_VNF_REMOVE
-    if "_ns" in pkg_name:
-        remove_url = osm_eps.PKG_NS_REMOVE
-    remove_url = remove_url.format(pkg_name)
-    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-    resp = requests.delete(
-            remove_url,
-            headers=osm_eps.get_default_headers(),
-            verify=False)
-    output = json.loads(resp.text)
-    output.update({"package": pkg_name})
-    return output
+    orchestrator = OSMR2()
+    return orchestrator.remove_package(pkg_name)

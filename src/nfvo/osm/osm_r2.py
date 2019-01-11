@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from core import download
 from core.config import FullConfParser
 from core import regex
 from flask import current_app
@@ -584,6 +585,25 @@ class OSMR2():
         if remove_after:
             pkg_dir = os.path.dirname(pkg_path)
             shutil.rmtree(pkg_dir)
+        return output
+
+    def onboard_package_remote(self, pkg_path):
+        if not os.path.isfile(pkg_path):
+            pkg_path = download.fetch_content(pkg_path)
+        return self.onboard_package(pkg_path)
+
+    def remove_package(self, pkg_name, release=None):
+        remove_url = endpoints.PKG_VNF_REMOVE
+        if "_ns" in pkg_name:
+            remove_url = endpoints.PKG_NS_REMOVE
+        remove_url = remove_url.format(pkg_name)
+        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+        resp = requests.delete(
+            remove_url,
+            headers=endpoints.get_default_headers(),
+            verify=False)
+        output = json.loads(resp.text)
+        output.update({"package": pkg_name})
         return output
 
 
