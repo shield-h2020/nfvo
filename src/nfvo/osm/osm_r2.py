@@ -23,11 +23,16 @@ from nfvo.osm import \
     NFVO_DEFAULT_KVM_DATACENTER, NFVO_DEFAULT_KVM_DATACENTER_NET
 from nfvo.osm import \
     NFVO_DEFAULT_DOCKER_DATACENTER, NFVO_DEFAULT_DOCKER_DATACENTER_NET
+from mimetypes import MimeTypes
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from templates import nfvo as nfvo_tmpl
+from werkzeug.datastructures import FileStorage
+from werkzeug.datastructures import ImmutableMultiDict
 
 import json
+import os
 import requests
+import shutil
 import threading
 import time
 import urllib3
@@ -543,6 +548,43 @@ class OSMR2():
                 verify=False)
         # Yep, this could be insecure - but the output comes from NFVO
         return eval(resp.text) if resp.text else []
+
+    def post_content(self, bin_file, release=None):
+        data_file = ImmutableMultiDict([("package", bin_file)])
+        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+        resp = requests.post(
+            endpoints.PKG_ONBOARD,
+            headers=endpoints.get_default_headers(),
+            files=data_file,
+            verify=False)
+        output = json.loads(resp.text)
+        output.update({"package": bin_file.filename})
+        return output
+
+    def onboard_package(self, pkg_path, release=None):
+        remove_after = False
+        fp = None
+        bin_file = None
+        output = None
+        if type(pkg_path) == FileStorage:
+            bin_file = pkg_path
+        else:
+            if not os.path.isfile(pkg_path):
+                remove_after = True
+            if os.path.isfile(pkg_path):
+                fp = open(pkg_path, "rb")
+                filename = os.path.basename(pkg_path)
+                mime = MimeTypes()
+                content_type = mime.guess_type(pkg_path)
+                bin_file = FileStorage(fp, filename, "package", content_type)
+        if bin_file is not None:
+            output = self.post_content(bin_file)
+        if fp is not None:
+            fp.close()
+        if remove_after:
+            pkg_dir = os.path.dirname(pkg_path)
+            shutil.rmtree(pkg_dir)
+        return output
 
 
 if __name__ == "__main__":

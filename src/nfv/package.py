@@ -16,18 +16,16 @@
 
 
 from core import download
-from mimetypes import MimeTypes
 from nfvo.osm import endpoints as osm_eps
+from nfvo.osm.osm_r2 import OSMR2
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from server.http import content
 from server.mocks.package import MockPackage as package_m
-from werkzeug.datastructures import FileStorage
 from werkzeug.datastructures import ImmutableMultiDict
 
 import json
 import os
 import requests
-import shutil
 
 
 def post_content(bin_file, release=None):
@@ -53,30 +51,8 @@ def onboard_package(pkg_path, release=None):
     @param pkg_path Local binary file
     @return output Structure with provided path and transaction ID
     """
-    remove_after = False
-
-    fp = None
-    bin_file = None
-    output = None
-    if type(pkg_path) == FileStorage:
-        bin_file = pkg_path
-    else:
-        if not os.path.isfile(pkg_path):
-            remove_after = True
-        if os.path.isfile(pkg_path):
-            fp = open(pkg_path, "rb")
-            filename = os.path.basename(pkg_path)
-            mime = MimeTypes()
-            content_type = mime.guess_type(pkg_path)
-            bin_file = FileStorage(fp, filename, "package", content_type)
-    if bin_file is not None:
-        output = post_content(bin_file)
-    if fp is not None:
-        fp.close()
-    if remove_after:
-        pkg_dir = os.path.dirname(pkg_path)
-        shutil.rmtree(pkg_dir)
-    return output
+    orchestrator = OSMR2()
+    return orchestrator.onboard_package(pkg_path)
 
 
 @content.on_mock(package_m().onboard_package_remote_mock)
