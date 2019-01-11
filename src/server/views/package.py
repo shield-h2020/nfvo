@@ -83,13 +83,13 @@ def onboard_package_remote_r4():
 
 
 @nfvo_views.route(endpoints.PKG_REMOVE, methods=["DELETE"])
-@nfvo_views.route(endpoints.PKG_REMOVE_R2, methods=["POST"])
+@nfvo_views.route(endpoints.PKG_REMOVE_R2, methods=["DELETE"])
 def remove_package(vnsf_name):
     return HttpResponse.json(HttpCode.ACCEPTED,
                              pkg.remove_package(vnsf_name))
 
 
-@nfvo_views.route(endpoints.PKG_REMOVE_R4, methods=["POST"])
+@nfvo_views.route(endpoints.PKG_REMOVE_R4, methods=["DELETE"])
 def remove_package_r4(vnsf_name):
     return HttpResponse.json(HttpCode.ACCEPTED,
                              pkg.remove_package(vnsf_name, 4))
