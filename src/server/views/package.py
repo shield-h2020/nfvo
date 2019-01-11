@@ -28,6 +28,7 @@ nfvo_views = Blueprint("nfvo_pkg_views", __name__)
 
 
 @nfvo_views.route(endpoints.PKG_ONBOARD, methods=["POST"])
+@nfvo_views.route(endpoints.PKG_ONBOARD_R2, methods=["POST"])
 @content.expect_json_content
 def onboard_package():
     exp_ct = "multipart/form-data"
@@ -40,7 +41,22 @@ def onboard_package():
     return HttpResponse.json(HttpCode.ACCEPTED, pkg.onboard_package(pkg_bin))
 
 
+@nfvo_views.route(endpoints.PKG_ONBOARD_R4, methods=["POST"])
+@content.expect_json_content
+def onboard_package_r4():
+    exp_ct = "multipart/form-data"
+    if exp_ct not in request.headers.get("Content-Type", ""):
+        Exception.invalid_content_type("Expected: {}".format(exp_ct))
+    form_param = "package"
+    if not(len(request.files) > 0 and form_param in request.files.keys()):
+        Exception.improper_usage("Missing file")
+    pkg_bin = request.files.get(form_param)
+    return HttpResponse.json(HttpCode.ACCEPTED,
+                             pkg.onboard_package(pkg_bin, 4))
+
+
 @nfvo_views.route(endpoints.PKG_ONBOARD_REMOTE, methods=["POST"])
+@nfvo_views.route(endpoints.PKG_ONBOARD_REMOTE_R2, methods=["POST"])
 @content.expect_json_content
 def onboard_package_remote():
     exp_ct = "application/json"
@@ -53,6 +69,27 @@ def onboard_package_remote():
                              pkg.onboard_package_remote(file_path))
 
 
+@nfvo_views.route(endpoints.PKG_ONBOARD_REMOTE_R4, methods=["POST"])
+@content.expect_json_content
+def onboard_package_remote_r4():
+    exp_ct = "application/json"
+    if exp_ct not in request.headers.get("Content-Type", ""):
+        Exception.invalid_content_type("Expected: {}".format(exp_ct))
+    if not content.data_in_request(request, ["path"]):
+        Exception.improper_usage("Missing argument: path")
+    file_path = request.json.get("path")
+    return HttpResponse.json(HttpCode.ACCEPTED,
+                             pkg.onboard_package_remote(file_path, 4))
+
+
 @nfvo_views.route(endpoints.PKG_REMOVE, methods=["DELETE"])
+@nfvo_views.route(endpoints.PKG_REMOVE_R2, methods=["POST"])
 def remove_package(vnsf_name):
-    return HttpResponse.json(HttpCode.ACCEPTED, pkg.remove_package(vnsf_name))
+    return HttpResponse.json(HttpCode.ACCEPTED,
+                             pkg.remove_package(vnsf_name))
+
+
+@nfvo_views.route(endpoints.PKG_REMOVE_R4, methods=["POST"])
+def remove_package_r4(vnsf_name):
+    return HttpResponse.json(HttpCode.ACCEPTED,
+                             pkg.remove_package(vnsf_name, 4))

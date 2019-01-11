@@ -30,7 +30,7 @@ import requests
 import shutil
 
 
-def post_content(bin_file):
+def post_content(bin_file, release=None):
     data_file = ImmutableMultiDict([("package", bin_file)])
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     resp = requests.post(
@@ -44,7 +44,7 @@ def post_content(bin_file):
 
 
 @content.on_mock(package_m().onboard_package_mock)
-def onboard_package(pkg_path):
+def onboard_package(pkg_path, release=None):
     """
     Uploads a locally stored VNF or NS package to the NFVO.
     Calling this method and POSTing a file from a remote server will
@@ -80,7 +80,7 @@ def onboard_package(pkg_path):
 
 
 @content.on_mock(package_m().onboard_package_remote_mock)
-def onboard_package_remote(pkg_path):
+def onboard_package_remote(pkg_path, release=None):
     """
     Uploads a remotely stored VNF or NS package to the NFVO.
 
@@ -93,7 +93,7 @@ def onboard_package_remote(pkg_path):
 
 
 @content.on_mock(package_m().remove_package_mock)
-def remove_package(pkg_name):
+def remove_package(pkg_name, release=None):
     remove_url = osm_eps.PKG_VNF_REMOVE
     if "_ns" in pkg_name:
         remove_url = osm_eps.PKG_NS_REMOVE
