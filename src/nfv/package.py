@@ -16,6 +16,7 @@
 
 
 from nfvo.osm.osm_r2 import OSMR2
+from nfvo.osm.osm_r4 import OSMR4
 from server.http import content
 from server.mocks.package import MockPackage as package_m
 
@@ -31,6 +32,8 @@ def onboard_package(pkg_path, release=None):
     @return output Structure with provided path and transaction ID
     """
     orchestrator = OSMR2()
+    if release == 4:
+        orchestrator = OSMR4()
     return orchestrator.onboard_package(pkg_path)
 
 

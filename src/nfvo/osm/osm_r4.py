@@ -15,9 +15,13 @@
 # limitations under the License.
 
 import configparser
+import hashlib
 import json
+import os
+import pycurl
 import random
 import requests
+import shutil
 import threading
 import time
 import urllib3
@@ -26,6 +30,11 @@ import uuid
 from core.log import setup_custom_logger
 from db.manager import DBManager
 from flask import current_app
+from io import BytesIO
+from mimetypes import MimeTypes
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from werkzeug.datastructures import FileStorage
+
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -93,6 +102,10 @@ class OSMR4():
         self.exec_action_url = \
             "{0}/osm/nslcm/v1/ns_instances/<ns_instance_id>/action".\
             format(self.base_url)
+        self.vnfd_package_url = "{0}/osm/vnfpkgm/v1/vnf_packages_content".\
+                                format(self.base_url)
+        self.nsd_package_url = "{0}/osm/nsd/v1/ns_descriptors_content".\
+                               format(self.base_url)
         self.headers = {"Accept": "application/json"}
         self.token = None
         self.username = config["nbi"]["username"]
@@ -580,6 +593,64 @@ class OSMR4():
                                                action,
                                                params,
                                                output_dict)
+        return output
+
+    @check_authorization
+    def post_vnfd_package(self, bin_file):
+        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+        headers = self.headers
+        headers.update({"Content-Type": "application/gzip"})
+        hash_md5 = hashlib.md5()
+        for chunk in iter(lambda: bin_file.read(4096), b""):
+            hash_md5.update(chunk)
+        md5sum = hash_md5.hexdigest()
+        bin_file.seek(0)
+        full_file = bin_file.read()
+        bin_file.seek(0)
+        headers.update({"Content-File-MD5": md5sum})
+        headers.update({"Content-Length": str(len(full_file))})
+        headers.update({"Expect": "100-continue"})
+        curl_cmd = pycurl.Curl()
+        curl_cmd.setopt(pycurl.URL, self.vnfd_package_url)
+        curl_cmd.setopt(pycurl.SSL_VERIFYPEER, 0)
+        curl_cmd.setopt(pycurl.SSL_VERIFYHOST, 0)
+        curl_cmd.setopt(pycurl.POST, 1)
+        pycurl_headers = ["{0}: {1}".format(k, headers[k]) for
+                          k in headers.keys()]
+        curl_cmd.setopt(pycurl.HTTPHEADER, pycurl_headers)
+        data = BytesIO()
+        curl_cmd.setopt(pycurl.WRITEFUNCTION, data.write)
+        postdata = bin_file.read()
+        curl_cmd.setopt(pycurl.POSTFIELDS, postdata)
+        curl_cmd.perform()
+        http_code = curl_cmd.getinfo(pycurl.HTTP_CODE)
+        LOGGER.error(http_code)
+        LOGGER.error(data.getvalue().decode())
+        return {}
+
+    def onboard_package(self, pkg_path):
+        remove_after = False
+        fp = None
+        bin_file = None
+        output = None
+        if type(pkg_path) == FileStorage:
+            bin_file = pkg_path
+        else:
+            if not os.path.isfile(pkg_path):
+                remove_after = True
+            if os.path.isfile(pkg_path):
+                fp = open(pkg_path, "rb")
+                filename = os.path.basename(pkg_path)
+                mime = MimeTypes()
+                content_type = mime.guess_type(pkg_path)
+                bin_file = FileStorage(fp, filename, "package", content_type)
+        if bin_file is not None:
+            output = self.post_vnfd_package(bin_file)
+        if fp is not None:
+            fp.close()
+        if remove_after:
+            pkg_dir = os.path.dirname(pkg_path)
+            shutil.rmtree(pkg_dir)
         return output
 
 
