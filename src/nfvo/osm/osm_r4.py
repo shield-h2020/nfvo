@@ -47,6 +47,10 @@ class OSMException(Exception):
     pass
 
 
+class OSMPackageConflict(Exception):
+    pass
+
+
 def check_authorization(f):
     """
     Decorator to validate authorization prior API call
@@ -626,7 +630,11 @@ class OSMR4():
         http_code = curl_cmd.getinfo(pycurl.HTTP_CODE)
         LOGGER.error(http_code)
         LOGGER.error(data.getvalue().decode())
-        return {}
+        output = json.loads(data.getvalue().decode())
+        if http_code == 409:
+            raise OSMPackageConflict
+        return {"package": bin_file.filename,
+                "transaction_id": output["id"]}
 
     def onboard_package(self, pkg_path):
         remove_after = False

@@ -17,8 +17,13 @@
 
 from nfvo.osm.osm_r2 import OSMR2
 from nfvo.osm.osm_r4 import OSMR4
+from nfvo.osm.osm_r4 import OSMPackageConflict
 from server.http import content
 from server.mocks.package import MockPackage as package_m
+
+
+class NFVPackageConflict(Exception):
+    pass
 
 
 @content.on_mock(package_m().onboard_package_mock)
@@ -34,7 +39,10 @@ def onboard_package(pkg_path, release=None):
     orchestrator = OSMR2()
     if release == 4:
         orchestrator = OSMR4()
-    return orchestrator.onboard_package(pkg_path)
+    try:
+        return orchestrator.onboard_package(pkg_path)
+    except OSMPackageConflict:
+        raise NFVPackageConflict
 
 
 @content.on_mock(package_m().onboard_package_remote_mock)

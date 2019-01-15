@@ -19,6 +19,7 @@ from core.exception import Exception
 from flask import Blueprint
 from flask import request
 from nfv import package as pkg
+from nfv.package import NFVPackageConflict
 from server.http import content
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
@@ -51,8 +52,12 @@ def onboard_package_r4():
     if not(len(request.files) > 0 and form_param in request.files.keys()):
         Exception.improper_usage("Missing file")
     pkg_bin = request.files.get(form_param)
-    return HttpResponse.json(HttpCode.ACCEPTED,
-                             pkg.onboard_package(pkg_bin, 4))
+    try:
+        response = HttpResponse.json(HttpCode.ACCEPTED,
+                                     pkg.onboard_package(pkg_bin, 4))
+    except NFVPackageConflict:
+        Exception.improper_usage("Package already onboarded")
+    return response
 
 
 @nfvo_views.route(endpoints.PKG_ONBOARD_REMOTE, methods=["POST"])
