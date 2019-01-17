@@ -21,6 +21,8 @@ from flask import request
 from nfv import package as pkg
 from nfv.package import NFVPackageConflict
 from nfv.package import NFVUnknownPackageType
+from nfv.package import NFVPackageNotFound
+from nfvo.osm.osm_r4 import OSMException
 from server.http import content
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
@@ -101,5 +103,14 @@ def remove_package(vnsf_name):
 
 @nfvo_views.route(endpoints.PKG_REMOVE_R4, methods=["DELETE"])
 def remove_package_r4(vnsf_name):
-    return HttpResponse.json(HttpCode.ACCEPTED,
-                             pkg.remove_package(vnsf_name, 4))
+    try:
+        return HttpResponse.json(HttpCode.ACCEPTED,
+                                 pkg.remove_package(vnsf_name, 4))
+    except NFVPackageNotFound:
+        Exception.improper_usage("Package not found")
+    except NFVUnknownPackageType:
+        Exception.improper_usage("Unknown package type")
+    except NFVPackageConflict:
+        Exception.improper_usage("Conflict removing package")
+    except OSMException:
+        Exception.improper_usage("OSM Exception")

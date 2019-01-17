@@ -57,6 +57,10 @@ class OSMUnknownPackageType(Exception):
     pass
 
 
+class OSMPackageNotFound(Exception):
+    pass
+
+
 def check_authorization(f):
     """
     Decorator to validate authorization prior API call
@@ -147,6 +151,17 @@ class OSMR4():
         return
 
     @check_authorization
+    def get_vnf_descriptor_id(self, vnf_name):
+        response = requests.get(self.vnf_descriptors_url,
+                                headers=self.headers,
+                                verify=False)
+        vnfds = json.loads(response.text)
+        for vnfd in vnfds:
+            if vnfd["name"] == vnf_name:
+                return vnfd["_id"]
+        return
+
+    @check_authorization
     def get_ns_r4__descriptors(self, ns_name=None):
         response = requests.get(self.ns_descriptors_url,
                                 headers=self.headers,
@@ -204,9 +219,10 @@ class OSMR4():
         tvnfd["vendor"] = vnf.get("vendor", None)
         tvnfd["version"] = vnf.get("version", None)
         tvnfd["charm"] = {}
-        if vnf["vnf-configuration"].get("juju", None):
-            tvnfd["charm"] = \
-                vnf["vnf-configuration"].get("juju", None)["charm"]
+        if "vnf-configuration" in vnf:
+            if vnf["vnf-configuration"].get("juju", None):
+                tvnfd["charm"] = \
+                    vnf["vnf-configuration"].get("juju", None)["charm"]
         nss = self.get_ns_descriptors()
         tvnfd["ns_name"] = None
         for ns in nss["ns"]:
@@ -634,8 +650,6 @@ class OSMR4():
         curl_cmd.setopt(pycurl.POSTFIELDS, postdata)
         curl_cmd.perform()
         http_code = curl_cmd.getinfo(pycurl.HTTP_CODE)
-        LOGGER.info(http_code)
-        LOGGER.info(data.getvalue().decode())
         output = json.loads(data.getvalue().decode())
         if http_code == 409:
             raise OSMPackageConflict
@@ -692,6 +706,34 @@ class OSMR4():
             pkg_dir = os.path.dirname(pkg_path)
             shutil.rmtree(pkg_dir)
         return output
+
+    def remove_package(self, package_name):
+        descriptor_id = self.get_vnf_descriptor_id(package_name)
+        descriptor_type = "vnf"
+        if not descriptor_id:
+            descriptor_id = self.get_ns_descriptor_id(package_name)
+            descriptor_type = "ns"
+        if descriptor_id is None:
+            raise OSMPackageNotFound
+        if descriptor_type == "ns":
+            del_url = "{0}/{1}".format(
+                self.ns_descriptors_url,
+                descriptor_id)
+        elif descriptor_type == "vnf":
+            del_url = "{0}/{1}".format(
+                self.vnf_descriptors_url,
+                descriptor_id)
+        else:
+            raise OSMUnknownPackageType
+        response = requests.delete("{0}".format(del_url),
+                                   headers=self.headers,
+                                   verify=False)
+        if response.status_code in (200, 201, 202, 204):
+            return {"package": package_name}
+        elif response.status_code == 409:
+            raise OSMPackageConflict
+        else:
+            raise OSMException
 
 
 if __name__ == "__main__":

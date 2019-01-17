@@ -17,8 +17,10 @@
 
 from nfvo.osm.osm_r2 import OSMR2
 from nfvo.osm.osm_r4 import OSMR4
+from nfvo.osm.osm_r4 import OSMException
 from nfvo.osm.osm_r4 import OSMPackageConflict
 from nfvo.osm.osm_r4 import OSMUnknownPackageType
+from nfvo.osm.osm_r4 import OSMPackageNotFound
 from server.http import content
 from server.mocks.package import MockPackage as package_m
 
@@ -28,6 +30,10 @@ class NFVPackageConflict(Exception):
 
 
 class NFVUnknownPackageType(Exception):
+    pass
+
+
+class NFVPackageNotFound(Exception):
     pass
 
 
@@ -61,10 +67,23 @@ def onboard_package_remote(pkg_path, release=None):
     @return output Structure with provided path and transaction ID
     """
     orchestrator = OSMR2()
+    if release == 4:
+        orchestrator = OSMR4()
     return orchestrator.onboard_package_remote(pkg_path)
 
 
 @content.on_mock(package_m().remove_package_mock)
 def remove_package(pkg_name, release=None):
     orchestrator = OSMR2()
-    return orchestrator.remove_package(pkg_name)
+    if release == 4:
+        orchestrator = OSMR4()
+    try:
+        return orchestrator.remove_package(pkg_name)
+    except OSMUnknownPackageType:
+        raise NFVUnknownPackageType
+    except OSMPackageNotFound:
+        raise NFVPackageNotFound
+    except OSMPackageConflict:
+        raise NFVPackageConflict
+    except OSMException:
+        raise OSMException
