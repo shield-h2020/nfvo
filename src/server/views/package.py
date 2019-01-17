@@ -20,6 +20,7 @@ from flask import Blueprint
 from flask import request
 from nfv import package as pkg
 from nfv.package import NFVPackageConflict
+from nfv.package import NFVUnknownPackageType
 from server.http import content
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
@@ -56,7 +57,11 @@ def onboard_package_r4():
         response = HttpResponse.json(HttpCode.ACCEPTED,
                                      pkg.onboard_package(pkg_bin, 4))
     except NFVPackageConflict:
-        Exception.improper_usage("Package already onboarded")
+        msg = "Package already onboarded and/or missing dependencies"
+        Exception.improper_usage(msg)
+    except NFVUnknownPackageType:
+        msg = "Could not guess package type"
+        Exception.improper_usage(msg)
     return response
 
 

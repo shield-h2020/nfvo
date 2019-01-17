@@ -22,10 +22,12 @@ import pycurl
 import random
 import requests
 import shutil
+import tarfile
 import threading
 import time
 import urllib3
 import uuid
+import yaml
 
 from core.log import setup_custom_logger
 from db.manager import DBManager
@@ -48,6 +50,10 @@ class OSMException(Exception):
 
 
 class OSMPackageConflict(Exception):
+    pass
+
+
+class OSMUnknownPackageType(Exception):
     pass
 
 
@@ -600,7 +606,7 @@ class OSMR4():
         return output
 
     @check_authorization
-    def post_vnfd_package(self, bin_file):
+    def post_package(self, bin_file, url):
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
         headers = self.headers
         headers.update({"Content-Type": "application/gzip"})
@@ -615,7 +621,7 @@ class OSMR4():
         headers.update({"Content-Length": str(len(full_file))})
         headers.update({"Expect": "100-continue"})
         curl_cmd = pycurl.Curl()
-        curl_cmd.setopt(pycurl.URL, self.vnfd_package_url)
+        curl_cmd.setopt(pycurl.URL, url)
         curl_cmd.setopt(pycurl.SSL_VERIFYPEER, 0)
         curl_cmd.setopt(pycurl.SSL_VERIFYHOST, 0)
         curl_cmd.setopt(pycurl.POST, 1)
@@ -628,13 +634,33 @@ class OSMR4():
         curl_cmd.setopt(pycurl.POSTFIELDS, postdata)
         curl_cmd.perform()
         http_code = curl_cmd.getinfo(pycurl.HTTP_CODE)
-        LOGGER.error(http_code)
-        LOGGER.error(data.getvalue().decode())
+        LOGGER.info(http_code)
+        LOGGER.info(data.getvalue().decode())
         output = json.loads(data.getvalue().decode())
         if http_code == 409:
             raise OSMPackageConflict
         return {"package": bin_file.filename,
                 "transaction_id": output["id"]}
+
+    def post_vnfd_package(self, bin_file):
+        return self.post_package(bin_file, self.vnfd_package_url)
+
+    def post_nsd_package(self, bin_file):
+        return self.post_package(bin_file, self.nsd_package_url)
+
+    def guess_package_type(self, bin_file):
+        full_file = bin_file.read()
+        bin_file.seek(0)
+        tar = tarfile.open(fileobj=BytesIO(full_file), mode="r:gz")
+        for name in tar.getnames():
+            if os.path.splitext(name)[-1] == ".yaml":
+                member_file = tar.extractfile(tar.getmember(name))
+                descriptor = yaml.load(member_file.read())
+                if "nsd:nsd-catalog" in descriptor:
+                    return "nsd"
+                if "vnfd:vnfd-catalog" in descriptor:
+                    return "vnfd"
+        return "unknown"
 
     def onboard_package(self, pkg_path):
         remove_after = False
@@ -653,7 +679,13 @@ class OSMR4():
                 content_type = mime.guess_type(pkg_path)
                 bin_file = FileStorage(fp, filename, "package", content_type)
         if bin_file is not None:
-            output = self.post_vnfd_package(bin_file)
+            ptype = self.guess_package_type(bin_file)
+            if ptype == "vnfd":
+                output = self.post_vnfd_package(bin_file)
+            elif ptype == "nsd":
+                output = self.post_nsd_package(bin_file)
+            else:
+                raise OSMUnknownPackageType
         if fp is not None:
             fp.close()
         if remove_after:
