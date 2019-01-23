@@ -19,6 +19,7 @@ from nfvo.osm.osm_r2 import OSMR2
 from nfvo.osm.osm_r4 import OSMR4
 from nfvo.osm.osm_r4 import OSMException
 from nfvo.osm.osm_r4 import OSMPackageConflict
+from nfvo.osm.osm_r4 import OSMPackageError
 from nfvo.osm.osm_r4 import OSMUnknownPackageType
 from nfvo.osm.osm_r4 import OSMPackageNotFound
 from server.http import content
@@ -26,6 +27,10 @@ from server.mocks.package import MockPackage as package_m
 
 
 class NFVPackageConflict(Exception):
+    pass
+
+
+class NFVPackageError(Exception):
     pass
 
 
@@ -56,6 +61,8 @@ def onboard_package(pkg_path, release=None):
         raise NFVPackageConflict
     except OSMUnknownPackageType:
         raise NFVUnknownPackageType
+    except OSMPackageError:
+        raise NFVPackageError
 
 
 @content.on_mock(package_m().onboard_package_remote_mock)

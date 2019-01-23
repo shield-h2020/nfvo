@@ -20,6 +20,7 @@ from flask import Blueprint
 from flask import request
 from nfv import package as pkg
 from nfv.package import NFVPackageConflict
+from nfv.package import NFVPackageError
 from nfv.package import NFVUnknownPackageType
 from nfv.package import NFVPackageNotFound
 from nfvo.osm.osm_r4 import OSMException
@@ -64,6 +65,9 @@ def onboard_package_r4():
     except NFVUnknownPackageType:
         msg = "Could not guess package type"
         Exception.improper_usage(msg)
+    except NFVPackageError:
+        msg = "OSMR4 package reading error"
+        Exception.improper_usage(msg)
     return response
 
 
@@ -90,8 +94,19 @@ def onboard_package_remote_r4():
     if not content.data_in_request(request, ["path"]):
         Exception.improper_usage("Missing argument: path")
     file_path = request.json.get("path")
-    return HttpResponse.json(HttpCode.ACCEPTED,
-                             pkg.onboard_package_remote(file_path, 4))
+    try:
+        response = HttpResponse.json(HttpCode.ACCEPTED,
+                                     pkg.onboard_package_remote(file_path, 4))
+    except NFVPackageConflict:
+        msg = "Package already onboarded and/or missing dependencies"
+        Exception.improper_usage(msg)
+    except NFVUnknownPackageType:
+        msg = "Could not guess package type"
+        Exception.improper_usage(msg)
+    except NFVPackageError:
+        msg = "OSMR4 package reading error"
+        Exception.improper_usage(msg)
+    return response
 
 
 @nfvo_views.route(endpoints.PKG_REMOVE, methods=["DELETE"])

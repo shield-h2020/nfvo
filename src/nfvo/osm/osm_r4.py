@@ -53,6 +53,10 @@ class OSMPackageConflict(Exception):
     pass
 
 
+class OSMPackageError(Exception):
+    pass
+
+
 class OSMUnknownPackageType(Exception):
     pass
 
@@ -157,7 +161,7 @@ class OSMR4():
                                 verify=False)
         vnfds = json.loads(response.text)
         for vnfd in vnfds:
-            if vnfd["name"] == vnf_name:
+            if vnfd.get("name", None) == vnf_name:
                 return vnfd["_id"]
         return
 
@@ -650,6 +654,8 @@ class OSMR4():
         curl_cmd.setopt(pycurl.POSTFIELDS, postdata)
         curl_cmd.perform()
         http_code = curl_cmd.getinfo(pycurl.HTTP_CODE)
+        if http_code == 500:
+            raise OSMPackageError
         output = json.loads(data.getvalue().decode())
         if http_code == 409:
             raise OSMPackageConflict
