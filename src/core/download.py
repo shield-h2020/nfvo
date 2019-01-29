@@ -16,7 +16,12 @@
 
 
 from tempfile import mkdtemp
+from urllib.error import HTTPError
 import os
+
+
+class DownloadException(Exception):
+    pass
 
 
 def fetch_content(url):
@@ -30,7 +35,10 @@ def fetch_content(url):
         data = urllib.urlretrieve(url, tmp_path)
     except AttributeError:
         import urllib.request
-        data = urllib.request.urlopen(url).read()
+        try:
+            data = urllib.request.urlopen(url).read()
+        except HTTPError:
+            raise DownloadException
     f = open(tmp_path, "wb")
     f.write(data)
     f.close()

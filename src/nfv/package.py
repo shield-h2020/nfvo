@@ -76,7 +76,16 @@ def onboard_package_remote(pkg_path, release=None):
     orchestrator = OSMR2()
     if release == 4:
         orchestrator = OSMR4()
-    return orchestrator.onboard_package_remote(pkg_path)
+    try:
+        return orchestrator.onboard_package_remote(pkg_path)
+    except OSMPackageNotFound:
+        raise NFVPackageNotFound
+    except OSMPackageConflict:
+        raise NFVPackageConflict
+    except OSMUnknownPackageType:
+        raise NFVUnknownPackageType
+    except OSMPackageError:
+        raise NFVPackageError
 
 
 @content.on_mock(package_m().remove_package_mock)

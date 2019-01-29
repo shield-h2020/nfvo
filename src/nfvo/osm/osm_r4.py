@@ -29,6 +29,7 @@ import urllib3
 import uuid
 import yaml
 
+from core import download
 from core.log import setup_custom_logger
 from db.manager import DBManager
 from flask import current_app
@@ -681,6 +682,14 @@ class OSMR4():
                 if "vnfd:vnfd-catalog" in descriptor:
                     return "vnfd"
         return "unknown"
+
+    def onboard_package_remote(self, pkg_path):
+        if not os.path.isfile(pkg_path):
+            try:
+                pkg_path = download.fetch_content(pkg_path)
+            except download.DownloadException:
+                raise OSMPackageNotFound
+        return self.onboard_package(pkg_path)
 
     def onboard_package(self, pkg_path):
         remove_after = False

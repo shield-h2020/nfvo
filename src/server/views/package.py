@@ -106,6 +106,9 @@ def onboard_package_remote_r4():
     except NFVPackageError:
         msg = "OSMR4 package reading error"
         Exception.improper_usage(msg)
+    except NFVPackageNotFound:
+        msg = "OSM Package not found"
+        Exception.improper_usage(msg)
     return response
 
 
