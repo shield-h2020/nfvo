@@ -60,6 +60,28 @@ class VnsfoNs:
             self.tm_general.get("default_driver")
         self.keys = self.isolation_category.get("commands")
         self.default_shutdown = self.keys.get("default_shutdown")
+        kvm_vim = self.isolation_category.get("kvm_vim")
+        self.kvm_vim = {"identity_endpoint":
+                        kvm_vim.get("identity_endpoint"),
+                        "username":
+                        kvm_vim.get("username"),
+                        "password":
+                        kvm_vim.get("password"),
+                        "project_name":
+                        kvm_vim.get("project_name"),
+                        "domain_name":
+                        kvm_vim.get("domain_name")}
+        docker_vim = self.isolation_category.get("docker_vim")
+        self.docker_vim = {"identity_endpoint":
+                           docker_vim.get("identity_endpoint"),
+                           "username":
+                           docker_vim.get("username"),
+                           "password":
+                           docker_vim.get("password"),
+                           "project_name":
+                           docker_vim.get("project_name"),
+                           "domain_name":
+                           docker_vim.get("domain_name")}
         if release == 4:
             self.orchestrator = OSMR4()
 

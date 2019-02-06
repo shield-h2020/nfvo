@@ -10,3 +10,17 @@
 
 [commands]
     default_shutdown = sudo poweroff
+
+[kvm_vim]
+    identity_endpoint = http://localhost/identity/v3
+    username = admin
+    password = admin
+    project_name = admin
+    domain_name = default
+
+[docker_vim]
+    identity_endpoint = http://localhost/identity/v3
+    username = admin
+    password = admin
+    project_name = admin
+    domain_name = default
