@@ -7,10 +7,11 @@ cleanup() {
 }
 
 teardown() {
-    # Stop and remove containers
+    # Stop and remove containers and images
     containers=($(docker ps -aq --filter label=project\=shield-nfvo))
     docker stop "${containers[@]}"
     docker rm "${containers[@]}"
+    docker rmi $(docker image list | grep docker_nfvo | head -1 | awk -F ' ' '{print $3}')
     # Cleanup
     cleanup
     return 0

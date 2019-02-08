@@ -77,6 +77,16 @@ class VnsfoEndpoints:
     PKG_ONBOARD = "{}/onboard".format(PKG)
     PKG_ONBOARD_REMOTE = "{}/remote".format(PKG_ONBOARD)
     PKG_REMOVE = "{}/<vnsf_name>".format(PKG)
+    # Package (explicit release 2)
+    PKG_R2 = "/package/r2"
+    PKG_ONBOARD_R2 = "{}/onboard".format(PKG_R2)
+    PKG_ONBOARD_REMOTE_R2 = "{}/remote".format(PKG_ONBOARD_R2)
+    PKG_REMOVE_R2 = "{}/<vnsf_name>".format(PKG_R2)
+    # Package (release 4)
+    PKG_R4 = "/package/r4"
+    PKG_ONBOARD_R4 = "{}/onboard".format(PKG_R4)
+    PKG_ONBOARD_REMOTE_R4 = "{}/remote".format(PKG_ONBOARD_R4)
+    PKG_REMOVE_R4 = "{}/<vnsf_name>".format(PKG_R4)
     # Network function
     VNSF = "/vnsf"
     VNSF_ACTION_EXEC = "{}/action".format(VNSF)
