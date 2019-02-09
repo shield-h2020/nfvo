@@ -661,6 +661,54 @@ paths:
             $ref: "#/definitions/PackageOnboardedOutput"
         <<: *API_RESPONSES
 
+  /package/r2/onboard:
+    post:
+      tags:
+        - package
+      summary: Onboards a local package into NFVO
+      description: >-
+        Uploads a locally stored package for a NS or vNSF into the NFVO.
+      operationId: onboardLocalPackage
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+      - name: package
+        in: formData
+        required: true
+        type: string
+      responses:
+        202:
+          description: Request accepted
+          schema:
+            $ref: "#/definitions/PackageOnboardedOutput"
+        <<: *API_RESPONSES
+
+  /package/r4/onboard:
+    post:
+      tags:
+        - package
+      summary: Onboards a local package into NFVO
+      description: >-
+        Uploads a locally stored package for a NS or vNSF into the NFVO.
+      operationId: onboardLocalPackage
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+      - name: package
+        in: formData
+        required: true
+        type: string
+      responses:
+        202:
+          description: Request accepted
+          schema:
+            $ref: "#/definitions/PackageOnboardedOutput"
+        <<: *API_RESPONSES
+
   /package/onboard/remote:
     post:
       tags:
@@ -687,7 +735,103 @@ paths:
             $ref: "#/definitions/PackageOnboardedOutput"
         <<: *API_RESPONSES
 
+  /package/r2/onboard/remote:
+    post:
+      tags:
+        - package
+      summary: Onboards a remotely stored package into NFVO
+      description: >-
+        Uploads a remotely stored package for a NS or vNSF into the NFVO.
+      operationId: onboardRemotePackage
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+      - in: body
+        name: body
+        description: The body of the request
+        required: true
+        schema:
+          $ref: "#/definitions/PackageOnboardedInput"
+      responses:
+        202:
+          description: Request accepted
+          schema:
+            $ref: "#/definitions/PackageOnboardedOutput"
+        <<: *API_RESPONSES
+
+  /package/r4/onboard/remote:
+    post:
+      tags:
+        - package
+      summary: Onboards a remotely stored package into NFVO
+      description: >-
+        Uploads a remotely stored package for a NS or vNSF into the NFVO.
+      operationId: onboardRemotePackage
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+      - in: body
+        name: body
+        description: The body of the request
+        required: true
+        schema:
+          $ref: "#/definitions/PackageOnboardedInput"
+      responses:
+        202:
+          description: Request accepted
+          schema:
+            $ref: "#/definitions/PackageOnboardedOutput"
+        <<: *API_RESPONSES
+
   /package/{vnsf_name}:
+    delete:
+      tags:
+        - package
+      summary: Removes package from vNSFO
+      description: >-
+        Removes the package of a NS or vNSF from the vNSFO.
+      operationId: removePackage
+      produces:
+        - application/json
+      parameters:
+        - name: vnsf_name
+          in: path
+          required: true
+          type: string
+      responses:
+        202:
+          description: Request accepted
+          schema:
+            $ref: "#/definitions/PackageRemovedOutput"
+        <<: *API_RESPONSES
+
+  /package/r2/{vnsf_name}:
+    delete:
+      tags:
+        - package
+      summary: Removes package from vNSFO
+      description: >-
+        Removes the package of a NS or vNSF from the vNSFO.
+      operationId: removePackage
+      produces:
+        - application/json
+      parameters:
+        - name: vnsf_name
+          in: path
+          required: true
+          type: string
+      responses:
+        202:
+          description: Request accepted
+          schema:
+            $ref: "#/definitions/PackageRemovedOutput"
+        <<: *API_RESPONSES
+
+  /package/r4/{vnsf_name}:
     delete:
       tags:
         - package

@@ -273,7 +273,19 @@ curl -ik https://127.0.0.1:8448/ns/r4/running/fl7f_test
 #### Onboard a locally stored package into NFVO
 
 ```
+# OSM release TWO (default and explicit modes)
+
 curl -ik https://127.0.0.1:8448/package/onboard -X POST \
+     -H "Content-Type: multipart/form-data" \
+     -F "package=@/tmp/cirros_vnf.tar.gz"
+
+curl -ik https://127.0.0.1:8448/package/r2/onboard -X POST \
+     -H "Content-Type: multipart/form-data" \
+     -F "package=@/tmp/cirros_vnf.tar.gz"
+
+# OSM release FOUR
+
+curl -ik https://127.0.0.1:8448/package/r4/onboard -X POST \
      -H "Content-Type: multipart/form-data" \
      -F "package=@/tmp/cirros_vnf.tar.gz"
 ```
@@ -281,7 +293,19 @@ curl -ik https://127.0.0.1:8448/package/onboard -X POST \
 #### Onboard a remotely stored package into NFVO
 
 ```
+# OSM release TWO (default and explicit modes)
+
 curl -ik https://127.0.0.1:8448/package/onboard/remote -X POST \
+     -H "Content-Type: application/json" \
+     -d '{"path": "https://osm-download.etsi.org/ftp/examples/cirros_2vnf_ns/cirros_vnf.tar.gz"}'
+
+curl -ik https://127.0.0.1:8448/package/r2/onboard/remote -X POST \
+     -H "Content-Type: application/json" \
+     -d '{"path": "https://osm-download.etsi.org/ftp/examples/cirros_2vnf_ns/cirros_vnf.tar.gz"}'
+
+# OSM release FOUR
+
+curl -ik https://127.0.0.1:8448/package/r4/onboard/remote -X POST \
      -H "Content-Type: application/json" \
      -d '{"path": "https://osm-download.etsi.org/ftp/examples/cirros_2vnf_ns/cirros_vnf.tar.gz"}'
 ```
