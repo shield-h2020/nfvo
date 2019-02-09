@@ -132,19 +132,33 @@ class VnsfoNs:
                         "username": self.default_username
                     }
                 # This expects a NS (VM) to be deployed, thus
-                #   the default poweroff values.
+                #   the default isolation policy brings down
+                #   vm ports on OpenStack & termination shuts
+                #   down the machine
+                vim = self.kvm_vim
+                if instantiation_data["vim_type"] == "docker":
+                    vim = self.docker_vim
+                LOGGER.info(instantiation_data)
                 if "isolation_policy" not in instantiation_data:
                     instantiation_data["isolation_policy"] = {
-                        "command": self.default_shutdown,
-                        "name": "shutdown",
-                        "type": "shutdown"
-                    }
+                        "name": "Openstack isolation",
+                        "identity_endpoint": vim["identity_endpoint"],
+                        "username": vim["username"],
+                        "project_name": vim["project_name"],
+                        "password": vim["password"],
+                        "domain_name": vim["domain_name"],
+                        "type": "openstack_isolation"
+                     }
                 if "termination_policy" not in instantiation_data:
                     instantiation_data["termination_policy"] = {
-                        "command": self.default_shutdown,
-                        "name": "shutdown",
-                        "type": "shutdown"
-                    }
+                        "name": "Openstack termination",
+                        "identity_endpoint": vim["identity_endpoint"],
+                        "username": vim["username"],
+                        "project_name": vim["project_name"],
+                        "password": vim["password"],
+                        "domain_name": vim["domain_name"],
+                        "type": "openstack_termination"
+                     }
                 app.mongo.store_vdu(vnfr_name, vdu_ip,
                                     instantiation_data["isolation_policy"],
                                     instantiation_data["termination_policy"],

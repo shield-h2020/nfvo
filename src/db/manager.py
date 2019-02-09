@@ -23,6 +23,8 @@ from db.models.auth.auth import PasswordAuth, KeyAuth
 from db.models.infra.node import Node
 from db.models.isolation.isolation_policy import InterfaceDown
 from db.models.isolation.isolation_policy import DeleteFlow
+from db.models.isolation.isolation_policy import OpenstackIsolation
+from db.models.isolation.isolation_policy import OpenstackTermination
 from db.models.isolation.isolation_policy import Shutdown
 from db.models.vnf_action_request import VnfActionRequest
 from mongoengine import connect as me_connect
@@ -326,6 +328,15 @@ class DBManager():
                 name=str(isolation_policy["name"]),
                 switch=str(isolation_policy["switch"]),
                 target_filter=str(isolation_policy["target_filter"]))
+        elif isolation_policy["type"] == "openstack_isolation":
+            LOGGER.info("Storing openstack isolation")
+            isolation = OpenstackIsolation(
+                name=str(isolation_policy["name"]),
+                identity_endpoint=isolation_policy["identity_endpoint"],
+                username=isolation_policy["username"],
+                password=isolation_policy["password"],
+                project_name=isolation_policy["project_name"],
+                domain_name=isolation_policy["domain_name"])
         if termination_policy["type"] == "shutdown":
             LOGGER.info("Storing shutdown termination")
             termination = Shutdown(name=str(termination_policy["name"]),
@@ -341,6 +352,15 @@ class DBManager():
                 name=str(termination_policy["name"]),
                 switch=str(termination_policy["switch"]),
                 target_filter=str(termination_policy["target_filter"]))
+        elif termination_policy["type"] == "openstack_termination":
+            LOGGER.info("Storing openstack termination")
+            termination = OpenstackTermination(
+                name=str(termination_policy["name"]),
+                identity_endpoint=termination_policy["identity_endpoint"],
+                username=termination_policy["username"],
+                password=termination_policy["password"],
+                project_name=termination_policy["project_name"],
+                domain_name=termination_policy["domain_name"])
         if authentication["type"] == "private_key":
             LOGGER.info("Storing private key auth")
             auth = KeyAuth(username=str(authentication["username"]),

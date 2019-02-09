@@ -55,3 +55,25 @@ class Shutdown(IsolationPolicy):
     Consisting on shutting down the resource
     """
     command = StringField(required=True)
+
+
+class OpenstackIsolation(IsolationPolicy):
+    """
+    Consisting on removing vdu ports
+    """
+    identity_endpoint = StringField()
+    username = StringField()
+    password = StringField()
+    project_name = StringField()
+    domain_name = StringField()
+
+
+class OpenstackTermination(IsolationPolicy):
+    """
+    Consisting on shutting down the vdu
+    """
+    identity_endpoint = StringField()
+    username = StringField()
+    password = StringField()
+    project_name = StringField()
+    domain_name = StringField()
