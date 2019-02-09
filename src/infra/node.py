@@ -113,20 +113,20 @@ class Node:
         return record
 
     def execute_delete_flow(self, file_id, ssh, scp, policy):
-            # Process delete flow template
-            with open("{0}/{1}".format(self._scripts_path,
-                                       self._delflow_path)) as fhandle:
-                sd_templ = Template(fhandle.read())
-                # Send script to node and render template with policy command
-                commands = sd_templ.render(
-                    switch=policy["switch"],
-                    target_filter=policy["target_filter"]).splitlines()
-            # Execute isolation commands
-            (stdout, stderr) = self.execute_commands(ssh, commands)
-            # Store isolation record
-            record = IsolationRecord(output=stdout, error=stderr)
-            record.save()
-            return record
+        # Process delete flow template
+        with open("{0}/{1}".format(self._scripts_path,
+                                   self._delflow_path)) as fhandle:
+            sd_templ = Template(fhandle.read())
+            # Send script to node and render template with policy command
+            commands = sd_templ.render(
+                switch=policy["switch"],
+                target_filter=policy["target_filter"]).splitlines()
+        # Execute isolation commands
+        (stdout, stderr) = self.execute_commands(ssh, commands)
+        # Store isolation record
+        record = IsolationRecord(output=stdout, error=stderr)
+        record.save()
+        return record
 
     def terminate(self):
         self.isolate(terminated=True)
