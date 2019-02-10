@@ -18,21 +18,28 @@ from bson import ObjectId
 from core.exception import Exception
 from core.exception import HttpCode
 from core.exception import ExceptionCode
+from core.log import setup_custom_logger
 from db.models.infra.node import Node as NodeModel
 from db.models.auth.auth import PasswordAuth
 from db.models.isolation.isolation_policy import InterfaceDown
 from db.models.isolation.isolation_policy import DeleteFlow
+from db.models.isolation.isolation_policy import OpenstackIsolation
 from db.models.isolation.isolation_policy import Shutdown
 from db.models.isolation.isolation_record import IsolationRecord
 from io import StringIO
 from jinja2 import Template
+from keystoneauth1.identity import v3
+from keystoneauth1 import session as keystone_session
 from tm.tm_client import TMClient
 
 import configparser
+import novaclient.client as nova_client
 import paramiko
 import select
 import socket
 import uuid
+
+LOGGER = setup_custom_logger(__name__)
 
 
 class NodeSSHException(BaseException):
@@ -131,7 +138,30 @@ class Node:
     def terminate(self):
         self.isolate(terminated=True)
 
+    def execute_openstack_isolation(self):
+        policy = self._node["isolation_policy"]
+        LOGGER.info(policy["identity_endpoint"])
+        LOGGER.info(policy["username"])
+        LOGGER.info(policy["password"])
+        LOGGER.info(policy["project_name"])
+        LOGGER.info(policy["domain_name"])
+        auth = v3.Password(auth_url=policy["identity_endpoint"],
+                           username=policy["username"],
+                           password=policy["password"],
+                           project_name=policy["project_name"],
+                           user_domain_name=policy["domain_name"],
+                           project_domain_name=policy["domain_name"])
+        session = keystone_session.Session(auth=auth)
+        compute = nova_client.Client("2.1", session=session)
+        for server in compute.servers.list({'all_tenants': 1}):
+            LOGGER.info(server)
+
     def isolate(self, terminated=False):
+        policy = self._node["isolation_policy"]
+        if isinstance(policy, OpenstackIsolation):
+            LOGGER.info("Openstack isolation request")
+            self.execute_openstack_isolation()
+            return
         ssh = paramiko.client.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
         if isinstance(self._node["authentication"], PasswordAuth):
@@ -154,7 +184,6 @@ class Node:
                 raise NodeSSHException
         scp = ssh.open_sftp()
         file_id = str(uuid.uuid4())
-        policy = self._node["isolation_policy"]
         if terminated:
             policy = self._node["termination_policy"]
         if isinstance(policy, Shutdown):
