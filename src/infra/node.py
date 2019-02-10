@@ -33,6 +33,7 @@ from keystoneauth1 import session as keystone_session
 from tm.tm_client import TMClient
 
 import configparser
+import json
 import novaclient.client as nova_client
 import paramiko
 import select
@@ -154,15 +155,29 @@ class Node:
         session = keystone_session.Session(auth=auth)
         compute = nova_client.Client("2.1", session=session)
         ip_address = self._node["ip_address"].split(";")[0]
-        server_id = None
+        target_server = None
         for server in compute.servers.list(search_opts={'all_tenants': 1}):
             for interface in server.interface_list():
                 for fixed_ip in interface.fixed_ips:
+                    LOGGER.info(interface.port_id)
                     if fixed_ip["ip_address"] == ip_address:
-                        server_id = server.id
+                        target_server = server
                         break
-        LOGGER.info("Server id found {0} for ip {1}".format(server_id,
+        if not target_server:
+            return
+        LOGGER.info("Server id found {0} for ip {1}".format(target_server.id,
                                                             ip_address))
+        previous_config = []
+        for interface in target_server.interface_list():
+            LOGGER.info(interface.fixed_ips)
+            previous_config.append(interface.fixed_ips)
+            target_server.interface_detach(interface.port_id)
+        record = IsolationRecord(output=json.dumps(previous_config), error="")
+        record.save()
+        self._node["isolation_policy"]["records"].append(record)
+        self._node["isolation_policy"].save()
+        self._node["isolated"] = True
+        # self._node.save()
 
     def isolate(self, terminated=False):
         policy = self._node["isolation_policy"]
