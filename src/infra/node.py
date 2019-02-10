@@ -153,8 +153,16 @@ class Node:
                            project_domain_name=policy["domain_name"])
         session = keystone_session.Session(auth=auth)
         compute = nova_client.Client("2.1", session=session)
-        for server in compute.servers.list({'all_tenants': 1}):
-            LOGGER.info(server)
+        ip_address = self._node["ip_address"].split(";")[0]
+        server_id = None
+        for server in compute.servers.list(search_opts={'all_tenants': 1}):
+            for interface in server.interface_list():
+                for fixed_ip in interface.fixed_ips:
+                    if fixed_ip["ip_address"] == ip_address:
+                        server_id = server.id
+                        break
+        LOGGER.info("Server id found {0} for ip {1}".format(server_id,
+                                                            ip_address))
 
     def isolate(self, terminated=False):
         policy = self._node["isolation_policy"]
