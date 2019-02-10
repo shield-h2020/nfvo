@@ -176,8 +176,7 @@ class Node:
         record.save()
         self._node["isolation_policy"]["records"].append(record)
         self._node["isolation_policy"].save()
-        self._node["isolated"] = True
-        # self._node.save()
+        self._node.update(set__isolated=True)
 
     def isolate(self, terminated=False):
         policy = self._node["isolation_policy"]
@@ -218,7 +217,7 @@ class Node:
         ssh.close()
         self._node["isolation_policy"]["records"].append(record)
         self._node["isolation_policy"].save()
-        self._node["isolated"] = True
+        self._node.update(set__isolated=True)
         if terminated:
-            self._node["terminated"] = True
+            self._node.update(set__terminated=True)
         self._node.save()
