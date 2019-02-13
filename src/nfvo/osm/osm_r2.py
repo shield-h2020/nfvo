@@ -80,11 +80,13 @@ class OSMR2():
         pass
 
     def post_ns_instance(self, instantiation_data):
+        vim_type = "kvm"
         if "vim_id" not in instantiation_data:
             instantiation_data["vim_id"] = \
                 NFVO_DEFAULT_KVM_DATACENTER
             if "virt_type" in instantiation_data:
                 if instantiation_data["virt_type"] == "docker":
+                    vim_type = "docker"
                     # Replacing instance_name in case it is
                     # a Docker deployment to avoid naming
                     # overlap
@@ -115,6 +117,7 @@ class OSMR2():
                            "instance_id": nsr_data["nsr"][0]["id"],
                            "ns_name": nsr_data["nsr"][0]["nsd"]["id"],
                            "vim_id": nsr_data["nsr"][0]["om-datacenter"],
+                           "vim_type": vim_type,
                            "result": "success"}
             self.apply_mspl_action(nsr_data["nsr"][0]["id"],
                                    instantiation_data)
