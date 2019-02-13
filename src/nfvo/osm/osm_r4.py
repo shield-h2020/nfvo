@@ -334,6 +334,7 @@ class OSMR4():
 
     @check_authorization
     def post_ns_instance(self, instantiation_data):
+        vim_account_id = instantiation_data.get("vim_id", None)
         if "vim_id" not in instantiation_data:
             vim_account_id = self.default_kvm_datacenter
             if "virt_type" in instantiation_data:
