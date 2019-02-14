@@ -26,8 +26,10 @@ from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
 from server.views.infra import check_auth_params
 from server.views.infra import check_isolation_params
+import configparser
 
 
+CONFIG_PATH = "./"
 LOGGER = setup_custom_logger(__name__)
 
 
@@ -48,18 +50,48 @@ def fetch_config_nss_r4():
                              ns_object.fetch_config_nss())
 
 
+def get_attack_ns_mapping(attack_type):
+    config = configparser.ConfigParser()
+    config.read("{0}conf/attacks.conf".format(CONFIG_PATH))
+    ns_mapped = config["general"].get(attack_type, "default").lower()
+    return ns_mapped
+
+
+def instantiate_ns_request_check():
+    exp_ct = "application/json"
+    if exp_ct not in request.headers.get("Content-Type", ""):
+            Exception.invalid_content_type("Expected: {}".format(exp_ct))
+    exp_params_implicit = ["attack_type"]
+    exp_params_explicit = ["ns_name", "instance_name"]
+    if not content.data_in_request(request, exp_params_implicit) and \
+            not content.data_in_request(request, exp_params_explicit):
+        Exception.improper_usage("Missing parameters: any of {} or {}"
+                                 .format(exp_params_implicit,
+                                         exp_params_explicit))
+    if (content.data_in_request(request, exp_params_implicit) and
+            content.data_in_request(request, exp_params_explicit)):
+        Exception.improper_usage("Conflicting parameters: {} and {} \
+                                 cannot coexist"
+                                 .format(exp_params_implicit,
+                                         exp_params_explicit))
+    instantiation_data = request.get_json()
+    # When an attack type is provided, the vNSFO consults the internal
+    # mapping between Network Services and attacks and picks the NS
+    # that is pointed by the given attack
+    if content.data_in_request(request, exp_params_implicit):
+        instantiation_data["ns_name"] = get_attack_ns_mapping(
+                instantiation_data["attack_type"])
+        instantiation_data["instance_name"] = "%s_%s" % (
+                instantiation_data["ns_name"],
+                instantiation_data["attack_type"])
+    return instantiation_data
+
+
 @nfvo_views.route(endpoints.NS_INSTANTIATE, methods=["POST"])
 @nfvo_views.route(endpoints.NS_INSTANTIATE_R2, methods=["POST"])
 @content.expect_json_content
 def instantiate_ns():
-    exp_ct = "application/json"
-    if exp_ct not in request.headers.get("Content-Type", ""):
-        Exception.invalid_content_type("Expected: {}".format(exp_ct))
-    instantiation_data = request.get_json()
-    exp_params = ["ns_name", "instance_name"]
-    if not content.data_in_request(request, exp_params):
-        Exception.improper_usage("Missing parameters: any of {}"
-                                 .format(exp_params))
+    instantiation_data = instantiate_ns_request_check()
     if "authentication" in instantiation_data:
         missing_params = check_auth_params(
             instantiation_data["authentication"])
@@ -96,14 +128,7 @@ def instantiate_ns():
 @nfvo_views.route(endpoints.NS_INSTANTIATE_R4, methods=["POST"])
 @content.expect_json_content
 def instantiate_ns_r4():
-    exp_ct = "application/json"
-    if exp_ct not in request.headers.get("Content-Type", ""):
-        Exception.invalid_content_type("Expected: {}".format(exp_ct))
-    instantiation_data = request.get_json()
-    exp_params = ["ns_name", "instance_name"]
-    if not content.data_in_request(request, exp_params):
-        Exception.improper_usage("Missing parameters: any of {}"
-                                 .format(exp_params))
+    instantiation_data = instantiate_ns_request_check()
     ns_object = VnsfoNs(4)
     result = ns_object.instantiate_ns(instantiation_data)
     if result.get("result", "") == "success":

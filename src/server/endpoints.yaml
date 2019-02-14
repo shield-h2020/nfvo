@@ -426,7 +426,9 @@ paths:
         description: The body of the request
         required: true
         schema:
-          $ref: "#/definitions/InstantiateNSInput"
+          allOf:
+            - $ref: "#/definitions/InstantiateNSExplicitInput"
+            - $ref: "#/definitions/InstantiateNSImplicitInput"
       description: >-
         Instantiates a NS
       operationId: instantiateNS
@@ -452,7 +454,9 @@ paths:
         description: The body of the request
         required: true
         schema:
-          $ref: "#/definitions/InstantiateNSInput"
+          allOf:
+            - $ref: "#/definitions/InstantiateNSExplicitInput"
+            - $ref: "#/definitions/InstantiateNSImplicitInput"
       description: >-
         Instantiates a NS
       operationId: instantiateNS
@@ -478,7 +482,9 @@ paths:
         description: The body of the request
         required: true
         schema:
-          $ref: "#/definitions/InstantiateNSInput"
+          allOf:
+            - $ref: "#/definitions/InstantiateNSExplicitInput"
+            - $ref: "#/definitions/InstantiateNSImplicitInput"
       description: >-
         Instantiates a NS
       operationId: instantiateNS
@@ -1148,7 +1154,117 @@ paths:
 
 definitions:
 
-  InstantiateNSInput:
+  InstantiateNSImplicitInput:
+    type: object
+    required:
+      - attack_type
+    properties:
+      attack_type:
+        type: string
+        example: slowloris
+      vim_id:
+        type: string
+        example: f9acd550-9d48-11e7-ae4c-00163e3afbe5
+      virt_type:
+        type: string
+        example: docker
+      vim_net:
+        type: string
+        example: provider
+      action:
+        type: string
+        example: set-policies
+      params:
+        type: object
+        required:
+          - policies
+        properties:
+          policies:
+            type: string
+            example: test-policy
+      target_status:
+        type: string
+        example: active
+      pcr0:
+        type: string
+        example: example
+      driver:
+        type: string
+        example: OAT
+      analysis_type:
+        type: string
+        example: FULL
+      distribution:
+        type: string
+        example: xenial
+      authentication:
+        type: object
+        required:
+          - username
+          - type
+        properties:
+          username:
+            type: string
+            example: user
+          type:
+            type: string
+            example: password, private_key
+          password:
+            type: string
+            example: password
+          private_key:
+            type: string
+            example: -----BEGIN RSA PRIVATE KEY-----\nMIIEqAIBAAKCAQEAnaSdeeE/bcAxgsivLliDhRE017ZK74m2QYg58QNbfdzoNba2 ...
+      isolation_policy:
+        type: object
+        required:
+          - name
+          - type
+        properties:
+          name:
+            type: string
+            example: DownEth0
+          type:
+            type: string
+            example: ifdown, delflow, shutdown
+          interface_name:
+            type: string
+            example: eth0
+          command:
+            type: string
+            example: sudo poweroff
+          flow_id:
+            type: string
+            example: 21
+          rule:
+            type: string
+            example: rule1
+      termination_policy:
+        type: object
+        required:
+          - name
+          - type
+        properties:
+          name:
+            type: string
+            example: DownEth0
+          type:
+            type: string
+            example: ifdown, delflow, shutdown
+          interface_name:
+            type: string
+            example: eth0
+          command:
+            type: string
+            example: sudo poweroff
+          flow_id:
+            type: string
+            example: 21
+          rule:
+            type: string
+            example: rule1
+
+  InstantiateNSExplicitInput:
     type: object
     required:
       - ns_name

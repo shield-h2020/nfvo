@@ -107,6 +107,9 @@ Extra configuration (NFVI optional fields) can be included inside the instantiat
 
 Since these are optional, if not provided in the request, default values will be used.
 
+Incompatibility of parameters:
+- "attack_type" and {"ns_name", "instance_name"} cannot be used at the same type. Attack type has precedence if some of the others is used.
+
 ##### Specific deployment location and provider network
 
 ```
@@ -127,6 +130,8 @@ curl -ik https://127.0.0.1:8448/ns/r4/instantiate -X POST \
 
 ##### Random deployment location and provider network
 
+###### Specific NS and given name for instance
+
 ```
 # OSM release TWO (default and explicit modes)
 curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
@@ -141,6 +146,24 @@ curl -ik https://127.0.0.1:8448/ns/r2/instantiate -X POST \
 curl -ik https://127.0.0.1:8448/ns/r4/instantiate -X POST \
      -H "Content-Type: application/json" \
      -d '{"instance_name": "l3f_test", "ns_name": "l3filter_nsd"}'
+```
+
+###### Per type of attack (NS and instance name taken from internal mapping)
+
+```
+# OSM release TWO (default and explicit modes)
+curl -ik https://127.0.0.1:8448/ns/instantiate -X POST \
+     -H "Content-Type: application/json" \
+     -d '{"attack_type": "dos"}'
+
+curl -ik https://127.0.0.1:8448/ns/r2/instantiate -X POST \
+     -H "Content-Type: application/json" \
+     -d '{"attack_type": "slowloris"}'
+
+# OSM release FOUR
+curl -ik https://127.0.0.1:8448/ns/r4/instantiate -X POST \
+     -H "Content-Type: application/json" \
+     -d '{"attack_type": "TCP flood"}'
 ```
 
 ##### Using a vim supporting Docker
