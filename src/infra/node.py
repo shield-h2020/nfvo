@@ -15,6 +15,7 @@
 # limitations under the License.
 
 from bson import ObjectId
+from bson.errors import InvalidId
 from core.exception import Exception
 from core.exception import HttpCode
 from core.exception import ExceptionCode
@@ -50,7 +51,10 @@ class NodeSSHException(BaseException):
 class Node:
 
     def __init__(self, node_id):
-        nodes = NodeModel.objects(id=ObjectId(node_id))
+        try:
+            nodes = NodeModel.objects(id=ObjectId(node_id))
+        except InvalidId:
+            nodes = NodeModel.objects(vnfr_id=node_id)
         if len(nodes) < 1:
             error_msg = "Node with id={0} not found".format(node_id)
             Exception.abort(HttpCode.NOT_FOUND,

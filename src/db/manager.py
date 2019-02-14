@@ -302,7 +302,8 @@ class DBManager():
                   termination_policy,
                   authentication,
                   analysis_type, pcr0, distribution, driver,
-                  instance_id):
+                  instance_id,
+                  vnfr_id):
         """
         Register VDU as node.
         Isolation and/or termination policy is stored,
@@ -391,7 +392,8 @@ class DBManager():
                    physical=False,
                    isolation_policy=isolation,
                    termination_policy=termination,
-                   instance_id=str(instance_id))
+                   instance_id=str(instance_id),
+                   vnfr_id=str(vnfr_id))
         vdu.save()
 
     def store_vnf_action(self, vnsfr_id, primitive, params, output):

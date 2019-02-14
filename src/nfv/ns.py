@@ -123,6 +123,7 @@ class VnsfoNs:
                 for vnfr in nss["ns"][0]["constituent_vnf_instances"]:
                     vnfr_name = vnfr["vnfr_name"]
                     vdu_ip = vnfr["ip"]
+                    vnfr_id = vnfr["vnfr_id"]
                 if "authentication" not in instantiation_data:
                     with open(self.default_key) as fhandle:
                         key = fhandle.read()
@@ -167,7 +168,8 @@ class VnsfoNs:
                                     instantiation_data["pcr0"],
                                     instantiation_data["distribution"],
                                     instantiation_data["driver"],
-                                    instantiation_data["instance_id"])
+                                    instantiation_data["instance_id"],
+                                    vnfr_id)
                 node_data = {
                     "host_name": vnfr_name,
                     "ip_address": vdu_ip,
