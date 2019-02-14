@@ -1,0 +1,13 @@
+[general]
+    default = {{fallback_ns}}
+    Worm = {{some_ns}}
+    Wannacry = {{some_ns}}
+    DoS = {{some_ns}}
+    TCP flood = {{some_ns}}
+    tcp_flood = {{some_ns}}
+    UDP flood = {{some_ns}}
+    udp_flood = {{some_ns}}
+    Slowloris = {{some_ns}}
+    dns_results = {{some_ns}}
+    DNS tunneling = {{some_ns}}
+    Cryptocurrency Mining = {{some_ns}}
