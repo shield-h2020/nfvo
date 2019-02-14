@@ -334,7 +334,8 @@ class OSMR4():
 
     @check_authorization
     def post_ns_instance(self, instantiation_data):
-        if "vim_id" not in instantiation_data:
+        vim_account_id = instantiation_data.get("vim_id", None)
+        if not vim_account_id:
             vim_account_id = self.default_kvm_datacenter
             if "virt_type" in instantiation_data:
                 if instantiation_data["virt_type"] == "docker":
@@ -345,12 +346,12 @@ class OSMR4():
                         str(uuid.uuid4()).replace("-", "")
                     instantiation_data["vim_id"] = \
                         vim_account_id = self.default_docker_datacenter
-        if "description" not in instantiation_data:
-            description = instantiation_data["ns_name"]
-        if "nsd_id" not in instantiation_data:
+        nsd_id = instantiation_data.get("nsd_id", None)
+        if not nsd_id:
             nsd_id = self.get_ns_descriptor_id(instantiation_data["ns_name"])
+        description = instantiation_data.get("description", nsd_id)
         ns_data = {"nsdId": nsd_id,
-                   "nsName": instantiation_data["ns_name"],
+                   "nsName": instantiation_data["instance_name"],
                    "nsDescription": description,
                    "vimAccountId": vim_account_id}
         response = requests.post(self.instantiate_url,
