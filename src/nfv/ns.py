@@ -60,17 +60,32 @@ class VnsfoNs:
             self.tm_general.get("default_driver")
         self.keys = self.isolation_category.get("commands")
         self.default_shutdown = self.keys.get("default_shutdown")
-        kvm_vim = self.isolation_category.get("kvm_vim")
-        self.kvm_vim = {"identity_endpoint":
-                        kvm_vim.get("identity_endpoint"),
-                        "username":
-                        kvm_vim.get("username"),
-                        "password":
-                        kvm_vim.get("password"),
-                        "project_name":
-                        kvm_vim.get("project_name"),
-                        "domain_name":
-                        kvm_vim.get("domain_name")}
+        kvm_vim_1 = self.isolation_category.get("kvm_vim_1")
+        self.kvm_vim_1 = {"vim_account_id":
+                          kvm_vim_1.get("vim_account_id"),
+                          "identity_endpoint":
+                          kvm_vim_1.get("identity_endpoint"),
+                          "username":
+                          kvm_vim_1.get("username"),
+                          "password":
+                          kvm_vim_1.get("password"),
+                          "project_name":
+                          kvm_vim_1.get("project_name"),
+                          "domain_name":
+                          kvm_vim_1.get("domain_name")}
+        kvm_vim_2 = self.isolation_category.get("kvm_vim_2")
+        self.kvm_vim_2 = {"vim_account_id":
+                          kvm_vim_2.get("vim_account_id"),
+                          "identity_endpoint":
+                          kvm_vim_2.get("identity_endpoint"),
+                          "username":
+                          kvm_vim_2.get("username"),
+                          "password":
+                          kvm_vim_2.get("password"),
+                          "project_name":
+                          kvm_vim_2.get("project_name"),
+                          "domain_name":
+                          kvm_vim_2.get("domain_name")}
         docker_vim = self.isolation_category.get("docker_vim")
         self.docker_vim = {"identity_endpoint":
                            docker_vim.get("identity_endpoint"),
@@ -136,7 +151,9 @@ class VnsfoNs:
                 #   the default isolation policy brings down
                 #   vm ports on OpenStack & termination shuts
                 #   down the machine
-                vim = self.kvm_vim
+                vim = self.kvm_vim_1
+                if instantiation_data == self.kvm_vim_2["vim_account_id"]:
+                    vim = self.kvm_vim_2
                 if instantiation_data["vim_type"] == "docker":
                     vim = self.docker_vim
                 LOGGER.info(instantiation_data)
