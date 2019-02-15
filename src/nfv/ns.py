@@ -152,7 +152,8 @@ class VnsfoNs:
                 #   vm ports on OpenStack & termination shuts
                 #   down the machine
                 vim = self.kvm_vim_1
-                if instantiation_data == self.kvm_vim_2["vim_account_id"]:
+                if instantiation_data["vim_id"] == \
+                   self.kvm_vim_2["vim_account_id"]:
                     vim = self.kvm_vim_2
                 if instantiation_data["vim_type"] == "docker":
                     vim = self.docker_vim
