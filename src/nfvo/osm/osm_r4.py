@@ -678,9 +678,9 @@ class OSMR4():
             if os.path.splitext(name)[-1] == ".yaml":
                 member_file = tar.extractfile(tar.getmember(name))
                 descriptor = yaml.load(member_file.read())
-                if "nsd:nsd-catalog" in descriptor:
+                if "nsd-catalog" in descriptor:
                     return "nsd"
-                if "vnfd:vnfd-catalog" in descriptor:
+                if "vnfd-catalog" in descriptor:
                     return "vnfd"
         return "unknown"
 
