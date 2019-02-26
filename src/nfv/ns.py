@@ -87,7 +87,9 @@ class VnsfoNs:
                           "domain_name":
                           kvm_vim_2.get("domain_name")}
         docker_vim = self.isolation_category.get("docker_vim")
-        self.docker_vim = {"identity_endpoint":
+        self.docker_vim = {"vim_account_id":
+                           docker_vim.get("vim_account_id"),
+                           "identity_endpoint":
                            docker_vim.get("identity_endpoint"),
                            "username":
                            docker_vim.get("username"),
@@ -156,6 +158,9 @@ class VnsfoNs:
                    self.kvm_vim_2["vim_account_id"]:
                     vim = self.kvm_vim_2
                 if instantiation_data["vim_type"] == "docker":
+                    vim = self.docker_vim
+                if instantiation_data["vim_id"] == \
+                   self.docker_vim["vim_account_id"]:
                     vim = self.docker_vim
                 LOGGER.info(instantiation_data)
                 if "isolation_policy" not in instantiation_data:

@@ -28,6 +28,7 @@
     domain_name = default
 
 [docker_vim]
+    vim_account_id = {{ id_docker }}
     identity_endpoint = http://localhost/identity/v3
     username = admin
     password = admin
