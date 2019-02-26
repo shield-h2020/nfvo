@@ -136,8 +136,6 @@ def config_node(node_id):
         Exception.improper_usage("Config should be isolated or disabled")
     if type(config_data[action]) is not bool:
         Exception.improper_usage("{0} should be bool".format(action))
-    if bson.objectid.ObjectId.is_valid(node_id) is False:
-        Exception.improper_usage("Bad node_id: {0}".format(node_id))
     if action == "isolated" and config_data[action] is True:
         try:
             Node(node_id).isolate()
