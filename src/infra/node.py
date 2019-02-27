@@ -16,9 +16,9 @@
 
 from bson import ObjectId
 from bson.errors import InvalidId
-from core.exception import Exception
+from core.exception import Exception as ShieldException
 from core.exception import HttpCode
-from core.exception import ExceptionCode
+from core.exception import ExceptionCode as ShieldExceptionCode
 from core.log import setup_custom_logger
 from db.models.infra.node import Node as NodeModel
 from db.models.auth.auth import PasswordAuth
@@ -29,14 +29,17 @@ from db.models.isolation.isolation_policy import Shutdown
 from db.models.isolation.isolation_record import IsolationRecord
 from io import StringIO
 from jinja2 import Template
+from keystoneauth1.identity import v2
 from keystoneauth1.identity import v3
 from keystoneauth1 import session as keystone_session
+from novaclient.exceptions import MethodNotAllowed
 from tm.tm_client import TMClient
 
 import configparser
 import json
 import novaclient.client as nova_client
 import paramiko
+import random
 import select
 import socket
 import uuid
@@ -57,9 +60,9 @@ class Node:
             nodes = NodeModel.objects(vnfr_id=node_id)
         if len(nodes) < 1:
             error_msg = "Node with id={0} not found".format(node_id)
-            Exception.abort(HttpCode.NOT_FOUND,
-                            ExceptionCode.NOT_FOUND,
-                            error_msg)
+            ShieldException.abort(HttpCode.NOT_FOUND,
+                                  ShieldExceptionCode.NOT_FOUND,
+                                  error_msg)
         config = configparser.ConfigParser()
         config.read("conf/isolation.conf")
         self._scripts_path = config["scripts"]["path"]
@@ -156,11 +159,25 @@ class Node:
                            project_name=policy["project_name"],
                            user_domain_name=policy["domain_name"],
                            project_domain_name=policy["domain_name"])
+        version = policy["identity_endpoint"].split("/")[-1]
+        if "v2" in version:
+            auth = v2.Password(auth_url=policy["identity_endpoint"],
+                               username=policy["username"],
+                               password=policy["password"],
+                               tenant_name=policy["project_name"])
         session = keystone_session.Session(auth=auth)
         compute = nova_client.Client("2.1", session=session)
         ip_address = self._node["ip_address"].split(";")[0]
         target_server = None
         for server in compute.servers.list(search_opts={'all_tenants': 1}):
+            try:
+                # if this fails we're dealing with vim-emu incomplete API
+                server.interface_list()
+            except MethodNotAllowed:
+                # proceed to "emulate" the isolation
+                LOGGER.info("Does not support interface_list ... emulating")
+                self.store_vim_emu_vnf_configuration()
+                return
             for interface in server.interface_list():
                 for fixed_ip in interface.fixed_ips:
                     LOGGER.info(interface.port_id)
@@ -178,6 +195,25 @@ class Node:
             target_server.interface_detach(interface.port_id)
         record = IsolationRecord(output=json.dumps(previous_config), error="")
         record.save()
+        self._node["isolation_policy"]["records"].append(record)
+        self._node["isolation_policy"].save()
+        self._node.update(set__isolated=True)
+
+    def store_vim_emu_vnf_configuration(self):
+        addresses = self._node["ip_address"].split(";")
+        previous_config = []
+        for address in addresses:
+            previous_config.append({"subnet_id": str(uuid.uuid4()),
+                                    "ip_address": address})
+        for i in range(0, 2):
+            subnet_id = str(uuid.uuid4())
+            ip_address = "10.0.{0}.{1}".format(random.randint(2, 230),
+                                               random.randint(2, 230))
+            previous_config.append({"subnet_id": subnet_id,
+                                    "ip_address": ip_address})
+            record = IsolationRecord(output=json.dumps(previous_config),
+                                     error="")
+            record.save()
         self._node["isolation_policy"]["records"].append(record)
         self._node["isolation_policy"].save()
         self._node.update(set__isolated=True)
