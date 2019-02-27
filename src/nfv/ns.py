@@ -60,6 +60,45 @@ class VnsfoNs:
             self.tm_general.get("default_driver")
         self.keys = self.isolation_category.get("commands")
         self.default_shutdown = self.keys.get("default_shutdown")
+        kvm_vim_1 = self.isolation_category.get("kvm_vim_1")
+        self.kvm_vim_1 = {"vim_account_id":
+                          kvm_vim_1.get("vim_account_id"),
+                          "identity_endpoint":
+                          kvm_vim_1.get("identity_endpoint"),
+                          "username":
+                          kvm_vim_1.get("username"),
+                          "password":
+                          kvm_vim_1.get("password"),
+                          "project_name":
+                          kvm_vim_1.get("project_name"),
+                          "domain_name":
+                          kvm_vim_1.get("domain_name")}
+        kvm_vim_2 = self.isolation_category.get("kvm_vim_2")
+        self.kvm_vim_2 = {"vim_account_id":
+                          kvm_vim_2.get("vim_account_id"),
+                          "identity_endpoint":
+                          kvm_vim_2.get("identity_endpoint"),
+                          "username":
+                          kvm_vim_2.get("username"),
+                          "password":
+                          kvm_vim_2.get("password"),
+                          "project_name":
+                          kvm_vim_2.get("project_name"),
+                          "domain_name":
+                          kvm_vim_2.get("domain_name")}
+        docker_vim = self.isolation_category.get("docker_vim")
+        self.docker_vim = {"vim_account_id":
+                           docker_vim.get("vim_account_id"),
+                           "identity_endpoint":
+                           docker_vim.get("identity_endpoint"),
+                           "username":
+                           docker_vim.get("username"),
+                           "password":
+                           docker_vim.get("password"),
+                           "project_name":
+                           docker_vim.get("project_name"),
+                           "domain_name":
+                           docker_vim.get("domain_name")}
         if release == 4:
             self.orchestrator = OSMR4()
 
@@ -101,6 +140,7 @@ class VnsfoNs:
                 for vnfr in nss["ns"][0]["constituent_vnf_instances"]:
                     vnfr_name = vnfr["vnfr_name"]
                     vdu_ip = vnfr["ip"]
+                    vnfr_id = vnfr["vnfr_id"]
                 if "authentication" not in instantiation_data:
                     with open(self.default_key) as fhandle:
                         key = fhandle.read()
@@ -110,19 +150,39 @@ class VnsfoNs:
                         "username": self.default_username
                     }
                 # This expects a NS (VM) to be deployed, thus
-                #   the default poweroff values.
+                #   the default isolation policy brings down
+                #   vm ports on OpenStack & termination shuts
+                #   down the machine
+                vim = self.kvm_vim_1
+                if instantiation_data["vim_id"] == \
+                   self.kvm_vim_2["vim_account_id"]:
+                    vim = self.kvm_vim_2
+                if instantiation_data["vim_type"] == "docker":
+                    vim = self.docker_vim
+                if instantiation_data["vim_id"] == \
+                   self.docker_vim["vim_account_id"]:
+                    vim = self.docker_vim
+                LOGGER.info(instantiation_data)
                 if "isolation_policy" not in instantiation_data:
                     instantiation_data["isolation_policy"] = {
-                        "command": self.default_shutdown,
-                        "name": "shutdown",
-                        "type": "shutdown"
-                    }
+                        "name": "Openstack isolation",
+                        "identity_endpoint": vim["identity_endpoint"],
+                        "username": vim["username"],
+                        "project_name": vim["project_name"],
+                        "password": vim["password"],
+                        "domain_name": vim["domain_name"],
+                        "type": "openstack_isolation"
+                     }
                 if "termination_policy" not in instantiation_data:
                     instantiation_data["termination_policy"] = {
-                        "command": self.default_shutdown,
-                        "name": "shutdown",
-                        "type": "shutdown"
-                    }
+                        "name": "Openstack termination",
+                        "identity_endpoint": vim["identity_endpoint"],
+                        "username": vim["username"],
+                        "project_name": vim["project_name"],
+                        "password": vim["password"],
+                        "domain_name": vim["domain_name"],
+                        "type": "openstack_termination"
+                     }
                 app.mongo.store_vdu(vnfr_name, vdu_ip,
                                     instantiation_data["isolation_policy"],
                                     instantiation_data["termination_policy"],
@@ -131,7 +191,8 @@ class VnsfoNs:
                                     instantiation_data["pcr0"],
                                     instantiation_data["distribution"],
                                     instantiation_data["driver"],
-                                    instantiation_data["instance_id"])
+                                    instantiation_data["instance_id"],
+                                    vnfr_id)
                 node_data = {
                     "host_name": vnfr_name,
                     "ip_address": vdu_ip,

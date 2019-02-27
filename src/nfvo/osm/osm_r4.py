@@ -334,11 +334,13 @@ class OSMR4():
 
     @check_authorization
     def post_ns_instance(self, instantiation_data):
+        vim_type = "kvm"
         vim_account_id = instantiation_data.get("vim_id", None)
         if not vim_account_id:
             vim_account_id = self.default_kvm_datacenter
             if "virt_type" in instantiation_data:
                 if instantiation_data["virt_type"] == "docker":
+                    vim_type = "docker"
                     # Replacing instance_name in case it is
                     # a Docker deployment to avoid naming
                     # overlap
@@ -371,6 +373,7 @@ class OSMR4():
                            "instance_id": response_data["id"],
                            "ns_name": instantiation_data["ns_name"],
                            "vim_id": vim_account_id,
+                           "vim_type": vim_type,
                            "result": "success"}
             self.apply_mspl_action(response_data["id"],
                                    instantiation_data)

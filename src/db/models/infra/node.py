@@ -46,3 +46,4 @@ class Node(Document):
     physical = BooleanField(required=True)
     # Only needed in case node corresponds to VDUs
     instance_id = StringField(required=False)
+    vnfr_id = StringField(required=False)
