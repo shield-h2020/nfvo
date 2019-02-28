@@ -144,7 +144,66 @@ class Node:
         return record
 
     def terminate(self):
+        policy = self._node["termination_policy"]
+        if isinstance(policy, OpenstackIsolation):
+            LOGGER.info("Openstack termination request")
+            self.execute_openstack_termination()
+            return
         self.isolate(terminated=True)
+
+    def execute_openstack_termination(self):
+        policy = self._node["termination_policy"]
+        LOGGER.info(policy["identity_endpoint"])
+        LOGGER.info(policy["username"])
+        LOGGER.info(policy["password"])
+        LOGGER.info(policy["project_name"])
+        LOGGER.info(policy["domain_name"])
+        auth = v3.Password(auth_url=policy["identity_endpoint"],
+                           username=policy["username"],
+                           password=policy["password"],
+                           project_name=policy["project_name"],
+                           user_domain_name=policy["domain_name"],
+                           project_domain_name=policy["domain_name"])
+        version = policy["identity_endpoint"].split("/")[-1]
+        if "v2" in version:
+            auth = v2.Password(auth_url=policy["identity_endpoint"],
+                               username=policy["username"],
+                               password=policy["password"],
+                               tenant_name=policy["project_name"])
+        session = keystone_session.Session(auth=auth)
+        compute = nova_client.Client("2.1", session=session)
+        ip_address = self._node["ip_address"].split(";")[0]
+        target_server = None
+        for server in compute.servers.list(search_opts={'all_tenants': 1}):
+            try:
+                # if this fails we're dealing with vim-emu incomplete API
+                server.interface_list()
+            except MethodNotAllowed:
+                # proceed to "emulate" the isolation
+                LOGGER.info("Does not support interface_list ... emulating")
+                self.store_vim_emu_vnf_configuration(True)
+                return
+            for interface in server.interface_list():
+                for fixed_ip in interface.fixed_ips:
+                    LOGGER.info(interface.port_id)
+                    if fixed_ip["ip_address"] == ip_address:
+                        target_server = server
+                        break
+        if not target_server:
+            return
+        LOGGER.info("Server id found {0} for ip {1}".format(target_server.id,
+                                                            ip_address))
+        previous_config = []
+        for interface in target_server.interface_list():
+            LOGGER.info(interface.fixed_ips)
+            previous_config.append(interface.fixed_ips)
+            target_server.interface_detach(interface.port_id)
+        target_server.stop()
+        record = IsolationRecord(output=json.dumps(previous_config), error="")
+        record.save()
+        self._node["termination_policy"]["records"].append(record)
+        self._node["termination_policy"].save()
+        self._node.update(set__isolated=True)
 
     def execute_openstack_isolation(self):
         policy = self._node["isolation_policy"]
@@ -199,7 +258,7 @@ class Node:
         self._node["isolation_policy"].save()
         self._node.update(set__isolated=True)
 
-    def store_vim_emu_vnf_configuration(self):
+    def store_vim_emu_vnf_configuration(self, terminate):
         addresses = self._node["ip_address"].split(";")
         previous_config = []
         for address in addresses:
@@ -217,6 +276,8 @@ class Node:
         self._node["isolation_policy"]["records"].append(record)
         self._node["isolation_policy"].save()
         self._node.update(set__isolated=True)
+        if terminate:
+            self._node.update(set__terminated=True)
 
     def isolate(self, terminated=False):
         policy = self._node["isolation_policy"]
