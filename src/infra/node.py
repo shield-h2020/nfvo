@@ -179,31 +179,21 @@ class Node:
                 # if this fails we're dealing with vim-emu incomplete API
                 server.interface_list()
             except MethodNotAllowed:
-                # proceed to "emulate" the isolation
+                # proceed to "emulate" the termination
                 LOGGER.info("Does not support interface_list ... emulating")
                 self.store_vim_emu_vnf_configuration(True)
                 return
             for interface in server.interface_list():
                 for fixed_ip in interface.fixed_ips:
-                    LOGGER.info(interface.port_id)
                     if fixed_ip["ip_address"] == ip_address:
                         target_server = server
                         break
         if not target_server:
             return
+        target_server.stop()
         LOGGER.info("Server id found {0} for ip {1}".format(target_server.id,
                                                             ip_address))
-        previous_config = []
-        for interface in target_server.interface_list():
-            LOGGER.info(interface.fixed_ips)
-            previous_config.append(interface.fixed_ips)
-            target_server.interface_detach(interface.port_id)
-        target_server.stop()
-        record = IsolationRecord(output=json.dumps(previous_config), error="")
-        record.save()
-        self._node["termination_policy"]["records"].append(record)
-        self._node["termination_policy"].save()
-        self._node.update(set__isolated=True)
+        self._node.update(set__terminated=True)
 
     def execute_openstack_isolation(self):
         policy = self._node["isolation_policy"]
@@ -283,7 +273,10 @@ class Node:
         policy = self._node["isolation_policy"]
         if isinstance(policy, OpenstackIsolation):
             LOGGER.info("Openstack isolation request")
-            self.execute_openstack_isolation()
+            if terminated:
+                self.execute_openstack_termination()
+            else:
+                self.execute_openstack_isolation()
             return
         ssh = paramiko.client.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
