@@ -151,7 +151,7 @@ class Node:
             return
         self.isolate(terminated=True)
 
-    def execute_openstack_termination(self):
+    def get_openstack_compute(self):
         policy = self._node["termination_policy"]
         LOGGER.info(policy["identity_endpoint"])
         LOGGER.info(policy["username"])
@@ -172,52 +172,9 @@ class Node:
                                tenant_name=policy["project_name"])
         session = keystone_session.Session(auth=auth)
         compute = nova_client.Client("2.1", session=session)
-        ip_address = self._node["ip_address"].split(";")[0]
-        target_server = None
-        for server in compute.servers.list(search_opts={'all_tenants': 1}):
-            try:
-                # if this fails we're dealing with vim-emu incomplete API
-                server.interface_list()
-            except MethodNotAllowed:
-                # proceed to "emulate" the termination
-                LOGGER.info("Does not support interface_list ... emulating")
-                self.store_vim_emu_vnf_configuration(True)
-                return
-            for interface in server.interface_list():
-                for fixed_ip in interface.fixed_ips:
-                    if fixed_ip["ip_address"] == ip_address:
-                        target_server = server
-                        break
-        if not target_server:
-            return
-        target_server.stop()
-        LOGGER.info("Server id found {0} for ip {1}".format(target_server.id,
-                                                            ip_address))
-        self._node.update(set__terminated=True)
+        return compute
 
-    def execute_openstack_isolation(self):
-        policy = self._node["isolation_policy"]
-        LOGGER.info(policy["identity_endpoint"])
-        LOGGER.info(policy["username"])
-        LOGGER.info(policy["password"])
-        LOGGER.info(policy["project_name"])
-        LOGGER.info(policy["domain_name"])
-        auth = v3.Password(auth_url=policy["identity_endpoint"],
-                           username=policy["username"],
-                           password=policy["password"],
-                           project_name=policy["project_name"],
-                           user_domain_name=policy["domain_name"],
-                           project_domain_name=policy["domain_name"])
-        version = policy["identity_endpoint"].split("/")[-1]
-        if "v2" in version:
-            auth = v2.Password(auth_url=policy["identity_endpoint"],
-                               username=policy["username"],
-                               password=policy["password"],
-                               tenant_name=policy["project_name"])
-        session = keystone_session.Session(auth=auth)
-        compute = nova_client.Client("2.1", session=session)
-        ip_address = self._node["ip_address"].split(";")[0]
-        target_server = None
+    def find_target_server(self, compute, ip_address):
         for server in compute.servers.list(search_opts={'all_tenants': 1}):
             try:
                 # if this fails we're dealing with vim-emu incomplete API
@@ -231,8 +188,25 @@ class Node:
                 for fixed_ip in interface.fixed_ips:
                     LOGGER.info(interface.port_id)
                     if fixed_ip["ip_address"] == ip_address:
-                        target_server = server
-                        break
+                        return server
+
+    def execute_openstack_termination(self):
+        ip_address = self._node["ip_address"].split(";")[0]
+        target_server = None
+        compute = self.get_openstack_compute()
+        target_server = self.find_target_server(compute, ip_address)
+        if not target_server:
+            return
+        target_server.stop()
+        LOGGER.info("Server id found {0} for ip {1}".format(target_server.id,
+                                                            ip_address))
+        self._node.update(set__terminated=True)
+
+    def execute_openstack_isolation(self):
+        ip_address = self._node["ip_address"].split(";")[0]
+        target_server = None
+        compute = self.get_openstack_compute()
+        target_server = self.find_target_server(compute, ip_address)
         if not target_server:
             return
         LOGGER.info("Server id found {0} for ip {1}".format(target_server.id,
