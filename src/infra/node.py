@@ -144,10 +144,15 @@ class Node:
         return record
 
     def terminate(self):
+        policy = self._node["termination_policy"]
+        if isinstance(policy, OpenstackIsolation):
+            LOGGER.info("Openstack termination request")
+            self.execute_openstack_termination()
+            return
         self.isolate(terminated=True)
 
-    def execute_openstack_isolation(self):
-        policy = self._node["isolation_policy"]
+    def get_openstack_compute(self):
+        policy = self._node["termination_policy"]
         LOGGER.info(policy["identity_endpoint"])
         LOGGER.info(policy["username"])
         LOGGER.info(policy["password"])
@@ -167,8 +172,9 @@ class Node:
                                tenant_name=policy["project_name"])
         session = keystone_session.Session(auth=auth)
         compute = nova_client.Client("2.1", session=session)
-        ip_address = self._node["ip_address"].split(";")[0]
-        target_server = None
+        return compute
+
+    def find_target_server(self, compute, ip_address):
         for server in compute.servers.list(search_opts={'all_tenants': 1}):
             try:
                 # if this fails we're dealing with vim-emu incomplete API
@@ -182,8 +188,25 @@ class Node:
                 for fixed_ip in interface.fixed_ips:
                     LOGGER.info(interface.port_id)
                     if fixed_ip["ip_address"] == ip_address:
-                        target_server = server
-                        break
+                        return server
+
+    def execute_openstack_termination(self):
+        ip_address = self._node["ip_address"].split(";")[0]
+        target_server = None
+        compute = self.get_openstack_compute()
+        target_server = self.find_target_server(compute, ip_address)
+        if not target_server:
+            return
+        target_server.stop()
+        LOGGER.info("Server id found {0} for ip {1}".format(target_server.id,
+                                                            ip_address))
+        self._node.update(set__terminated=True)
+
+    def execute_openstack_isolation(self):
+        ip_address = self._node["ip_address"].split(";")[0]
+        target_server = None
+        compute = self.get_openstack_compute()
+        target_server = self.find_target_server(compute, ip_address)
         if not target_server:
             return
         LOGGER.info("Server id found {0} for ip {1}".format(target_server.id,
@@ -199,7 +222,7 @@ class Node:
         self._node["isolation_policy"].save()
         self._node.update(set__isolated=True)
 
-    def store_vim_emu_vnf_configuration(self):
+    def store_vim_emu_vnf_configuration(self, terminate):
         addresses = self._node["ip_address"].split(";")
         previous_config = []
         for address in addresses:
@@ -217,12 +240,17 @@ class Node:
         self._node["isolation_policy"]["records"].append(record)
         self._node["isolation_policy"].save()
         self._node.update(set__isolated=True)
+        if terminate:
+            self._node.update(set__terminated=True)
 
     def isolate(self, terminated=False):
         policy = self._node["isolation_policy"]
         if isinstance(policy, OpenstackIsolation):
             LOGGER.info("Openstack isolation request")
-            self.execute_openstack_isolation()
+            if terminated:
+                self.execute_openstack_termination()
+            else:
+                self.execute_openstack_isolation()
             return
         ssh = paramiko.client.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
