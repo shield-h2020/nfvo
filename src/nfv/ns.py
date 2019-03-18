@@ -24,7 +24,7 @@ from server.http import content
 from server.mocks.ns import MockNs as ns_m
 from tm.tm_client import TMClient
 
-import threading
+# import threading
 import time
 
 
@@ -117,6 +117,19 @@ class VnsfoNs:
         vdus_registered = False
         if target_status is None:
             target_status = self.monitoring_target_status
+        # This expects a NS (VM) to be deployed, thus
+        #   the default isolation policy brings down
+        #   vm ports on OpenStack & termination shuts
+        #   down the machine
+        vim = self.kvm_vim_1
+        if instantiation_data["vim_id"] == \
+           self.kvm_vim_2["vim_account_id"]:
+            vim = self.kvm_vim_2
+        if instantiation_data["vim_type"] == "docker":
+            vim = self.docker_vim
+        if instantiation_data["vim_id"] == \
+           self.docker_vim["vim_account_id"]:
+            vim = self.docker_vim
         while not vdus_registered:
             time.sleep(self.monitoring_interval)
             nss = self.orchestrator.get_ns_instances(
@@ -149,19 +162,6 @@ class VnsfoNs:
                         "type": "private_key",
                         "username": self.default_username
                     }
-                # This expects a NS (VM) to be deployed, thus
-                #   the default isolation policy brings down
-                #   vm ports on OpenStack & termination shuts
-                #   down the machine
-                vim = self.kvm_vim_1
-                if instantiation_data["vim_id"] == \
-                   self.kvm_vim_2["vim_account_id"]:
-                    vim = self.kvm_vim_2
-                if instantiation_data["vim_type"] == "docker":
-                    vim = self.docker_vim
-                if instantiation_data["vim_id"] == \
-                   self.docker_vim["vim_account_id"]:
-                    vim = self.docker_vim
                 LOGGER.info(instantiation_data)
                 if "isolation_policy" not in instantiation_data:
                     instantiation_data["isolation_policy"] = {
@@ -193,14 +193,22 @@ class VnsfoNs:
                                     instantiation_data["driver"],
                                     instantiation_data["instance_id"],
                                     vnfr_id)
-                node_data = {
-                    "host_name": vnfr_name,
-                    "ip_address": vdu_ip,
-                    "distribution": instantiation_data["distribution"],
-                    "pcr0": instantiation_data["pcr0"],
-                    "driver": instantiation_data["driver"]}
-                trust_monitor_client = TMClient()
-                trust_monitor_client.register_node(node_data)
+                # node_data = {
+                #     "host_name": vnfr_name,
+                #     "ip_address": vdu_ip,
+                #     "distribution": instantiation_data["distribution"],
+                #     "pcr0": instantiation_data["pcr0"],
+                #     "driver": instantiation_data["driver"]}
+                if vim == self.docker_vim:
+                    LOGGER.info("Getting attestation info ...")
+                    trust_monitor_client = TMClient()
+                    remediation = trust_monitor_client.get_attestation_info()
+                    node = Node(vnfr_id)
+                    LOGGER.info(remediation)
+                    if remediation["terminate"]:
+                        node.terminate()
+                    elif remediation["isolate"]:
+                        node.isolate()
                 break
             timeout -= self.monitoring_interval
 
@@ -237,11 +245,14 @@ class VnsfoNs:
         if "driver" in instantiation_data:
             nsi_data["driver"] = \
                 instantiation_data["driver"]
-        t = threading.Thread(target=self.monitor_deployment,
-                             args=(nsi_data,
-                                   current_app._get_current_object(),
-                                   self.monitoring_target_status))
-        t.start()
+        self.monitor_deployment(nsi_data,
+                                current_app._get_current_object(),
+                                self.monitoring_target_status)
+        # t = threading.Thread(target=self.monitor_deployment,
+        #                      args=(nsi_data,
+        #                            current_app._get_current_object(),
+        #                            self.monitoring_target_status))
+        # t.start()
         return nsi_data
 
     @content.on_mock(ns_m().delete_nsr_mock)
