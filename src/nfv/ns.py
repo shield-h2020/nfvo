@@ -212,10 +212,18 @@ class VnsfoNs:
                     remediation = trust_monitor_client.get_attestation_info()
                     node = Node(vnfr_id)
                     LOGGER.info(remediation)
-                    if remediation["terminate"]:
-                        node.terminate()
-                    elif remediation["isolate"]:
-                        node.isolate()
+                    LOGGER.info(remediation.get("vnsfs"))
+                    for vnsf in remediation.get("vnsfs", []):
+                        LOGGER.info("Terminate ... {0} {1}".format(
+                            vnsf["remediation"]["terminate"],
+                            vnsf["vnsfd_id"]))
+                        LOGGER.info("Isolate ..... {0} {1}".format(
+                            vnsf["remediation"]["isolate"],
+                            vnsf["vnsfd_id"]))
+                        if vnsf["remediation"]["terminate"]:
+                            node.terminate()
+                        elif vnsf["remediation"]["isolate"]:
+                            node.isolate()
                 break
             timeout -= self.monitoring_interval
 

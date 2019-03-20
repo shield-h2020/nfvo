@@ -339,18 +339,18 @@ class OSMR4():
         if "virt_type" in instantiation_data:
             if instantiation_data["virt_type"] == "docker":
                 vim_type = "docker"
-        if not vim_account_id:
+        if vim_account_id == self.default_docker_datacenter:
+            vim_type = "docker"
+        if not vim_account_id and vim_type != "docker":
             vim_account_id = self.default_kvm_datacenter
-            if "virt_type" in instantiation_data:
-                if instantiation_data["virt_type"] == "docker":
-                    vim_type = "docker"
-                    # Replacing instance_name in case it is
-                    # a Docker deployment to avoid naming
-                    # overlap
-                    instantiation_data["instance_name"] = \
-                        str(uuid.uuid4()).replace("-", "")
-                    instantiation_data["vim_id"] = \
-                        vim_account_id = self.default_docker_datacenter
+        if vim_type == "docker":
+            # Replacing instance_name in case it is
+            # a Docker deployment to avoid naming
+            # overlap
+            instantiation_data["instance_name"] = \
+                str(uuid.uuid4()).replace("-", "")
+            instantiation_data["vim_id"] = \
+                vim_account_id = self.default_docker_datacenter
         nsd_id = instantiation_data.get("nsd_id", None)
         if not nsd_id:
             nsd_id = self.get_ns_descriptor_id(instantiation_data["ns_name"])

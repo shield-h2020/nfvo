@@ -44,8 +44,7 @@ class TMClient:
             for host in attestation_info["hosts"]:
                 if host["node"] == self.default_node:
                     nfvi_node = host
-            LOGGER.info(json.dumps(nfvi_node, sort_keys=True, indent=4))
-            return nfvi_node["remediation"]
+            return nfvi_node
         except Exception as excp:
             LOGGER.error("Error getting attestation info")
             LOGGER.error(excp)
