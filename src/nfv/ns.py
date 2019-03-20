@@ -28,6 +28,13 @@ from tm.tm_client import TMClient
 import time
 
 
+class ServiceInstanceFailure(Exception):
+
+    def __init__(self, msg=None, status_code=409):
+        self.msg = msg
+        self.status_code = status_code
+
+
 LOGGER = setup_custom_logger(__name__)
 
 
@@ -142,7 +149,7 @@ class VnsfoNs:
             operational_status = nss["ns"][0].get("operational_status", "")
             if operational_status == "failed":
                 LOGGER.info("Instance failed, aborting")
-                break
+                raise ServiceInstanceFailure(operational_status)
             if operational_status == target_status and \
                "constituent_vnf_instances" in nss["ns"][0]:
                 LOGGER.info("Network Service Deployed")
@@ -214,6 +221,9 @@ class VnsfoNs:
 
     @content.on_mock(ns_m().post_nsr_instantiate_mock)
     def instantiate_ns(self, instantiation_data):
+        if instantiation_data["vim_id"] == \
+           self.docker_vim["vim_account_id"]:
+            instantiation_data["virt_type"] = "docker"
         nsi_data = self.orchestrator.post_ns_instance(
             instantiation_data)
         if "authentication" in instantiation_data:
@@ -245,9 +255,14 @@ class VnsfoNs:
         if "driver" in instantiation_data:
             nsi_data["driver"] = \
                 instantiation_data["driver"]
-        self.monitor_deployment(nsi_data,
-                                current_app._get_current_object(),
-                                self.monitoring_target_status)
+        try:
+            self.monitor_deployment(nsi_data,
+                                    current_app._get_current_object(),
+                                    self.monitoring_target_status)
+        except ServiceInstanceFailure as service_instance_failure:
+            nsi_data["result"] = "failure"
+            nsi_data["error_response"] = {"msg": service_instance_failure.msg}
+            nsi_data["status_code"] = service_instance_failure.status_code
         # t = threading.Thread(target=self.monitor_deployment,
         #                      args=(nsi_data,
         #                            current_app._get_current_object(),
