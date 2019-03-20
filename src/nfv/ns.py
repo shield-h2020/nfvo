@@ -24,7 +24,7 @@ from server.http import content
 from server.mocks.ns import MockNs as ns_m
 from tm.tm_client import TMClient
 
-# import threading
+import threading
 import time
 
 
@@ -221,7 +221,7 @@ class VnsfoNs:
 
     @content.on_mock(ns_m().post_nsr_instantiate_mock)
     def instantiate_ns(self, instantiation_data):
-        if instantiation_data["vim_id"] == \
+        if instantiation_data.get("vim_id", None) == \
            self.docker_vim["vim_account_id"]:
             instantiation_data["virt_type"] = "docker"
         nsi_data = self.orchestrator.post_ns_instance(
@@ -255,19 +255,23 @@ class VnsfoNs:
         if "driver" in instantiation_data:
             nsi_data["driver"] = \
                 instantiation_data["driver"]
-        try:
-            self.monitor_deployment(nsi_data,
-                                    current_app._get_current_object(),
-                                    self.monitoring_target_status)
-        except ServiceInstanceFailure as service_instance_failure:
-            nsi_data["result"] = "failure"
-            nsi_data["error_response"] = {"msg": service_instance_failure.msg}
-            nsi_data["status_code"] = service_instance_failure.status_code
-        # t = threading.Thread(target=self.monitor_deployment,
-        #                      args=(nsi_data,
-        #                            current_app._get_current_object(),
-        #                            self.monitoring_target_status))
-        # t.start()
+        if instantiation_data.get("virt_type", None) == "docker":
+            try:
+                self.monitor_deployment(nsi_data,
+                                        current_app._get_current_object(),
+                                        self.monitoring_target_status)
+            except ServiceInstanceFailure as service_instance_failure:
+                nsi_data["result"] = "failure"
+                nsi_data["error_response"] = {"msg":
+                                              service_instance_failure.msg}
+                nsi_data["status_code"] = \
+                    service_instance_failure.status_code
+        else:
+            t = threading.Thread(target=self.monitor_deployment,
+                                 args=(nsi_data,
+                                       current_app._get_current_object(),
+                                       self.monitoring_target_status))
+            t.start()
         return nsi_data
 
     @content.on_mock(ns_m().delete_nsr_mock)
