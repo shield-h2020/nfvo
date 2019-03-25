@@ -34,6 +34,27 @@ class TMClient:
         self.protocol = config["general"]["protocol"]
         self.default_node = config["general"]["default_node"]
 
+    def get_attestation_mock(self):
+        return {"vnsfs": [
+            {
+                "vnsfd_id": "First",
+                "trust": True,
+                "remediation": {
+                    "isolate": True,
+                    "terminate": False}},
+            {
+                "vnsfd_id": "Second",
+                "trust": False,
+                "remediation": {
+                    "isolate": False,
+                    "terminate": True}},
+            {
+                "vnsfd_id": "Third",
+                "trust": False,
+                "remediation": {
+                    "isolate": True,
+                    "terminate": False}}]}
+
     def get_attestation_info(self):
         url = "{0}://{1}:{2}/nfvi_attestation_info/".format(
             self.protocol, self.host, self.port)

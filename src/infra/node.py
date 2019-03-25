@@ -222,7 +222,7 @@ class Node:
         self._node["isolation_policy"].save()
         self._node.update(set__isolated=True)
 
-    def store_vim_emu_vnf_configuration(self, terminate):
+    def store_vim_emu_vnf_configuration(self, terminate=False):
         addresses = self._node["ip_address"].split(";")
         previous_config = []
         for address in addresses:

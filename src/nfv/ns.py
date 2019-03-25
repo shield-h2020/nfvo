@@ -16,7 +16,8 @@
 
 from core.config import FullConfParser
 from core.log import setup_custom_logger
-from db.models.infra.node import Node
+from db.models.infra.node import Node as NodeModel
+from infra.node import Node
 from flask import current_app
 from nfvo.osm.osm_r2 import OSMR2
 from nfvo.osm.osm_r4 import OSMR4
@@ -215,12 +216,16 @@ class VnsfoNs:
                     LOGGER.info(remediation.get("vnsfs"))
                     for vnsf in remediation.get("vnsfs", []):
                         if vnsf["trust"]:
-                            LOGGER.info("VNSF trusted ... continuing")
+                            LOGGER.info("VNSF {0} trusted ... continuing"
+                                        .format(vnsf["vnsfd_id"]))
                             continue
-                        LOGGER.info("Terminate ... {0} {1}".format(
+                        else:
+                            LOGGER.info("VNSF {0} not trusted ... checking"
+                                        .format(vnsf["vnsfd_id"]))
+                        LOGGER.info("Terminate {1} ... {0}".format(
                             vnsf["remediation"]["terminate"],
                             vnsf["vnsfd_id"]))
-                        LOGGER.info("Isolate ..... {0} {1}".format(
+                        LOGGER.info("Isolate {1} ..... {0}".format(
                             vnsf["remediation"]["isolate"],
                             vnsf["vnsfd_id"]))
                         if vnsf["remediation"]["terminate"]:
@@ -287,7 +292,7 @@ class VnsfoNs:
 
     @content.on_mock(ns_m().delete_nsr_mock)
     def delete_ns(self, instance_id):
-        nodes = Node.objects(instance_id=instance_id)
+        nodes = NodeModel.objects(instance_id=instance_id)
         tm_client = TMClient()
         for node in nodes:
             LOGGER.info(node.host_name)
