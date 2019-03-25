@@ -214,6 +214,9 @@ class VnsfoNs:
                     LOGGER.info(remediation)
                     LOGGER.info(remediation.get("vnsfs"))
                     for vnsf in remediation.get("vnsfs", []):
+                        if vnsf["trust"]:
+                            LOGGER.info("VNSF trusted ... continuing")
+                            continue
                         LOGGER.info("Terminate ... {0} {1}".format(
                             vnsf["remediation"]["terminate"],
                             vnsf["vnsfd_id"]))
