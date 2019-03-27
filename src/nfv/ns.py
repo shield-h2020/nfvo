@@ -230,8 +230,10 @@ class VnsfoNs:
                             vnsf["vnsfd_id"]))
                         if vnsf["remediation"]["terminate"]:
                             node.terminate()
+                            raise ServiceInstanceFailure("termination")
                         elif vnsf["remediation"]["isolate"]:
                             node.isolate()
+                            raise ServiceInstanceFailure("isolation")
                 break
             timeout -= self.monitoring_interval
 
@@ -279,7 +281,9 @@ class VnsfoNs:
             except ServiceInstanceFailure as service_instance_failure:
                 nsi_data["result"] = "failure"
                 nsi_data["error_response"] = {"msg":
-                                              service_instance_failure.msg}
+                                              service_instance_failure.msg,
+                                              "instance_id":
+                                              nsi_data["instance_id"]}
                 nsi_data["status_code"] = \
                     service_instance_failure.status_code
         else:
@@ -293,10 +297,10 @@ class VnsfoNs:
     @content.on_mock(ns_m().delete_nsr_mock)
     def delete_ns(self, instance_id):
         nodes = NodeModel.objects(instance_id=instance_id)
-        tm_client = TMClient()
+        # tm_client = TMClient()
         for node in nodes:
             LOGGER.info(node.host_name)
-            tm_client.delete_node(node.host_name)
+            # tm_client.delete_node(node.host_name)
             node.delete()
         return self.orchestrator.delete_ns_instance(instance_id)
 
