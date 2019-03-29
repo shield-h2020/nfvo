@@ -59,7 +59,7 @@ class TMClient:
         url = "{0}://{1}:{2}/nfvi_attestation_info/".format(
             self.protocol, self.host, self.port)
         try:
-            response = requests.get(url, verify=False)
+            response = requests.get(url, verify=False, allow_redirects=True)
             attestation_info = json.loads(response.text)
             nfvi_node = None
             for host in attestation_info["hosts"]:
