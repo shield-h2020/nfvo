@@ -108,7 +108,8 @@ class Server(object):
                                      "client verification")
 
             serving.run_simple(
-                self.host, self.port, self._app,
-                ssl_context=context, use_reloader=False)
+                self.host, int(self.port), self._app,
+                ssl_context=context, use_reloader=False,
+                threaded=True)
         finally:
             self._app._got_first_request = False
