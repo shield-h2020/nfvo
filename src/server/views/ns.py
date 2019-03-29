@@ -134,8 +134,8 @@ def instantiate_ns_r4():
     if result.get("result", "") == "success":
         return HttpResponse.json(HttpCode.OK, result)
     else:
-        return HttpResponse.json(result["error_response"].status_code,
-                                 result["error_response"].text)
+        return HttpResponse.json(result["status_code"],
+                                 result["error_response"])
 
 
 @nfvo_views.route(endpoints.NS_R_NSS, methods=["GET"])

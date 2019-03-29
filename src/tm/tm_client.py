@@ -17,6 +17,7 @@
 from core.log import setup_custom_logger
 
 import configparser
+import json
 import requests
 
 
@@ -31,6 +32,45 @@ class TMClient:
         self.host = config["general"]["host"]
         self.port = config["general"]["port"]
         self.protocol = config["general"]["protocol"]
+        self.default_node = config["general"]["default_node"]
+
+    def get_attestation_mock(self):
+        return {"vnsfs": [
+            {
+                "vnsfd_id": "First",
+                "trust": True,
+                "remediation": {
+                    "isolate": True,
+                    "terminate": False}},
+            {
+                "vnsfd_id": "Second",
+                "trust": False,
+                "remediation": {
+                    "isolate": False,
+                    "terminate": True}},
+            {
+                "vnsfd_id": "Third",
+                "trust": False,
+                "remediation": {
+                    "isolate": True,
+                    "terminate": False}}]}
+
+    def get_attestation_info(self):
+        url = "{0}://{1}:{2}/nfvi_attestation_info/".format(
+            self.protocol, self.host, self.port)
+        try:
+            response = requests.get(url, verify=False)
+            attestation_info = json.loads(response.text)
+            nfvi_node = None
+            for host in attestation_info["hosts"]:
+                if host["node"] == self.default_node:
+                    nfvi_node = host
+            LOGGER.info("NFVI NODE")
+            LOGGER.info(json.dumps(nfvi_node, sort_keys=True, indent=4))
+            return nfvi_node
+        except Exception as excp:
+            LOGGER.error("Error getting attestation info")
+            LOGGER.error(excp)
 
     def register_node(self, node_data):
         url = "{0}://{1}:{2}/register_node/".format(

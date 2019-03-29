@@ -6,3 +6,4 @@
     default_pcr0 = example
     default_distribution = CentOS7
     default_driver = linux
+    default_node = nfvi-node

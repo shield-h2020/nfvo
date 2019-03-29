@@ -336,22 +336,26 @@ class OSMR4():
     def post_ns_instance(self, instantiation_data):
         vim_type = "kvm"
         vim_account_id = instantiation_data.get("vim_id", None)
-        if not vim_account_id:
+        if "virt_type" in instantiation_data:
+            if instantiation_data["virt_type"] == "docker":
+                vim_type = "docker"
+        if vim_account_id == self.default_docker_datacenter:
+            vim_type = "docker"
+        if not vim_account_id and vim_type != "docker":
             vim_account_id = self.default_kvm_datacenter
-            if "virt_type" in instantiation_data:
-                if instantiation_data["virt_type"] == "docker":
-                    vim_type = "docker"
-                    # Replacing instance_name in case it is
-                    # a Docker deployment to avoid naming
-                    # overlap
-                    instantiation_data["instance_name"] = \
-                        str(uuid.uuid4()).replace("-", "")
-                    instantiation_data["vim_id"] = \
-                        vim_account_id = self.default_docker_datacenter
+        if vim_type == "docker":
+            # Replacing instance_name in case it is
+            # a Docker deployment to avoid naming
+            # overlap
+            instantiation_data["instance_name"] = \
+                str(uuid.uuid4()).replace("-", "")
+            instantiation_data["vim_id"] = \
+                vim_account_id = self.default_docker_datacenter
         nsd_id = instantiation_data.get("nsd_id", None)
         if not nsd_id:
             nsd_id = self.get_ns_descriptor_id(instantiation_data["ns_name"])
         description = instantiation_data.get("description", nsd_id)
+        LOGGER.info("VIM ID = {0}".format(vim_account_id))
         ns_data = {"nsdId": nsd_id,
                    "nsName": instantiation_data["instance_name"],
                    "nsDescription": description,

@@ -16,7 +16,8 @@
 
 from core.config import FullConfParser
 from core.log import setup_custom_logger
-from db.models.infra.node import Node
+from db.models.infra.node import Node as NodeModel
+from infra.node import Node
 from flask import current_app
 from nfvo.osm.osm_r2 import OSMR2
 from nfvo.osm.osm_r4 import OSMR4
@@ -26,6 +27,13 @@ from tm.tm_client import TMClient
 
 import threading
 import time
+
+
+class ServiceInstanceFailure(Exception):
+
+    def __init__(self, msg=None, status_code=409):
+        self.msg = msg
+        self.status_code = status_code
 
 
 LOGGER = setup_custom_logger(__name__)
@@ -117,6 +125,19 @@ class VnsfoNs:
         vdus_registered = False
         if target_status is None:
             target_status = self.monitoring_target_status
+        # This expects a NS (VM) to be deployed, thus
+        #   the default isolation policy brings down
+        #   vm ports on OpenStack & termination shuts
+        #   down the machine
+        vim = self.kvm_vim_1
+        if instantiation_data["vim_id"] == \
+           self.kvm_vim_2["vim_account_id"]:
+            vim = self.kvm_vim_2
+        if instantiation_data["vim_type"] == "docker":
+            vim = self.docker_vim
+        if instantiation_data["vim_id"] == \
+           self.docker_vim["vim_account_id"]:
+            vim = self.docker_vim
         while not vdus_registered:
             time.sleep(self.monitoring_interval)
             nss = self.orchestrator.get_ns_instances(
@@ -129,7 +150,7 @@ class VnsfoNs:
             operational_status = nss["ns"][0].get("operational_status", "")
             if operational_status == "failed":
                 LOGGER.info("Instance failed, aborting")
-                break
+                raise ServiceInstanceFailure(operational_status)
             if operational_status == target_status and \
                "constituent_vnf_instances" in nss["ns"][0]:
                 LOGGER.info("Network Service Deployed")
@@ -149,19 +170,6 @@ class VnsfoNs:
                         "type": "private_key",
                         "username": self.default_username
                     }
-                # This expects a NS (VM) to be deployed, thus
-                #   the default isolation policy brings down
-                #   vm ports on OpenStack & termination shuts
-                #   down the machine
-                vim = self.kvm_vim_1
-                if instantiation_data["vim_id"] == \
-                   self.kvm_vim_2["vim_account_id"]:
-                    vim = self.kvm_vim_2
-                if instantiation_data["vim_type"] == "docker":
-                    vim = self.docker_vim
-                if instantiation_data["vim_id"] == \
-                   self.docker_vim["vim_account_id"]:
-                    vim = self.docker_vim
                 LOGGER.info(instantiation_data)
                 if "isolation_policy" not in instantiation_data:
                     instantiation_data["isolation_policy"] = {
@@ -193,19 +201,47 @@ class VnsfoNs:
                                     instantiation_data["driver"],
                                     instantiation_data["instance_id"],
                                     vnfr_id)
-                node_data = {
-                    "host_name": vnfr_name,
-                    "ip_address": vdu_ip,
-                    "distribution": instantiation_data["distribution"],
-                    "pcr0": instantiation_data["pcr0"],
-                    "driver": instantiation_data["driver"]}
-                trust_monitor_client = TMClient()
-                trust_monitor_client.register_node(node_data)
+                # node_data = {
+                #     "host_name": vnfr_name,
+                #     "ip_address": vdu_ip,
+                #     "distribution": instantiation_data["distribution"],
+                #     "pcr0": instantiation_data["pcr0"],
+                #     "driver": instantiation_data["driver"]}
+                if vim == self.docker_vim:
+                    LOGGER.info("Getting attestation info ...")
+                    trust_monitor_client = TMClient()
+                    remediation = trust_monitor_client.get_attestation_info()
+                    node = Node(vnfr_id)
+                    LOGGER.info(remediation)
+                    LOGGER.info(remediation.get("vnsfs"))
+                    for vnsf in remediation.get("vnsfs", []):
+                        if vnsf["trust"]:
+                            LOGGER.info("VNSF {0} trusted ... continuing"
+                                        .format(vnsf["vnsfd_id"]))
+                            continue
+                        else:
+                            LOGGER.info("VNSF {0} not trusted ... checking"
+                                        .format(vnsf["vnsfd_id"]))
+                        LOGGER.info("Terminate {1} ... {0}".format(
+                            vnsf["remediation"]["terminate"],
+                            vnsf["vnsfd_id"]))
+                        LOGGER.info("Isolate {1} ..... {0}".format(
+                            vnsf["remediation"]["isolate"],
+                            vnsf["vnsfd_id"]))
+                        if vnsf["remediation"]["terminate"]:
+                            node.terminate()
+                            raise ServiceInstanceFailure("termination")
+                        elif vnsf["remediation"]["isolate"]:
+                            node.isolate()
+                            raise ServiceInstanceFailure("isolation")
                 break
             timeout -= self.monitoring_interval
 
     @content.on_mock(ns_m().post_nsr_instantiate_mock)
     def instantiate_ns(self, instantiation_data):
+        if instantiation_data.get("vim_id", None) == \
+           self.docker_vim["vim_account_id"]:
+            instantiation_data["virt_type"] = "docker"
         nsi_data = self.orchestrator.post_ns_instance(
             instantiation_data)
         if "authentication" in instantiation_data:
@@ -237,20 +273,34 @@ class VnsfoNs:
         if "driver" in instantiation_data:
             nsi_data["driver"] = \
                 instantiation_data["driver"]
-        t = threading.Thread(target=self.monitor_deployment,
-                             args=(nsi_data,
-                                   current_app._get_current_object(),
-                                   self.monitoring_target_status))
-        t.start()
+        if instantiation_data.get("virt_type", None) == "docker":
+            try:
+                self.monitor_deployment(nsi_data,
+                                        current_app._get_current_object(),
+                                        self.monitoring_target_status)
+            except ServiceInstanceFailure as service_instance_failure:
+                nsi_data["result"] = "failure"
+                nsi_data["error_response"] = {"msg":
+                                              service_instance_failure.msg,
+                                              "instance_id":
+                                              nsi_data["instance_id"]}
+                nsi_data["status_code"] = \
+                    service_instance_failure.status_code
+        else:
+            t = threading.Thread(target=self.monitor_deployment,
+                                 args=(nsi_data,
+                                       current_app._get_current_object(),
+                                       self.monitoring_target_status))
+            t.start()
         return nsi_data
 
     @content.on_mock(ns_m().delete_nsr_mock)
     def delete_ns(self, instance_id):
-        nodes = Node.objects(instance_id=instance_id)
-        tm_client = TMClient()
+        nodes = NodeModel.objects(instance_id=instance_id)
+        # tm_client = TMClient()
         for node in nodes:
             LOGGER.info(node.host_name)
-            tm_client.delete_node(node.host_name)
+            # tm_client.delete_node(node.host_name)
             node.delete()
         return self.orchestrator.delete_ns_instance(instance_id)
 
