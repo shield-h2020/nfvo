@@ -222,18 +222,24 @@ class VnsfoNs:
                         else:
                             LOGGER.info("VNSF {0} not trusted ... checking"
                                         .format(vnsf["vnsfd_id"]))
-                        LOGGER.info("Terminate {1} ... {0}".format(
-                            vnsf["remediation"]["terminate"],
+#                        LOGGER.info("Terminate {1} ... {0}".format(
+#                            vnsf["remediation"]["terminate"],
+#                            vnsf["vnsfd_id"]))
+#                        LOGGER.info("Isolate {1} ..... {0}".format(
+#                            vnsf["remediation"]["isolate"],
+#                            vnsf["vnsfd_id"]))
+#                        if vnsf["remediation"]["terminate"]:
+#                            node.terminate()
+#                            raise ServiceInstanceFailure("termination")
+#                        elif vnsf["remediation"]["isolate"]:
+#                            node.isolate()
+#                            raise ServiceInstanceFailure("isolation")
+                        LOGGER.info("Shutting down {0} ...".format(
                             vnsf["vnsfd_id"]))
-                        LOGGER.info("Isolate {1} ..... {0}".format(
-                            vnsf["remediation"]["isolate"],
-                            vnsf["vnsfd_id"]))
-                        if vnsf["remediation"]["terminate"]:
-                            node.terminate()
-                            raise ServiceInstanceFailure("termination")
-                        elif vnsf["remediation"]["isolate"]:
-                            node.isolate()
-                            raise ServiceInstanceFailure("isolation")
+                        node.delete()
+                        self.orchestrator.delete_ns_instance(
+                                instantiation_data["instance_id"])
+                        raise ServiceInstanceFailure("failure_attestation")
                 break
             timeout -= self.monitoring_interval
 
