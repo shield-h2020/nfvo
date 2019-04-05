@@ -31,9 +31,16 @@ class VnsfoEndpoints:
     ROOT = "/"
     # Infrastructure
     NFVI = "/nfvi"
-    NFVI_FLOW = "{}/flowtable".format(NFVI)
+    NFVI_NETWORK = "{}/network".format(NFVI)
     NFVI_NODE = "{}/node".format(NFVI)
-    NFVI_TOPO = "{}/network".format(NFVI)
+    # - Network
+    NFVI_NETWORK_C = "{}/config".format(NFVI_NETWORK)
+    NFVI_NETWORK_C_FLOW = "{}/flows".format(NFVI_NETWORK_C)
+    NFVI_NETWORK_C_FLOW_ID = "{}/flows/<flow_id>".format(NFVI_NETWORK_C)
+    NFVI_NETWORK_R = "{}/running".format(NFVI_NETWORK)
+    NFVI_NETWORK_R_FLOW = "{}/flows".format(NFVI_NETWORK_R)
+    NFVI_NETWORK_R_FLOW_ID = "{}/flows/<flow_id>".format(NFVI_NETWORK_R)
+    NFVI_NETWORK_TOPO = "{}/nodes".format(NFVI_NETWORK)
     # - Nodes
     NFVI_NODE_ID = "{}/<node_id>".format(NFVI_NODE)
     NFVI_NODE_ISOLATE = "{}/isolate".format(NFVI_NODE_ID)

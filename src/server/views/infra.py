@@ -23,6 +23,7 @@ from flask import current_app
 from flask import request
 from infra.node import Node
 from infra.node import NodeSSHException
+from sdn.odl.carbon import ODLCarbon
 from server.endpoints import VnsfoEndpoints as endpoints
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
@@ -32,17 +33,91 @@ import bson
 
 
 LOGGER = setup_custom_logger(__name__)
+odl = ODLCarbon()
 
 
 nfvo_views = Blueprint("nfvo_infra_views", __name__)
 
 
-@nfvo_views.route(endpoints.NFVI_FLOW, methods=["GET"])
-def fetch_devices_flowtable():
-    Exception.not_implemented()
+@nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["GET"])
+@nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW_ID, methods=["GET"])
+def get_network_devices_config_flows(flow_id=None):
+    """
+    Config in the vNSFO: DB
+    """
+    flows = current_app.mongo.get_flows(flow_id)
+    flows_data = dict()
+    flows_data["flow_id"] = flow_id
+    flows_data["flow"] = flows
+    return HttpResponse.json(HttpCode.OK, flows_data)
 
 
-@nfvo_views.route(endpoints.NFVI_TOPO, methods=["GET"])
+@nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW, methods=["GET"])
+@nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW_ID, methods=["GET"])
+def get_network_devices_running_flows(flow_id=None):
+    """
+    Config in the vNSFO: ODL
+    """
+    flows, result, details = odl.get_config_flows(flow_id)
+    #flows = odl.get_running_flows(flow_id)
+    flows_data = dict()
+    flows_data["flow_id"] = flow_id
+    flows_data["flow"] = flows
+    flows_data["result"] = result
+    flows_data["details"] = details
+    return HttpResponse.json(HttpCode.OK, flows_data)
+
+
+@nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["POST"])
+@nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW_ID, methods=["POST"])
+def store_network_devices_config_flow(flow_id=None, flow=None, reply=None):
+    """
+    Config in the vNSFO: DB
+    """
+    exp_ct = "application/xml"
+    if exp_ct not in request.headers.get("Content-Type", ""):
+        Exception.invalid_content_type("Expected: {}".format(exp_ct))
+    flow = request.data
+    current_app.mongo.store_flows(odl.default_device, odl.default_table, flow_id, flow)
+    flow_data = dict()
+    # XXX Find in "flow" (<id></id>)
+    flow_data["flow_id"] = flow_id if flow_id else ""
+    flow_data["result"] = reply[0]
+    flow_data["details"] = reply[1]
+    return HttpResponse.json(HttpCode.OK, flow_data)
+
+
+@nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW, methods=["POST"])
+@nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW_ID, methods=["POST"])
+def store_network_devices_running_flow(flow_id=None, flow=None):
+    """
+    Running in the vNSFO: ODL
+    """
+    exp_ct = "application/xml"
+    if exp_ct not in request.headers.get("Content-Type", ""):
+        Exception.invalid_content_type("Expected: {}".format(exp_ct))
+    flow = request.data
+    # If no parameter or body is passed, get the configuration from the DB
+    if flow_id is None and flow is None:
+        flow = get_network_devices_running_flows()
+    # Storing the flows as part of the running configuration also saves these into the DB
+    result, details = odl.store_config_flow(flow_id, flow, odl.default_device, odl.default_table)
+    return store_network_devices_config_flow(flow_id, flow, [result, details])
+
+
+@nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["DELETE"])
+@nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW_ID, methods=["DELETE"])
+def delete_network_devices_flow(flow_id=None):
+    result, details = odl.delete_config_flows(flow_id)
+    current_app.mongo.delete_flows(odl.default_device, odl.default_table, flow_id)
+    flow_data = dict()
+    flow_data["flow_id"] = flow_id
+    flow_data["result"] = result
+    flow_data["details"] = details
+    return HttpResponse.json(HttpCode.OK, flow_data)
+
+
+@nfvo_views.route(endpoints.NFVI_NETWORK_TOPO, methods=["GET"])
 def fetch_network_topology():
     Exception.not_implemented()
 

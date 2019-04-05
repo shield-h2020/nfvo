@@ -20,6 +20,7 @@ from bson.objectid import ObjectId
 from core.config import FullConfParser
 from core.log import setup_custom_logger
 from db.models.auth.auth import PasswordAuth, KeyAuth
+from db.models.infra.network_flow import NetworkFlow
 from db.models.infra.node import Node
 from db.models.isolation.isolation_policy import InterfaceDown
 from db.models.isolation.isolation_policy import DeleteFlow
@@ -69,11 +70,18 @@ class DBManager():
                 self.auth_source)
         me_connect(host=self.auth_db_address)
         self.collections = [
-                "resource.vnsf",
-                "resource.vnsf.action",
-                "topology.physical",
-                "topology.slice",
-                "topology.slice.sdn"
+                "delete_flow",
+                "interface_down",
+                "isolation_record",
+                "key_auth",
+                "network",
+                "node",
+                "openstack_isolation",
+                "openstack_termination",
+                "password_auth",
+                "shutdown",
+                "vdu",
+                "vnf_action_request"
         ]
         self.client = pymongo.MongoClient(self.address, self.port)
         self._first_setup()
@@ -159,6 +167,57 @@ class DBManager():
         else:
             nodes = Node.objects(physical=physical)
         return self.__format_nodes(nodes)
+
+    def get_flows(self, flow_id=None):
+        """
+        Get flow according to an ID or multiple flows as saved previously.
+        """
+        if flow_id is None:
+            flows = NetworkFlow.objects(flow_id=flow_id)
+        else:
+            flows = NetworkFlow.objects()
+        return flows
+
+    def store_flows(self, device_id, table_id, flow_id, flow):
+        """
+        Stores the flow or multiple flows and associated data.
+        """
+        try:
+            flows = NetworkFlow.objects(device_id=device_id,
+                                        table_id=table_id,
+                                        flow_id=flow_id,
+                                        flow=flow)
+            flows.save()
+        except (OperationError, ValidationError):
+            # Rolling back
+            flows.delete()
+            e = "Cannot store network information (flows)"
+            raise Exception(e)
+        return str(flows.flow_id)
+
+    def delete_flows(self, device_id, table_id, flow_id=None, date=None):
+        """
+        Stores the flow or multiple flows and associated data.
+        """
+        try:
+            if flow_id is None and date is None:
+                flows = NetworkFlow.objects(device_id=device_id,
+                                            table_id=table_id)
+            else if flow_id is None and date is not None:
+                flows = NetworkFlow.objects(device_id=device_id,
+                                            table_id=table_id,
+                                            date=date)
+            else if flow_id is not None and date is None:
+                flows = NetworkFlow.objects(device_id=device_id,
+                                            table_id=table_id,
+                                            flow_id=flow_id)
+            flows.delete()
+        except (OperationError, ValidationError):
+            # Rolling back
+            flows.delete()
+            e = "Cannot delete network information (flows)"
+            raise Exception(e)
+        return str(flow_id)
 
     def get_nodes(self, node_id=None):
         """
