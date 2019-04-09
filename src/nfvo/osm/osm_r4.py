@@ -598,12 +598,13 @@ class OSMR4():
         instance_url = url.replace("<ns_instance_id>", nsi_id)
         LOGGER.info(nsi_id)
         r4_payload = {
+            "member_vnf_index": "1",
             "primitive": payload["action"],
             "primitive_params": payload["params"]}
         resp = requests.post(
             instance_url,
             headers=self.headers,
-            data=r4_payload,
+            data=yaml.dump(r4_payload),
             verify=False)
         LOGGER.info("POST TO URL: ==================·····")
         LOGGER.info(instance_url)
