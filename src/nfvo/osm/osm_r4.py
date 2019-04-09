@@ -292,7 +292,7 @@ class OSMR4():
         while not action_submitted:
             time.sleep(self.monitoring_interval)
             timeout = timeout-self.monitoring_interval
-            print("Checking {0} {1} {2}".format(instance_id, action, params))
+            # print("Checking {0} {1} {2}".format(instance_id, action, params))
             try:
                 nss = self.get_ns_r4_instances(instance_id)
             except OSMException:
@@ -316,7 +316,7 @@ class OSMR4():
                     #     vnsf_instance["vnfr_id"], action, params)
                     payload = {"action": action,
                                "params": params}
-                    output = self.exec_action_on_vnf(payload)
+                    output = self.exec_action_on_vnf(payload, instance_id)
                     output = "{}"
                     if action is not None:
                         app.mongo.store_vnf_action(vnsf_instance,
@@ -581,7 +581,7 @@ class OSMR4():
         return target_vim
 
     @check_authorization
-    def exec_action_on_vnf(self, payload):
+    def exec_action_on_vnf(self, payload, instance_id=None):
         # JSON
         # resp = requests.post(
         #        endpoints.VNF_ACTION_EXEC,
@@ -592,24 +592,30 @@ class OSMR4():
         # Encoded
         # payload = payload.replace('\\"', '"').strip()
         # Find out which ns_id holds the vnf:
-        nsis = self.get_ns_instances()["ns"]
-        nsi_id = None
-        for nsi in nsis:
-            for vnfi in nsi["constituent_vnf_instances"]:
-                print(vnfi)
-                if vnfi["vnfr_id"] == payload["vnfr_id"]:
-                    nsi_id = nsi["instance_id"]
+        nsi = self.get_ns_instances(instance_id)["ns"][0]
+        nsi_id = nsi["instance_id"]
         url = self.exec_action_url
-        url.replace("<ns_instance_id>", nsi_id)
+        instance_url = url.replace("<ns_instance_id>", nsi_id)
+        LOGGER.info(nsi_id)
         r4_payload = {
             "primitive": payload["action"],
             "primitive_params": payload["params"]}
         resp = requests.post(
-            url,
+            instance_url,
             headers=self.headers,
             data=r4_payload,
             verify=False)
-        # output = json.loads(resp.text)
+        LOGGER.info("POST TO URL: ==================·····")
+        LOGGER.info(instance_url)
+        LOGGER.info("HEADERS: ======================·····")
+        LOGGER.info(self.headers)
+        LOGGER.info("WITH PAYLOAD: =================·····")
+        LOGGER.info(r4_payload)
+        LOGGER.info("RESPONSE TEXT: ================·····")
+        LOGGER.info(resp.text)
+        LOGGER.info("RESPONSE STATUS CODE: =========·····")
+        LOGGER.info(resp.status_code)
+        LOGGER.info("===============================·····")
         output = resp.text
         return output
 
