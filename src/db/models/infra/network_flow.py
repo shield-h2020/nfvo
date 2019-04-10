@@ -15,6 +15,7 @@
 # limitations under the License.
 
 
+from mongoengine import BooleanField
 from mongoengine import DateTimeField
 from mongoengine import Document
 from mongoengine import IntField
@@ -32,3 +33,4 @@ class NetworkFlow(Document):
     table_id = IntField(required=True)
     flow_id = StringField(required=True)
     flow = StringField(required=True)
+    trusted = BooleanField(default=False, required=True)

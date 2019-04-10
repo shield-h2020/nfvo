@@ -21,19 +21,17 @@ from flask import abort
 from flask import Blueprint
 from flask import current_app
 from flask import request
+from infra.network import Network
 from infra.node import Node
 from infra.node import NodeSSHException
-from sdn.odl.carbon import ODLCarbon
 from server.endpoints import VnsfoEndpoints as endpoints
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
-from tm.tm_client import TMClient
 
 import bson
 
 
 LOGGER = setup_custom_logger(__name__)
-odl = ODLCarbon()
 
 
 nfvo_views = Blueprint("nfvo_infra_views", __name__)
@@ -41,11 +39,11 @@ nfvo_views = Blueprint("nfvo_infra_views", __name__)
 
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["GET"])
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW_ID, methods=["GET"])
-def get_network_devices_config_flows(flow_id=None):
+def get_network_device_config_flows(flow_id=None):
     """
     Config in the vNSFO: DB
     """
-    flows = current_app.mongo.get_flows(flow_id)
+    flows = current_app.mongo.get_flows({"flow_id": flow_id, "trusted": True})
     flows_data = dict()
     flows_data["flow_id"] = flow_id
     flows_data["flow"] = flows
@@ -54,72 +52,67 @@ def get_network_devices_config_flows(flow_id=None):
 
 @nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW, methods=["GET"])
 @nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW_ID, methods=["GET"])
-def get_network_devices_running_flows(flow_id=None):
+def get_network_device_running_flows(flow_id=None):
     """
     Config in the vNSFO: ODL
     """
-    flows, result, details = odl.get_config_flows(flow_id)
-    #flows = odl.get_running_flows(flow_id)
-    flows_data = dict()
-    flows_data["flow_id"] = flow_id
-    flows_data["flow"] = flows
-    flows_data["result"] = result
-    flows_data["details"] = details
+    flows_data = Network().get_network_device_running_flows(flow_id)
+    print("******* flows_data = " + str(flows_data))
     return HttpResponse.json(HttpCode.OK, flows_data)
 
 
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["POST"])
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW_ID, methods=["POST"])
-def store_network_devices_config_flow(flow_id=None, flow=None, reply=None):
+def store_network_device_config_flow(flow_id=None, flow=None, trusted=False, reply=None):
     """
     Config in the vNSFO: DB
     """
     exp_ct = "application/xml"
-    if exp_ct not in request.headers.get("Content-Type", ""):
+    header_ct = request.headers.get("Content-Type", "")
+    # Internall calls will come from other methods and provide reply from them
+    # In such situations, the Content-Type will be defined internally
+    # Otherwise, it may be fille from a previous request and be wrong
+    if reply is None and header_ct is not None and exp_ct not in header_ct:
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
     flow = request.data
-    current_app.mongo.store_flows(odl.default_device, odl.default_table, flow_id, flow)
-    flow_data = dict()
-    # XXX Find in "flow" (<id></id>)
-    flow_data["flow_id"] = flow_id if flow_id else ""
-    flow_data["result"] = reply[0]
-    flow_data["details"] = reply[1]
+    # XXX UNCOMMENT
+#    current_app.mongo.store_flows(odl.default_device, odl.default_table, flow_id, flow, trusted)
+    flow_data = Network().store_network_device_config_flow(flow_id, flow)
     return HttpResponse.json(HttpCode.OK, flow_data)
 
 
 @nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW, methods=["POST"])
 @nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW_ID, methods=["POST"])
-def store_network_devices_running_flow(flow_id=None, flow=None):
+def store_network_device_running_flow(flow_id=None, flow=None, internal=False):
     """
     Running in the vNSFO: ODL
     """
     exp_ct = "application/xml"
-    if exp_ct not in request.headers.get("Content-Type", ""):
+    header_ct = request.headers.get("Content-Type", "")
+    # Internall calls will come from other methods and provide a specific flag
+    # In such situations, the Content-Type will be defined internally
+    if not internal and header_ct is not None and exp_ct not in header_ct:
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
-    flow = request.data
-    # If no parameter or body is passed, get the configuration from the DB
-    if flow_id is None and flow is None:
-        flow = get_network_devices_running_flows()
-    # Storing the flows as part of the running configuration also saves these into the DB
-    result, details = odl.store_config_flow(flow_id, flow, odl.default_device, odl.default_table)
-    return store_network_devices_config_flow(flow_id, flow, [result, details])
+    if not internal:
+        flow = request.data
+    Network().store_network_device_running_flow(flow_id, flow)
+    # Trigger attestation right after SDN rules are inserted
+    last_trusted_flow = get_last_network_device_config_flow()
+    print("last_trusted_flow = " + str(last_trusted_flow))
+    attest_data = Network().attest_and_revert_switch(last_trusted_flow)
+    # Save flows in configuration, indicating whether these keep the trusted state or not
+    is_device_trusted = True if attest_data.get("result", "") == "flow_trusted" else False
+    store_network_devices_config_flow(flow_id, flow, is_device_trusted, flow_data)
+    return HttpResponse.json(HttpCode.OK, flow_data)
 
 
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["DELETE"])
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW_ID, methods=["DELETE"])
-def delete_network_devices_flow(flow_id=None):
-    result, details = odl.delete_config_flows(flow_id)
-    current_app.mongo.delete_flows(odl.default_device, odl.default_table, flow_id)
-    flow_data = dict()
-    flow_data["flow_id"] = flow_id
-    flow_data["result"] = result
-    flow_data["details"] = details
+def delete_network_device_flow(flow_id=None):
+    # XXX UNCOMMENT
+#    current_app.mongo.delete_flows(odl.default_device, odl.default_table, flow_id)
+    flow_data = Network().delete_network_device_flow(flow_id)
     return HttpResponse.json(HttpCode.OK, flow_data)
-
-
-@nfvo_views.route(endpoints.NFVI_NETWORK_TOPO, methods=["GET"])
-def fetch_network_topology():
-    Exception.not_implemented()
 
 
 @nfvo_views.route(endpoints.NFVI_NODE_ID, methods=["DELETE"])
@@ -235,7 +228,11 @@ def register_node():
     exp_ct = "application/json"
     if exp_ct not in request.headers.get("Content-Type", ""):
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
-    node_data = request.get_json()
+    node_data = request.get_json(silent=True)
+    print("node_data = " + str(node_data))
+    if node_data is None:
+        Exception.improper_usage("Body content does not follow type: {0}".format(
+            exp_ct))
     missing_params = check_node_params(node_data)
     if len(missing_params) > 0:
         Exception.improper_usage("Missing node parameters: {0}".format(
@@ -256,9 +253,27 @@ def register_node():
         Exception.improper_usage("Missing termination parameters: {0}".format(
             ", ".join(missing_termination_params)))
     node_id = current_app.mongo.store_node_information(node_data)
-    trust_monitor_client = TMClient()
-    trust_monitor_client.register_node(node_data)
+    print("FLOWS BEFORE UNTRUSTED CHANGE --> " + str(get_network_device_running_flows().response))
+    # Save the proper flows in order to revert
+    # XXX REMOVE (REMOVING & INSERTING BAD FLOWS BEFORE TO FORCE TRUST=FALSE)
+    # THIS WOULD BE DONE MANUALLY
+    delete_network_device_flow("L2switch-0")
+    store_network_device_running_flow("L2switch-0", '<flow xmlns="urn:opendaylight:flow:inventory"><id>L2switch-0</id><hard-timeout>10</hard-timeout><idle-timeout>5</idle-timeout><cookie>3098476543630901248</cookie><instructions><instruction><order>0</order><apply-actions><action><order>0</order><output-action><max-length>65535</max-length><output-node-connector>NORMAL</output-node-connector></output-action></action></apply-actions></instruction></instructions><priority>10000</priority><flow-statistics xmlns="urn:opendaylight:flow:statistics"><packet-count>0</packet-count><byte-count>0</byte-count><duration><nanosecond>42111111</nanosecond><second>2064</second></duration></flow-statistics><table_id>0</table_id></flow>', True)
+    print("FLOWS AFTER UNTRUSTED CHANGE --> " + str(get_network_device_running_flows().response))
+    if "switch" in node_data.get("driver", "").lower():
+        Network().attest_and_revert_switch()
     return HttpResponse.json(HttpCode.OK, {"node_id": node_id})
+
+
+def get_last_network_device_config_flow():
+    flows = current_app.mongo.get_flows({"trusted": True})
+    print("flows -----> " + str(flows))
+    flow = flows[0] if len(flows) > 0 else None
+    print("flow -----> " + str(flow))
+    flow_data = dict()
+    flow_data["flow_id"] = flow_id
+    flow_data["flow"] = flow
+    return HttpResponse.json(HttpCode.OK, flow_data)
 
 
 def check_isolation_params(isolation_policy):

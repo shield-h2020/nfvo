@@ -41,6 +41,7 @@ class ODLCarbon():
     def __init__(self):
         config = configparser.ConfigParser()
         config.read("{0}conf/sdn.conf".format(CONFIG_PATH))
+        # Controller
         controller_category = config["controller"]
         self.base_url = "{0}://{1}:{2}".format(
             controller_category["protocol"],
@@ -49,10 +50,14 @@ class ODLCarbon():
         self.headers = {"Accept": "application/xml"}
         self.username = controller_category["username"]
         self.password = controller_category["password"]
-        # Default values
+        # Infrastructure
         infra_category = config["infrastructure"]
+        ## Default values
         self.default_device = infra_category["default_device"]
         self.default_table = infra_category["default_table"]
+        # General
+        general_category = config["general"]
+        self.push_delay = int(general_category["push_delay"])
         # ODL endpoints
         self.flows_config_url = "/restconf/config/opendaylight-inventory:nodes/node/{}/flow-node-inventory:table/{}"
         self.flow_config_url = "{}/flow/{}".format(self.flows_config_url, "{}")
@@ -79,8 +84,6 @@ class ODLCarbon():
         details = response.text if "error-message" in response.text else ""
         return (flows, result, details)
 
-        return response.text
-
     def get_running_flows(self, flow_id=None):
         # Query information for all flows or for specific flow from the switch
         if flow_id is None:
@@ -96,7 +99,10 @@ class ODLCarbon():
                                     headers=self.headers,
                                     auth=(self.username, self.password),
                                     verify=False)
-            return response.text
+            flows = "" if "error-message" in response.text else response.text
+            result = "success" if response.status_code == requests.status_codes.codes.OK else "failure"
+            details = response.text if "error-message" in response.text else ""
+            return (flows, result, details)
         except Exception as e:
             raise ODLException(e)
 

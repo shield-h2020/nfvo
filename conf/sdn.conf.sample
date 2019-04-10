@@ -1,3 +1,7 @@
+[general]
+    # Delay between pushing any rule and attesting (in milliseconds)
+    push_delay = 3000
+
 [controller]
     protocol = http
     host = {{sdn_controller_ip}}

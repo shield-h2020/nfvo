@@ -168,17 +168,18 @@ class DBManager():
             nodes = Node.objects(physical=physical)
         return self.__format_nodes(nodes)
 
-    def get_flows(self, flow_id=None):
+    def get_flows(self, filters={}):
         """
         Get flow according to an ID or multiple flows as saved previously.
+        Flows are returned ordered - from newest first to oldest in the end
         """
-        if flow_id is None:
-            flows = NetworkFlow.objects(flow_id=flow_id)
+        if filters is not None:
+            flows = NetworkFlow.objects(filters).sort("date", pymongo.DESCENDING)
         else:
-            flows = NetworkFlow.objects()
+            flows = NetworkFlow.objects().sort("date", pymongo.DESCENDING)
         return flows
 
-    def store_flows(self, device_id, table_id, flow_id, flow):
+    def store_flows(self, device_id, table_id, flow_id, flow, trusted=False):
         """
         Stores the flow or multiple flows and associated data.
         """
@@ -186,7 +187,8 @@ class DBManager():
             flows = NetworkFlow.objects(device_id=device_id,
                                         table_id=table_id,
                                         flow_id=flow_id,
-                                        flow=flow)
+                                        flow=flow,
+                                        trusted=trusted)
             flows.save()
         except (OperationError, ValidationError):
             # Rolling back
@@ -203,11 +205,11 @@ class DBManager():
             if flow_id is None and date is None:
                 flows = NetworkFlow.objects(device_id=device_id,
                                             table_id=table_id)
-            else if flow_id is None and date is not None:
+            elif flow_id is None and date is not None:
                 flows = NetworkFlow.objects(device_id=device_id,
                                             table_id=table_id,
                                             date=date)
-            else if flow_id is not None and date is None:
+            elif flow_id is not None and date is None:
                 flows = NetworkFlow.objects(device_id=device_id,
                                             table_id=table_id,
                                             flow_id=flow_id)
