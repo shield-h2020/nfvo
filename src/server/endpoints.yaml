@@ -96,29 +96,167 @@ paths:
             $ref: "#/definitions/EndPoints"
         <<: *API_RESPONSES
 
-  /nfvi/flowtable:
+  /nfvi/network/config/flows:
     get:
       tags:
         - nfvi
-      summary: Provides flow tables in network devices
+      summary: Provides information on flows in DB
       description: >-
-        TBD. Provides the contents of the flow tables of the SDN controller.
-      operationId: getDevicesFlowtable
+        Get data from a given flow (or all flows) in the default switch and table
+        This is retrieved from the internal database, not from the controller
+      operationId: getNetworkConfigFlows
       produces:
         - application/json
-      responses: *API_RESPONSES
+      responses:
+        200:
+          description: Flow information
+          schema:
+            $ref: "#/definitions/GetNetworkFlowOutput"
+        500:
+          description: Error when retrieving data from DB
 
-  /nfvi/network:
+  /nfvi/network/config/flows/{flow_id}:
     get:
       tags:
         - nfvi
-      summary: Provides network topology
+      summary: Provides information on flow(s) in DB
       description: >-
-        TBD. Returns the topology of the network as known to the VIM.
-      operationId: getNetworkTopology
+        Get data from a given flow (or all flows) in the default switch and table
+        This is retrieved from the internal database, not from the controller
+      operationId: getNetworkConfigFlow
       produces:
         - application/json
-      responses: *API_RESPONSES
+      parameters:
+        - name: flow_id
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: Flow information
+          schema:
+            $ref: "#/definitions/GetNetworkFlowOutput"
+        500:
+          description: Error when retrieving data from DB
+
+  /nfvi/network/running/flows:
+    get:
+      tags:
+        - nfvi
+      summary: Provides information on flows in the controller
+      description: >-
+        Get data from a given flow (or all flows) in the default switch and table
+        This is retrieved from the internal database, not from the controller
+      operationId: getNetworkRunningFlows
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Flow information
+          schema:
+            $ref: "#/definitions/GetNetworkFlowOutput"
+        500:
+          description: Error when retrieving data from the controller
+    post:
+      tags:
+        - nfvi
+      summary: Push flows to the controller
+      description: >-
+        Submit SDN flows to the default switch and table
+      operationId: postNetworkRunningFlows
+      parameters:
+        - in: body
+          name: body
+          description: The body of the request
+          required: true
+          schema:
+            oneOf:
+              - $ref: "#/definitions/PostNetworkRunningFlow"
+      responses:
+        200:
+          description: Flow information
+          schema:
+            $ref: "#/definitions/GetNetworkFlowOutput"
+        500:
+          description: Error when pushing data to the controller
+    delete:
+      tags:
+        - nfvi
+      summary: Delete flows from the controller
+      description: >-
+        Delete all flows from the default switch and table
+      operationId: deleteNetworkRunningFlows
+      responses:
+        200:
+          description: Flow information
+          schema:
+            $ref: "#/definitions/GetNetworkFlowOutput"
+
+  /nfvi/network/running/flows/{flow_id}:
+    get:
+      tags:
+        - nfvi
+      summary: Provides information on flow in controller
+      description: >-
+        Get data from a given flow (or all flows) in the default switch and table
+        This is retrieved from the controller, not from the internal database
+      operationId: getNetworkRunningFlow
+      produces:
+        - application/json
+      parameters:
+        - name: flow_id
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: Flow information
+          schema:
+            $ref: "#/definitions/GetNetworkFlowOutput"
+        500:
+          description: Error when retrieving data from the controller
+    post:
+      tags:
+        - nfvi
+      summary: Push flows to the controller
+      description: >-
+        Submit SDN flows to the default switch and table
+      operationId: postNetworkRunningFlow
+      parameters:
+        - name: flow_id
+          in: path
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: The body of the request
+          required: true
+          schema:
+            $ref: "#/definitions/PostNetworkRunningFlow"
+      responses:
+        200:
+          description: Flow information
+          schema:
+            $ref: "#/definitions/GetNetworkFlowOutput"
+        500:
+          description: Error when pushing data to the controller
+    delete:
+      tags:
+        - nfvi
+      summary: Delete flows from the controller
+      description: >-
+        Delete all flows from the default switch and table
+      operationId: deleteNetworkRunningFlow
+      parameters:
+        - name: flow_id
+          in: path
+          required: true
+          type: string
+      responses:
+        200:
+          description: Flow information
+          schema:
+            $ref: "#/definitions/GetNetworkFlowOutput"
 
   /nfvi/node/{node_id}:
     get:
@@ -386,7 +524,7 @@ paths:
       summary: Provides available NSs
       description: >-
         Returns the available NSs.
-      operationId: getAvailableNss
+      operationId: getAvailableNssRelease2
       produces:
         - application/json
       responses:
@@ -403,7 +541,7 @@ paths:
       summary: Provides available NSs (OSM R4)
       description: >-
         Returns the available NSs.
-      operationId: getAvailableNss
+      operationId: getAvailableNssRelease4
       produces:
         - application/json
       responses:
@@ -459,7 +597,7 @@ paths:
             - $ref: "#/definitions/InstantiateNSImplicitInput"
       description: >-
         Instantiates a NS
-      operationId: instantiateNS
+      operationId: instantiateNSRelease2
       produces:
         - application/json
       responses:
@@ -487,7 +625,7 @@ paths:
             - $ref: "#/definitions/InstantiateNSImplicitInput"
       description: >-
         Instantiates a NS
-      operationId: instantiateNS
+      operationId: instantiateNSRelease4
       produces:
         - application/json
       responses:
@@ -521,7 +659,7 @@ paths:
       summary: Provides running NSs
       description: >-
         Returns the instantiated NS.
-      operationId: getDeployedNss
+      operationId: getDeployedNssRelease2
       produces:
         - application/json
       responses:
@@ -538,7 +676,7 @@ paths:
       summary: Provides running NSs
       description: >-
         Returns the instantiated NS.
-      operationId: getDeployedNss
+      operationId: getDeployedNssRelease4
       produces:
         - application/json
       responses:
@@ -553,7 +691,7 @@ paths:
       parameters:
         - in: path
           name: instance_id
-          required: false
+          required: true
           schema:
             type: string
           description: Instance id or name
@@ -563,6 +701,23 @@ paths:
       description: >-
         Returns the specific instantiated NS.
       operationId: getDeployedNssPerId
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Request succeeded
+          schema:
+            $ref: "#/definitions/RunningNsOutput"
+        <<: *API_RESPONSES
+
+  /ns/r2/running:
+    get:
+      tags:
+        - ns
+      summary: Provides specific running NSs
+      description: >-
+        Returns the specific instantiated NS.
+      operationId: getDeployedNssRelease2
       produces:
         - application/json
       responses:
@@ -586,7 +741,7 @@ paths:
       summary: Provides specific running NSs
       description: >-
         Returns the specific instantiated NS.
-      operationId: getDeployedNssPerId
+      operationId: getDeployedNssPerIdRelease2
       produces:
         - application/json
       responses:
@@ -610,7 +765,7 @@ paths:
       summary: Provides specific running NSs
       description: >-
         Returns the specific instantiated NS.
-      operationId: getDeployedNssPerId
+      operationId: getDeployedNssPerIdRelease4
       produces:
         - application/json
       responses:
@@ -619,7 +774,6 @@ paths:
           schema:
             $ref: "#/definitions/RunningNsOutput"
         <<: *API_RESPONSES
-
     delete:
       parameters:
         - in: path
@@ -674,7 +828,7 @@ paths:
       summary: Onboards a local package into NFVO
       description: >-
         Uploads a locally stored package for a NS or vNSF into the NFVO.
-      operationId: onboardLocalPackage
+      operationId: onboardLocalPackageRelease2
       consumes:
         - multipart/form-data
       produces:
@@ -698,7 +852,7 @@ paths:
       summary: Onboards a local package into NFVO
       description: >-
         Uploads a locally stored package for a NS or vNSF into the NFVO.
-      operationId: onboardLocalPackage
+      operationId: onboardLocalPackageRelease4
       consumes:
         - multipart/form-data
       produces:
@@ -748,7 +902,7 @@ paths:
       summary: Onboards a remotely stored package into NFVO
       description: >-
         Uploads a remotely stored package for a NS or vNSF into the NFVO.
-      operationId: onboardRemotePackage
+      operationId: onboardRemotePackageRelease2
       consumes:
         - application/json
       produces:
@@ -774,7 +928,7 @@ paths:
       summary: Onboards a remotely stored package into NFVO
       description: >-
         Uploads a remotely stored package for a NS or vNSF into the NFVO.
-      operationId: onboardRemotePackage
+      operationId: onboardRemotePackageRelease4
       consumes:
         - application/json
       produces:
@@ -822,7 +976,7 @@ paths:
       summary: Removes package from vNSFO
       description: >-
         Removes the package of a NS or vNSF from the vNSFO.
-      operationId: removePackage
+      operationId: removePackageRelease2
       produces:
         - application/json
       parameters:
@@ -844,7 +998,7 @@ paths:
       summary: Removes package from vNSFO
       description: >-
         Removes the package of a NS or vNSF from the vNSFO.
-      operationId: removePackage
+      operationId: removePackageRelease4
       produces:
         - application/json
       parameters:
@@ -875,6 +1029,7 @@ paths:
           schema:
             $ref: "#/definitions/VimListOutput"
         <<: *API_RESPONSES
+
   /vim/image:
     get:
       tags:
@@ -944,7 +1099,7 @@ paths:
       summary: Provides available vNSFs
       description: >-
         Returns the available vNSFs.
-      operationId: getAvailableVnsfs
+      operationId: getAvailableVnsfsRelease2
       produces:
         - application/json
       responses:
@@ -961,7 +1116,7 @@ paths:
       summary: Provides available vNSFs
       description: >-
         Returns the available vNSFs.
-      operationId: getAvailableVnsfs
+      operationId: getAvailableVnsfsRelease4
       produces:
         - application/json
       responses:
@@ -995,7 +1150,7 @@ paths:
       summary: Provides running vNSFs
       description: >-
         Returns the instantiated vNSFs.
-      operationId: getDeployedVnsfs
+      operationId: getDeployedVnsfsRelease2
       produces:
         - application/json
       responses:
@@ -1012,7 +1167,7 @@ paths:
       summary: Provides running vNSFs
       description: >-
         Returns the instantiated vNSFs.
-      operationId: getDeployedVnsfs
+      operationId: getDeployedVnsfsRelease4
       produces:
         - application/json
       responses:
@@ -1046,7 +1201,7 @@ paths:
       summary: Provides the deployed vNSFs per tenant
       description: >-
         TBD. Returns the deployed vNSFs per tenant.
-      operationId: getDeployedVnsfsPerTenant
+      operationId: getDeployedVnsfsPerTenantRelease2
       produces:
         - application/json
       parameters:
@@ -1063,7 +1218,7 @@ paths:
       summary: Provides the deployed vNSFs per tenant
       description: >-
         TBD. Returns the deployed vNSFs per tenant.
-      operationId: getDeployedVnsfsPerTenant
+      operationId: getDeployedVnsfsPerTenantRelease4
       produces:
         - application/json
       parameters:
@@ -1106,7 +1261,7 @@ paths:
       summary: Executes pre-defined action from a specific vNSF
       description: >-
         Triggers the remote execution of data into a specific vNSF.
-      operationId: executeVnsfAction
+      operationId: executeVnsfActionRelease2
       consumes:
         - application/json
       produces:
@@ -1132,7 +1287,7 @@ paths:
       summary: Executes pre-defined action from a specific vNSF
       description: >-
         Triggers the remote execution of data into a specific vNSF.
-      operationId: executeVnsfAction
+      operationId: executeVnsfActionRelease4
       consumes:
         - application/json
       produces:
@@ -1378,27 +1533,14 @@ definitions:
             type: string
             example: rule1
 
-  InstantiateNSOutput:
-    type: object
+  PostNetworkRunningFlow:
+    type: body
+    required:
+      - flow
     properties:
-      ns_name:
+      flow:
         type: string
-      instance_name:
-        type: string
-      instance_id:
-        type: string
-      vim_id:
-        type: string
-      result:
-        type: string
-      analysis_type:
-        type: string
-      distribution:
-        type: string
-      pcr0:
-        type: string
-      driver:
-        type: string
+        example: <flow xmlns="urn:opendaylight:flow:inventory"><id>L2switch-0</id><hard-timeout>0</hard-timeout><idle-timeout>0</idle-timeout><cookie>3098476543630901248</cookie><instructions><instruction><order>0</order><apply-actions><action><order>0</order><output-action><max-length>65535</max-length><output-node-connector>NORMAL</output-node-connector></output-action></action></apply-actions></instruction></instructions><priority>100</priority><flow-statistics xmlns="urn:opendaylight:flow:statistics"><packet-count>0</packet-count><byte-count>0</byte-count><duration><nanosecond>42000000</nanosecond><second>2064</second></duration></flow-statistics><table_id>0</table_id></flow>
 
   ConfigNssOutput:
     type: object
@@ -1498,23 +1640,26 @@ definitions:
                 type: string
                 example: GET
 
-  PackageOnboardedInput:
+  GetNetworkFlowOutput:
     type: object
     required:
-      - path
+      - flow_id
+      - flow
+      - result
+      - details
     properties:
-      path:
+      flow_id:
         type: string
-        example: /opt/osm_pkg/cirros_vnf.tar.gz
-
-  RegisterNodeOutput:
-    type: object
-    required:
-      - node_id
-    properties:
-      node_id:
+        example: L2switch-0
+      flow:
         type: string
-        example: 48c50c21f6fa26100644
+        example: <flow xmlns="urn:opendaylight:flow:inventory"><id>L2switch-0</id><hard-timeout>0</hard-timeout><idle-timeout>0</idle-timeout><cookie>3098476543630901248</cookie><instructions><instruction><order>0</order><apply-actions><action><order>0</order><output-action><max-length>65535</max-length><output-node-connector>NORMAL</output-node-connector></output-action></action></apply-actions></instruction></instructions><priority>100</priority><flow-statistics xmlns="urn:opendaylight:flow:statistics"><packet-count>0</packet-count><byte-count>0</byte-count><duration><nanosecond>42000000</nanosecond><second>2064</second></duration></flow-statistics><table_id>0</table_id></flow>
+      result:
+        type: string
+        example: installed
+      details:
+        type: string
+        example: ""
 
   GetNodeIdOutput:
     type: object
@@ -1607,6 +1752,46 @@ definitions:
       physical:
         type: boolean
         example: true
+
+  InstantiateNSOutput:
+    type: object
+    properties:
+      ns_name:
+        type: string
+      instance_name:
+        type: string
+      instance_id:
+        type: string
+      vim_id:
+        type: string
+      result:
+        type: string
+      analysis_type:
+        type: string
+      distribution:
+        type: string
+      pcr0:
+        type: string
+      driver:
+        type: string
+
+  PackageOnboardedInput:
+    type: object
+    required:
+      - path
+    properties:
+      path:
+        type: string
+        example: /opt/osm_pkg/cirros_vnf.tar.gz
+
+  RegisterNodeOutput:
+    type: object
+    required:
+      - node_id
+    properties:
+      node_id:
+        type: string
+        example: 48c50c21f6fa26100644
 
   IsolateNodeInput:
     type: object
