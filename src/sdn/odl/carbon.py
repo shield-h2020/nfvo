@@ -19,7 +19,6 @@ import requests
 import urllib3
 
 from core.log import setup_custom_logger
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -52,47 +51,47 @@ class ODLCarbon():
         self.password = controller_category["password"]
         # Infrastructure
         infra_category = config["infrastructure"]
-        ## Default values
+        # Infrastructure - default values
         self.default_device = infra_category["default_device"]
         self.default_table = infra_category["default_table"]
         # General
         general_category = config["general"]
         self.push_delay = int(general_category["push_delay"])
         # ODL endpoints
-        self.flows_config_url = "/restconf/config/opendaylight-inventory:nodes/node/{}/flow-node-inventory:table/{}"
+        self.flows_config_url = "/restconf/config/opendaylight-inventory" \
+                                + ":nodes/node/{}/flow-node-inventory:table/{}"
         self.flow_config_url = "{}/flow/{}".format(self.flows_config_url, "{}")
-        self.flows_oper_url = "/restconf/operational/opendaylight-inventory:nodes/node/{}/flow-node-inventory:table/{}"
+        self.flows_oper_url = "/restconf/operational/opendaylight-inventory" \
+                              + ":nodes/node/{}/flow-node-inventory:table/{}"
         self.flow_oper_url = "{}/flow/{}".format(self.flows_oper_url, "{}")
-
 
     def get_config_flows(self, flow_id=None):
         # Query information for all flows or for specific flow from ODL
         if flow_id is None:
-            flows_config_url = self.flows_config_url.format(self.default_device,
-                                                            self.default_table)
+            flows_config_url = self.flows_config_url.format(
+                    self.default_device, self.default_table)
         else:
-            flows_config_url = self.flow_config_url.format(self.default_device,
-                                                            self.default_table,
-                                                            flow_id)
+            flows_config_url = self.flow_config_url.format(
+                    self.default_device, self.default_table, flow_id)
         flows_config_url = "{}{}".format(self.base_url, flows_config_url)
         response = requests.get(flows_config_url,
                                 headers=self.headers,
                                 auth=(self.username, self.password),
                                 verify=False)
         flows = "" if "error-message" in response.text else response.text
-        result = "success" if response.status_code == requests.status_codes.codes.OK else "failure"
+        result = "success" if response.status_code == \
+            requests.status_codes.codes.OK else "failure"
         details = response.text if "error-message" in response.text else ""
         return (flows, result, details)
 
     def get_running_flows(self, flow_id=None):
         # Query information for all flows or for specific flow from the switch
         if flow_id is None:
-            flows_oper_url = self.flows_oper_url.format(self.default_device,
-                                                            self.default_table)
+            flows_oper_url = self.flows_oper_url.format(
+                    self.default_device, self.default_table)
         else:
-            flows_oper_url = self.flow_oper_url.format(self.default_device,
-                                                            self.default_table,
-                                                            flow_id)
+            flows_oper_url = self.flow_oper_url.format(
+                    self.default_device, self.default_table, flow_id)
         flows_oper_url = "{}{}".format(self.base_url, flows_oper_url)
         try:
             response = requests.get(flows_oper_url,
@@ -100,16 +99,16 @@ class ODLCarbon():
                                     auth=(self.username, self.password),
                                     verify=False)
             flows = "" if "error-message" in response.text else response.text
-            result = "success" if response.status_code == requests.status_codes.codes.OK else "failure"
+            result = "success" if response.status_code == \
+                requests.status_codes.codes.OK else "failure"
             details = response.text if "error-message" in response.text else ""
             return (flows, result, details)
         except Exception as e:
             raise ODLException(e)
 
     def store_config_flow(self, flow_id, flow, device_id=None, table_id=None):
-        flow_config_url = self.flow_config_url.format(self.default_device,
-                                                        self.default_table,
-                                                        flow_id)
+        flow_config_url = self.flow_config_url.format(
+                self.default_device, self.default_table, flow_id)
         flow_config_url = "{}{}".format(self.base_url, flow_config_url)
         self.headers.update({"Content-Type": "application/xml"})
         try:
@@ -118,7 +117,8 @@ class ODLCarbon():
                                     data=flow,
                                     auth=(self.username, self.password),
                                     verify=False)
-            result = "success" if response.status_code == requests.status_codes.codes.CREATED else "failure"
+            result = "success" if response.status_code == \
+                requests.status_codes.codes.CREATED else "failure"
             details = response.text or ""
             if response.status_code == requests.status_codes.codes.OK:
                 details = "Flow is already installed"
@@ -129,19 +129,18 @@ class ODLCarbon():
     def delete_config_flows(self, flow_id=None):
         # Query information for all flows or for specific flow from the switch
         if flow_id is None:
-            flows_config_url = self.flows_config_url.format(self.default_device,
-                                                            self.default_table)
+            flows_config_url = self.flows_config_url.format(
+                    self.default_device, self.default_table)
         else:
-            flows_config_url = self.flow_config_url.format(self.default_device,
-                                                            self.default_table,
-                                                            flow_id)
+            flows_config_url = self.flow_config_url.format(
+                    self.default_device, self.default_table, flow_id)
         flows_config_url = "{}{}".format(self.base_url, flows_config_url)
         try:
-            response = requests.delete(flows_config_url,
-                                    headers=self.headers,
-                                    auth=(self.username, self.password),
-                                    verify=False)
-            result = "success" if response.status_code == requests.status_codes.codes.OK else "failure"
+            response = requests.delete(
+                    flows_config_url, headers=self.headers,
+                    auth=(self.username, self.password), verify=False)
+            result = "success" if response.status_code == \
+                requests.status_codes.codes.OK else "failure"
             details = response.text or ""
             return (result, details)
         except Exception as e:

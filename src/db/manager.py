@@ -174,7 +174,8 @@ class DBManager():
         Flows are returned ordered - from newest first to oldest in the end
         """
         if filters is not None:
-            flows = NetworkFlow.objects(filters).sort("date", pymongo.DESCENDING)
+            flows = NetworkFlow.objects(filters).sort(
+                    "date", pymongo.DESCENDING)
         else:
             flows = NetworkFlow.objects().sort("date", pymongo.DESCENDING)
         return flows

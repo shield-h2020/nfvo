@@ -63,7 +63,8 @@ def get_network_device_running_flows(flow_id=None):
 
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["POST"])
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW_ID, methods=["POST"])
-def store_network_device_config_flow(flow_id=None, flow=None, trusted=False, reply=None):
+def store_network_device_config_flow(flow_id=None, flow=None, trusted=False,
+                                     reply=None):
     """
     Config in the vNSFO: DB
     """
@@ -75,8 +76,9 @@ def store_network_device_config_flow(flow_id=None, flow=None, trusted=False, rep
     if reply is None and header_ct is not None and exp_ct not in header_ct:
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
     flow = request.data
-    # XXX UNCOMMENT
-#    current_app.mongo.store_flows(odl.default_device, odl.default_table, flow_id, flow, trusted)
+    odl = Network().odl
+    current_app.mongo.store_flows(odl.default_device, odl.default_table,
+                                  flow_id, flow, trusted)
     flow_data = Network().store_network_device_config_flow(flow_id, flow)
     return HttpResponse.json(HttpCode.OK, flow_data)
 
@@ -100,17 +102,22 @@ def store_network_device_running_flow(flow_id=None, flow=None, internal=False):
     last_trusted_flow = get_last_network_device_config_flow()
     print("last_trusted_flow = " + str(last_trusted_flow))
     attest_data = Network().attest_and_revert_switch(last_trusted_flow)
-    # Save flows in configuration, indicating whether these keep the trusted state or not
-    is_device_trusted = True if attest_data.get("result", "") == "flow_trusted" else False
-    store_network_devices_config_flow(flow_id, flow, is_device_trusted, flow_data)
-    return HttpResponse.json(HttpCode.OK, flow_data)
+    # Save flows and indicate whether these keep the trusted state or not
+    is_device_trusted = True if attest_data.get("result", "") == \
+        "flow_trusted" else False
+    flow_data = store_network_device_config_flow(
+            flow_id, flow, is_device_trusted, "internal")
+    print("\n\n\n\nstore_network_device_running_flow --->")
+    print("flow_data received = " + str(flow_data))
+    return HttpResponse.json(HttpCode.OK, flow_data.text)
 
 
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["DELETE"])
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW_ID, methods=["DELETE"])
 def delete_network_device_flow(flow_id=None):
-    # XXX UNCOMMENT
-#    current_app.mongo.delete_flows(odl.default_device, odl.default_table, flow_id)
+    odl = Network().odl
+    current_app.mongo.delete_flows(odl.default_device, odl.default_table,
+                                   flow_id)
     flow_data = Network().delete_network_device_flow(flow_id)
     return HttpResponse.json(HttpCode.OK, flow_data)
 
@@ -231,8 +238,8 @@ def register_node():
     node_data = request.get_json(silent=True)
     print("node_data = " + str(node_data))
     if node_data is None:
-        Exception.improper_usage("Body content does not follow type: {0}".format(
-            exp_ct))
+        Exception.improper_usage("Body content does not follow type: {0}"
+                                 .format(exp_ct))
     missing_params = check_node_params(node_data)
     if len(missing_params) > 0:
         Exception.improper_usage("Missing node parameters: {0}".format(
@@ -253,13 +260,16 @@ def register_node():
         Exception.improper_usage("Missing termination parameters: {0}".format(
             ", ".join(missing_termination_params)))
     node_id = current_app.mongo.store_node_information(node_data)
-    print("FLOWS BEFORE UNTRUSTED CHANGE --> " + str(get_network_device_running_flows().response))
+    print("FLOWS BEFORE UNTRUSTED CHANGE --> ")
+    print(str(get_network_device_running_flows().response))
     # Save the proper flows in order to revert
     # XXX REMOVE (REMOVING & INSERTING BAD FLOWS BEFORE TO FORCE TRUST=FALSE)
     # THIS WOULD BE DONE MANUALLY
     delete_network_device_flow("L2switch-0")
+    # XXX IGNORE AND THEN REMOVE
     store_network_device_running_flow("L2switch-0", '<flow xmlns="urn:opendaylight:flow:inventory"><id>L2switch-0</id><hard-timeout>10</hard-timeout><idle-timeout>5</idle-timeout><cookie>3098476543630901248</cookie><instructions><instruction><order>0</order><apply-actions><action><order>0</order><output-action><max-length>65535</max-length><output-node-connector>NORMAL</output-node-connector></output-action></action></apply-actions></instruction></instructions><priority>10000</priority><flow-statistics xmlns="urn:opendaylight:flow:statistics"><packet-count>0</packet-count><byte-count>0</byte-count><duration><nanosecond>42111111</nanosecond><second>2064</second></duration></flow-statistics><table_id>0</table_id></flow>', True)
-    print("FLOWS AFTER UNTRUSTED CHANGE --> " + str(get_network_device_running_flows().response))
+    print("FLOWS AFTER UNTRUSTED CHANGE --> ")
+    print(str(get_network_device_running_flows().response))
     if "switch" in node_data.get("driver", "").lower():
         Network().attest_and_revert_switch()
     return HttpResponse.json(HttpCode.OK, {"node_id": node_id})
@@ -271,7 +281,7 @@ def get_last_network_device_config_flow():
     flow = flows[0] if len(flows) > 0 else None
     print("flow -----> " + str(flow))
     flow_data = dict()
-    flow_data["flow_id"] = flow_id
+    flow_data["flow_id"] = Node().get_flow_id_from_flow(flow)
     flow_data["flow"] = flow
     return HttpResponse.json(HttpCode.OK, flow_data)
 
