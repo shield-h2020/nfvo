@@ -74,7 +74,7 @@ class DBManager():
                 "interface_down",
                 "isolation_record",
                 "key_auth",
-                "network",
+                "network_flow",
                 "node",
                 "openstack_isolation",
                 "openstack_termination",
@@ -174,10 +174,10 @@ class DBManager():
         Flows are returned ordered - from newest first to oldest in the end
         """
         if filters is not None:
-            flows = NetworkFlow.objects(filters).sort(
-                    "date", pymongo.DESCENDING)
+            # Expand filters from dictionary to parameters for mongoengine
+            flows = NetworkFlow.objects(**filters).order_by("-date")
         else:
-            flows = NetworkFlow.objects().sort("date", pymongo.DESCENDING)
+            flows = NetworkFlow.objects().order_by("-date")
         return flows
 
     def store_flows(self, device_id, table_id, flow_id, flow, trusted=False):
@@ -185,11 +185,15 @@ class DBManager():
         Stores the flow or multiple flows and associated data.
         """
         try:
-            flows = NetworkFlow.objects(device_id=device_id,
-                                        table_id=table_id,
-                                        flow_id=flow_id,
-                                        flow=flow,
-                                        trusted=trusted)
+            print("storing flows -> to store flow_id = " + str(flow_id))
+            print("storing flows -> to store flow = " + str(flow))
+            print("storing flows -> to store trusted = " + str(trusted))
+            flows = NetworkFlow(device_id=device_id,
+                                table_id=table_id,
+                                flow_id=flow_id,
+                                flow=flow,
+                                trusted=trusted)
+            print("storing flows = " + str(flows))
             flows.save()
         except (OperationError, ValidationError):
             # Rolling back

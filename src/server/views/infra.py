@@ -29,6 +29,7 @@ from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
 
 import bson
+import copy
 
 
 LOGGER = setup_custom_logger(__name__)
@@ -43,9 +44,15 @@ def get_network_device_config_flows(flow_id=None):
     """
     Config in the vNSFO: DB
     """
-    flows = current_app.mongo.get_flows({"flow_id": flow_id, "trusted": True})
+    flows = current_app.mongo.get_flows(
+            {"flow_id": flow_id, "trusted": "True"})
+    # Flows must be casted (from the initial queryset) to a list
+    flows = list(flows)
+    flows = process_flows_from_db(flows)
     flows_data = dict()
     flows_data["flow_id"] = flow_id
+    if flow_id is not None and len(flows) == 1:
+        flows = flows[0].get("flow")
     flows_data["flow"] = flows
     return HttpResponse.json(HttpCode.OK, flows_data)
 
@@ -76,6 +83,9 @@ def store_network_device_config_flow(flow_id=None, flow=None, trusted=False,
     if reply is None and header_ct is not None and exp_ct not in header_ct:
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
     flow = request.data
+    if reply is not None:
+        flow = reply
+    print("store network device config flow ---> flow = " + str(flow))
     odl = Network().odl
     current_app.mongo.store_flows(odl.default_device, odl.default_table,
                                   flow_id, flow, trusted)
@@ -99,17 +109,16 @@ def store_network_device_running_flow(flow_id=None, flow=None, internal=False):
         flow = request.data
     Network().store_network_device_running_flow(flow_id, flow)
     # Trigger attestation right after SDN rules are inserted
-    last_trusted_flow = get_last_network_device_config_flow()
-    print("last_trusted_flow = " + str(last_trusted_flow))
+    last_trusted_flow = get_last_network_device_config_flow().get("flow")
     attest_data = Network().attest_and_revert_switch(last_trusted_flow)
     # Save flows and indicate whether these keep the trusted state or not
     is_device_trusted = True if attest_data.get("result", "") == \
         "flow_trusted" else False
     flow_data = store_network_device_config_flow(
-            flow_id, flow, is_device_trusted, "internal")
+            flow_id, flow, is_device_trusted, last_trusted_flow)
     print("\n\n\n\nstore_network_device_running_flow --->")
     print("flow_data received = " + str(flow_data))
-    return HttpResponse.json(HttpCode.OK, flow_data.text)
+    return HttpResponse.json(HttpCode.OK, flow_data.response)
 
 
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["DELETE"])
@@ -276,14 +285,35 @@ def register_node():
 
 
 def get_last_network_device_config_flow():
-    flows = current_app.mongo.get_flows({"trusted": True})
-    print("flows -----> " + str(flows))
+    flows = current_app.mongo.get_flows({"trusted": "True"})
     flow = flows[0] if len(flows) > 0 else None
-    print("flow -----> " + str(flow))
     flow_data = dict()
-    flow_data["flow_id"] = Node().get_flow_id_from_flow(flow)
-    flow_data["flow"] = flow
-    return HttpResponse.json(HttpCode.OK, flow_data)
+    flow_data["flow_id"] = flow.flow_id
+    flow_data["flow"] = flow.flow
+    return flow_data
+
+
+def process_flows_from_db(flows):
+    def object_to_dictionary(flow):
+        return {
+            "date": str(flow.date),
+            "device_id": flow.device_id,
+            "table_id": flow.table_id,
+            "flow_id": flow.flow_id,
+            "flow": flow.flow,
+            "trusted": str(flow.trusted),
+        }
+    # Avoid modification of passed flows
+    flows_c = copy.deepcopy(flows)
+    if not flows_c:
+        return []
+    if isinstance(flows_c, list):
+        if len(flows_c) > 0:
+            flow = flows_c.pop()
+            return [object_to_dictionary(flow)] + \
+                process_flows_from_db(flows_c)
+    elif isinstance(flows_c, str):
+        return [object_to_dictionary(flows_c)]
 
 
 def check_isolation_params(isolation_policy):
