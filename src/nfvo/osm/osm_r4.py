@@ -580,6 +580,15 @@ class OSMR4():
                 target_vim = vim
         return target_vim
 
+    def get_instance_id_by_vnfr_id(self, instances, vnfr_id):
+        LOGGER.info("Getting instance_id by vnsf_id")
+        LOGGER.info("VNFR_ID {0}".format(vnfr_id))
+        for instance in instances:
+            for vnf_instance in instance.get(
+                    "constituent_vnf_instances", []):
+                if vnf_instance["vnfr_id"] == vnfr_id:
+                    return instance["instance_id"]
+
     @check_authorization
     def exec_action_on_vnf(self, payload, instance_id=None):
         # JSON
@@ -592,6 +601,13 @@ class OSMR4():
         # Encoded
         # payload = payload.replace('\\"', '"').strip()
         # Find out which ns_id holds the vnf:
+        if instance_id is None:
+            LOGGER.info("Instance id is none")
+            instance_id = self.get_instance_id_by_vnfr_id(
+                self.get_ns_instances()["ns"],
+                payload["vnfr_id"])
+            if not instance_id:
+                raise OSMException
         nsi = self.get_ns_instances(instance_id)["ns"][0]
         nsi_id = nsi["instance_id"]
         url = self.exec_action_url
