@@ -193,7 +193,7 @@ class DBManager():
                                 flow_id=flow_id,
                                 flow=flow,
                                 trusted=trusted)
-            print("storing flows = " + str(flows))
+            print("storing flows = " + str(flows.flow))
             flows.save()
         except (OperationError, ValidationError):
             # Rolling back
@@ -204,27 +204,27 @@ class DBManager():
 
     def delete_flows(self, device_id, table_id, flow_id=None, date=None):
         """
-        Stores the flow or multiple flows and associated data.
+        Deletes the flow or flows determined by the parameters.
         """
-        try:
-            if flow_id is None and date is None:
-                flows = NetworkFlow.objects(device_id=device_id,
-                                            table_id=table_id)
-            elif flow_id is None and date is not None:
-                flows = NetworkFlow.objects(device_id=device_id,
-                                            table_id=table_id,
-                                            date=date)
-            elif flow_id is not None and date is None:
-                flows = NetworkFlow.objects(device_id=device_id,
-                                            table_id=table_id,
-                                            flow_id=flow_id)
-            flows.delete()
-        except (OperationError, ValidationError):
-            # Rolling back
-            flows.delete()
-            e = "Cannot delete network information (flows)"
-            raise Exception(e)
-        return str(flow_id)
+        if flow_id is None and date is None:
+            flows = NetworkFlow.objects(device_id=device_id,
+                                        table_id=table_id)
+        elif flow_id is None and date is not None:
+            flows = NetworkFlow.objects(device_id=device_id,
+                                        table_id=table_id,
+                                        date=date)
+        elif flow_id is not None and date is None:
+            flows = NetworkFlow.objects(device_id=device_id,
+                                        table_id=table_id,
+                                        flow_id=flow_id)
+        flows.delete()
+
+    def delete_flows_untrusted(self, device_id, table_id):
+        """
+        Deletes all those flows which are not trusted.
+        """
+        flows = NetworkFlow.objects({"trusted": False})
+        flows.delete()
 
     def get_nodes(self, node_id=None):
         """

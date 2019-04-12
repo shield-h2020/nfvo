@@ -114,14 +114,23 @@ paths:
             $ref: "#/definitions/GetNetworkFlowOutput"
         500:
           description: Error when retrieving data from DB
+    delete:
+      tags:
+        - nfvi
+      summary: Delete all flows from the internal DB
+      description: >-
+        Delete all flows
+        These are deleted from the internal database, not from the controller
+      operationId: deleteNetworkConfigFlows
+      responses: *API_RESPONSES
 
   /nfvi/network/config/flows/{flow_id}:
     get:
       tags:
         - nfvi
-      summary: Provides information on flow(s) in DB
+      summary: Provides information on flow in DB
       description: >-
-        Get data from a given flow (or all flows) in the default switch and table
+        Get data from a given flow in the default switch and table
         This is retrieved from the internal database, not from the controller
       operationId: getNetworkConfigFlow
       produces:
@@ -138,6 +147,15 @@ paths:
             $ref: "#/definitions/GetNetworkFlowOutput"
         500:
           description: Error when retrieving data from DB
+    delete:
+      tags:
+        - nfvi
+      summary: Delete specific flow from the internal DB
+      description: >-
+        Delete a specific flow
+        This is deleted from the internal database, not from the controller
+      operationId: deleteNetworkConfigFlow
+      responses: *API_RESPONSES
 
   /nfvi/network/running/flows:
     get:
@@ -185,11 +203,7 @@ paths:
       description: >-
         Delete all flows from the default switch and table
       operationId: deleteNetworkRunningFlows
-      responses:
-        200:
-          description: Flow information
-          schema:
-            $ref: "#/definitions/GetNetworkFlowOutput"
+      responses: *API_RESPONSES
 
   /nfvi/network/running/flows/{flow_id}:
     get:
@@ -247,18 +261,14 @@ paths:
       summary: Delete flows from the controller
       description: >-
         Delete all flows from the default switch and table
-      operationId: deleteNetworkRunningFlow
       parameters:
         - name: flow_id
           in: path
           required: true
           type: string
           description: ID of the flow in the controller
-      responses:
-        200:
-          description: Flow information
-          schema:
-            $ref: "#/definitions/GetNetworkFlowOutput"
+      operationId: deleteNetworkRunningFlow
+      responses: *API_RESPONSES
 
   /nfvi/node/{node_id}:
     get:

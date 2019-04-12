@@ -15,6 +15,7 @@
 # limitations under the License.
 
 from core.log import setup_custom_logger
+from flask import current_app
 from sdn.odl.carbon import ODLCarbon
 from tm.tm_client import TMClient
 
@@ -40,7 +41,25 @@ class Network:
         flows_data["details"] = details
         return flows_data
 
-    def delete_network_device_flow(self, flow_id=None):
+    def delete_network_device_config_flow(self, flow_id=None):
+        current_app.mongo.delete_flows(
+                self.odl.default_device, self.odl.default_table, flow_id)
+        flow_data = dict()
+        flow_data["flow_id"] = flow_id
+        flow_data["result"] = "deleted"
+        flow_data["details"] = ""
+        return flow_data
+
+    def delete_network_device_config_flow_untrusted(self, flow_id=None):
+        current_app.mongo.delete_flows_untrusted(
+                self.odl.default_device, self.odl.default_table, flow_id)
+        flow_data = dict()
+        flow_data["flow_id"] = flow_id
+        flow_data["result"] = "deleted"
+        flow_data["details"] = ""
+        return flow_data
+
+    def delete_network_device_running_flow(self, flow_id=None):
         result, details = self.odl.delete_config_flows(flow_id)
         flow_data = dict()
         flow_data["flow_id"] = flow_id
@@ -58,7 +77,12 @@ class Network:
         for attest_sdn_switch in attestation_info_sdn:
             print("Switch to check for trust => " + str(attest_sdn_switch))
             # If node is not trusted after attestation; then restore the flows
-            if not attest_sdn_switch.get("trust"):
+            # XXX UNCOMMENT
+            # ... if not attest_sdn_switch.get("trust"):
+            # XXX DELETE
+            if True:
+                # XXX REMOVE
+                trusted_flow = '<flow xmlns="urn:opendaylight:flow:inventory"><id>L2switch-0</id><hard-timeout>0</hard-timeout><idle-timeout>0</idle-timeout><cookie>3098476543630901248</cookie><instructions><instruction><order>0</order><apply-actions><action><order>0</order><output-action><max-length>65535</max-length><output-node-connector>NORMAL</output-node-connector></output-action></action></apply-actions></instruction></instructions><priority>1000</priority><flow-statistics xmlns="urn:opendaylight:flow:statistics"><packet-count>0</packet-count><byte-count>0</byte-count><duration><nanosecond>42000000</nanosecond><second>2064</second></duration></flow-statistics><table_id>0</table_id></flow>'
                 flow_data["result"] = "flow_untrusted"
                 if trusted_flow is None:
                     trusted_flow = self.get_network_device_running_flows()\
@@ -70,12 +94,16 @@ class Network:
                 print(str(attest_sdn_switch.get("trust")))
                 print("FLOWS BEFORE DELETE --> ")
                 print(str(self.get_network_device_running_flows().response))
-                self.delete_network_device_flow()
+                # Delete all untrusted config flows
+                self.delete_network_device_config_flow_untrusted()
+                # Delete all running flows
+                self.delete_network_device_running_flow()
                 flow_data["details"] = "Flow removed: {}".format(flow)
                 flow_data = self.store_network_device_running_flow(
                         trusted_flow_id, trusted_flow)
                 print("FLOWS AFTER DELETE AND REVERT --> ")
                 print(str(self.get_network_device_running_flows().response))
+                print(str(self.get_network_device_config_flows().response))
                 # Important: only one switch is in place to be remediated
                 # If specific controller is expected (for some switch), then
                 # use 'attest_sdn_switch.get("node")' and data should be

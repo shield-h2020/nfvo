@@ -45,7 +45,7 @@ def get_network_device_config_flows(flow_id=None):
     Config in the vNSFO: DB
     """
     flows = current_app.mongo.get_flows(
-            {"flow_id": flow_id, "trusted": "True"})
+            {"flow_id": flow_id, "trusted": True})
     # Flows must be casted (from the initial queryset) to a list
     flows = list(flows)
     flows = process_flows_from_db(flows)
@@ -77,16 +77,25 @@ def store_network_device_config_flow(flow_id=None, flow=None, trusted=False,
     """
     exp_ct = "application/xml"
     header_ct = request.headers.get("Content-Type", "")
+    print("&&& ct? = " + str(header_ct))
+    print("&&& reply/internal? = " + str(reply))
+    if reply is None:
+        print("----------------not internal")
+    else:
+        print("----------------internal call")
     # Internall calls will come from other methods and provide reply from them
     # In such situations, the Content-Type will be defined internally
     # Otherwise, it may be fille from a previous request and be wrong
     if reply is None and header_ct is not None and exp_ct not in header_ct:
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
     flow = request.data
-    if reply is not None:
+    if reply is not None and reply != "internal":
         flow = reply
     print("store network device config flow ---> flow = " + str(flow))
     odl = Network().odl
+    # Store external (manually) pushed rules as trusted to ease workflow
+    if reply is None:
+        trusted = True
     current_app.mongo.store_flows(odl.default_device, odl.default_table,
                                   flow_id, flow, trusted)
     flow_data = Network().store_network_device_config_flow(flow_id, flow)
@@ -98,36 +107,60 @@ def store_network_device_config_flow(flow_id=None, flow=None, trusted=False,
 def store_network_device_running_flow(flow_id=None, flow=None, internal=False):
     """
     Running in the vNSFO: ODL
+    Stores data in running (and config)
     """
     exp_ct = "application/xml"
     header_ct = request.headers.get("Content-Type", "")
-    # Internall calls will come from other methods and provide a specific flag
+    # Internal calls will come from other methods and provide a specific flag
     # In such situations, the Content-Type will be defined internally
+    print("&&& ct? = " + str(header_ct))
+    print("&&& internal? = " + str(internal))
+    if not internal:
+        print("----------------not internal")
+    else:
+        print("----------------internal call")
     if not internal and header_ct is not None and exp_ct not in header_ct:
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
     if not internal:
         flow = request.data
     Network().store_network_device_running_flow(flow_id, flow)
     # Trigger attestation right after SDN rules are inserted
+    print("&&&&&&&&& flow = " + str(flow))
+    print("&&&&&&&&& last_trusted_flow_all_data = ")
+    print(str(get_last_network_device_config_flow()))
     last_trusted_flow = get_last_network_device_config_flow().get("flow")
     attest_data = Network().attest_and_revert_switch(last_trusted_flow)
-    # Save flows and indicate whether these keep the trusted state or not
-    is_device_trusted = True if attest_data.get("result", "") == \
-        "flow_trusted" else False
+    # Indicate whether the flows should keep the trusted state or not
+    # For externally (manually pushed) rules, mark these as trusted
+    if internal:
+        is_device_trusted = True
+    else:
+        is_device_trusted = True if attest_data.get("result", "") == \
+            "flow_trusted" else False
+    print("last_trusted_flow = " + str(last_trusted_flow))
     flow_data = store_network_device_config_flow(
-            flow_id, flow, is_device_trusted, last_trusted_flow)
+            flow_id, flow, is_device_trusted,
+            last_trusted_flow or "internal")
     print("\n\n\n\nstore_network_device_running_flow --->")
-    print("flow_data received = " + str(flow_data))
+    print("flow_data received = " + str(flow_data.response))
     return HttpResponse.json(HttpCode.OK, flow_data.response)
 
 
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["DELETE"])
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW_ID, methods=["DELETE"])
-def delete_network_device_flow(flow_id=None):
-    odl = Network().odl
-    current_app.mongo.delete_flows(odl.default_device, odl.default_table,
-                                   flow_id)
-    flow_data = Network().delete_network_device_flow(flow_id)
+def delete_network_device_config_flow(flow_id=None):
+    flow_data = Network().delete_network_device_config_flow()
+    return HttpResponse.json(HttpCode.OK, flow_data)
+
+
+@nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW, methods=["DELETE"])
+@nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW_ID, methods=["DELETE"])
+def delete_network_device_running_flow(flow_id=None):
+    """
+    Running in the vNSFO: ODL
+    Deletes data from running only
+    """
+    flow_data = Network().delete_network_device_running_flow(flow_id)
     return HttpResponse.json(HttpCode.OK, flow_data)
 
 
@@ -269,27 +302,21 @@ def register_node():
         Exception.improper_usage("Missing termination parameters: {0}".format(
             ", ".join(missing_termination_params)))
     node_id = current_app.mongo.store_node_information(node_data)
-    print("FLOWS BEFORE UNTRUSTED CHANGE --> ")
-    print(str(get_network_device_running_flows().response))
-    # Save the proper flows in order to revert
-    # XXX REMOVE (REMOVING & INSERTING BAD FLOWS BEFORE TO FORCE TRUST=FALSE)
-    # THIS WOULD BE DONE MANUALLY
-    delete_network_device_flow("L2switch-0")
-    # XXX IGNORE AND THEN REMOVE
-    store_network_device_running_flow("L2switch-0", '<flow xmlns="urn:opendaylight:flow:inventory"><id>L2switch-0</id><hard-timeout>10</hard-timeout><idle-timeout>5</idle-timeout><cookie>3098476543630901248</cookie><instructions><instruction><order>0</order><apply-actions><action><order>0</order><output-action><max-length>65535</max-length><output-node-connector>NORMAL</output-node-connector></output-action></action></apply-actions></instruction></instructions><priority>10000</priority><flow-statistics xmlns="urn:opendaylight:flow:statistics"><packet-count>0</packet-count><byte-count>0</byte-count><duration><nanosecond>42111111</nanosecond><second>2064</second></duration></flow-statistics><table_id>0</table_id></flow>', True)
-    print("FLOWS AFTER UNTRUSTED CHANGE --> ")
-    print(str(get_network_device_running_flows().response))
     if "switch" in node_data.get("driver", "").lower():
         Network().attest_and_revert_switch()
     return HttpResponse.json(HttpCode.OK, {"node_id": node_id})
 
 
 def get_last_network_device_config_flow():
-    flows = current_app.mongo.get_flows({"trusted": "True"})
+    flows = current_app.mongo.get_flows({"trusted": True})
     flow = flows[0] if len(flows) > 0 else None
     flow_data = dict()
-    flow_data["flow_id"] = flow.flow_id
-    flow_data["flow"] = flow.flow
+    if flow is not None:
+        flow_data["flow_id"] = flow.flow_id
+        flow_data["flow"] = flow.flow
+    else:
+        flow_data["flow_id"] = None
+        flow_data["flow"] = None
     return flow_data
 
 
@@ -301,7 +328,7 @@ def process_flows_from_db(flows):
             "table_id": flow.table_id,
             "flow_id": flow.flow_id,
             "flow": flow.flow,
-            "trusted": str(flow.trusted),
+            "trusted": flow.trusted,
         }
     # Avoid modification of passed flows
     flows_c = copy.deepcopy(flows)
