@@ -170,7 +170,6 @@ class VnsfoNs:
                         "type": "private_key",
                         "username": self.default_username
                     }
-                LOGGER.info(instantiation_data)
                 if "isolation_policy" not in instantiation_data:
                     instantiation_data["isolation_policy"] = {
                         "name": "Openstack isolation",
