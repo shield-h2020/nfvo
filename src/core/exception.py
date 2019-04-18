@@ -72,7 +72,7 @@ class Exception:
 
     @staticmethod
     def internal_error(error_msg=None):
-        return Exception.inform(
+        return Exception.abort(
             HttpCode.INTERNAL_ERROR,
             ExceptionCode.INTERNAL_ERROR,
             error_msg)

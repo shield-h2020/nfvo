@@ -112,11 +112,13 @@ class ODLCarbon():
         flow_config_url = "{}{}".format(self.base_url, flow_config_url)
         self.headers.update({"Content-Type": "application/xml"})
         try:
+            print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& ODL . Carbon . store_config_flow -> flow = " + str(flow))
             response = requests.put(flow_config_url,
                                     headers=self.headers,
                                     data=flow,
                                     auth=(self.username, self.password),
                                     verify=False)
+            print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& ODL . Carbon . store_config_flow -> response = " + str(response.__dict__))
             result = "success" if response.status_code == \
                 requests.status_codes.codes.CREATED else "failure"
             details = response.text or ""

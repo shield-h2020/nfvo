@@ -22,6 +22,7 @@ from flask import Blueprint
 from flask import current_app
 from flask import request
 from infra.network import Network
+from infra.network import NetworkConnectException
 from infra.node import Node
 from infra.node import NodeSSHException
 from server.endpoints import VnsfoEndpoints as endpoints
@@ -29,7 +30,6 @@ from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
 
 import bson
-import copy
 
 
 LOGGER = setup_custom_logger(__name__)
@@ -44,16 +44,7 @@ def get_network_device_config_flows(flow_id=None):
     """
     Config in the vNSFO: DB
     """
-    flows = current_app.mongo.get_flows(
-            {"flow_id": flow_id, "trusted": True})
-    # Flows must be casted (from the initial queryset) to a list
-    flows = list(flows)
-    flows = process_flows_from_db(flows)
-    flows_data = dict()
-    flows_data["flow_id"] = flow_id
-    if flow_id is not None and len(flows) == 1:
-        flows = flows[0].get("flow")
-    flows_data["flow"] = flows
+    flows_data = Network().get_last_network_device_config_flow(flow_id)
     return HttpResponse.json(HttpCode.OK, flows_data)
 
 
@@ -70,35 +61,18 @@ def get_network_device_running_flows(flow_id=None):
 
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["POST"])
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW_ID, methods=["POST"])
-def store_network_device_config_flow(flow_id=None, flow=None, trusted=False,
-                                     reply=None):
+def store_network_device_config_flow(flow_id=None, flow=None):
     """
     Config in the vNSFO: DB
     """
     exp_ct = "application/xml"
     header_ct = request.headers.get("Content-Type", "")
     print("&&& ct? = " + str(header_ct))
-    print("&&& reply/internal? = " + str(reply))
-    if reply is None:
-        print("----------------not internal")
-    else:
-        print("----------------internal call")
-    # Internall calls will come from other methods and provide reply from them
-    # In such situations, the Content-Type will be defined internally
-    # Otherwise, it may be fille from a previous request and be wrong
-    if reply is None and header_ct is not None and exp_ct not in header_ct:
+    if header_ct is not None and exp_ct not in header_ct:
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
     flow = request.data
-    if reply is not None and reply != "internal":
-        flow = reply
     print("store network device config flow ---> flow = " + str(flow))
-    odl = Network().odl
-    # Store external (manually) pushed rules as trusted to ease workflow
-    if reply is None:
-        trusted = True
-    current_app.mongo.store_flows(odl.default_device, odl.default_table,
-                                  flow_id, flow, trusted)
-    flow_data = Network().store_network_device_config_flow(flow_id, flow)
+    flow_data = Network().store_network_device_config_flow(flow_id, flow, True)
     return HttpResponse.json(HttpCode.OK, flow_data)
 
 
@@ -123,13 +97,27 @@ def store_network_device_running_flow(flow_id=None, flow=None, internal=False):
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
     if not internal:
         flow = request.data
+    print("1b--------------------- storing SDN rule/operational")
     Network().store_network_device_running_flow(flow_id, flow)
+    print("1e--------------------- storing SDN rule/operational")
     # Trigger attestation right after SDN rules are inserted
-    print("&&&&&&&&& flow = " + str(flow))
-    print("&&&&&&&&& last_trusted_flow_all_data = ")
-    print(str(get_last_network_device_config_flow()))
-    last_trusted_flow = get_last_network_device_config_flow().get("flow")
-    attest_data = Network().attest_and_revert_switch(last_trusted_flow)
+    # print("&&&&&&&&& flow = " + str(flow))
+    print("&&&&&&&&& running flow = ")
+    print(Network().get_network_device_config_flows(flow_id))
+    print("&&&&&&&&& cfg flow = ")
+    last_trusted_flow = Network().get_last_network_device_config_flow()\
+                        .get("flow")
+    print(last_trusted_flow)
+    print("2b--------------------- attesting SDN rule")
+    attest_data = None
+    try:
+        attest_data = Network().attest_and_revert_switch()
+    except NetworkConnectException as e:
+        print("******** ATTEST - RAISED NetworkConnectException. Details: " + str(e))
+        Exception.internal_error(str(e))
+    if not attest_data or attest_data is None:
+        Exception.internal_error("Cannot attest status of the device(s)")
+    print("2e--------------------- attesting SDN rule")
     # Indicate whether the flows should keep the trusted state or not
     # For externally (manually pushed) rules, mark these as trusted
     if internal:
@@ -138,12 +126,13 @@ def store_network_device_running_flow(flow_id=None, flow=None, internal=False):
         is_device_trusted = True if attest_data.get("result", "") == \
             "flow_trusted" else False
     print("last_trusted_flow = " + str(last_trusted_flow))
-    flow_data = store_network_device_config_flow(
-            flow_id, flow, is_device_trusted,
-            last_trusted_flow or "internal")
+    print("3b--------------------- storing SDN rule/config")
+    flow_data = Network().store_network_device_config_flow(flow_id,
+            last_trusted_flow, True)
+    print("3e--------------------- storing SDN rule/config")
     print("\n\n\n\nstore_network_device_running_flow --->")
-    print("flow_data received = " + str(flow_data.response))
-    return HttpResponse.json(HttpCode.OK, flow_data.response)
+    print("flow_data received = " + str(flow_data))
+    return HttpResponse.json(HttpCode.OK, flow_data)
 
 
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["DELETE"])
@@ -305,42 +294,6 @@ def register_node():
     if "switch" in node_data.get("driver", "").lower():
         Network().attest_and_revert_switch()
     return HttpResponse.json(HttpCode.OK, {"node_id": node_id})
-
-
-def get_last_network_device_config_flow():
-    flows = current_app.mongo.get_flows({"trusted": True})
-    flow = flows[0] if len(flows) > 0 else None
-    flow_data = dict()
-    if flow is not None:
-        flow_data["flow_id"] = flow.flow_id
-        flow_data["flow"] = flow.flow
-    else:
-        flow_data["flow_id"] = None
-        flow_data["flow"] = None
-    return flow_data
-
-
-def process_flows_from_db(flows):
-    def object_to_dictionary(flow):
-        return {
-            "date": str(flow.date),
-            "device_id": flow.device_id,
-            "table_id": flow.table_id,
-            "flow_id": flow.flow_id,
-            "flow": flow.flow,
-            "trusted": flow.trusted,
-        }
-    # Avoid modification of passed flows
-    flows_c = copy.deepcopy(flows)
-    if not flows_c:
-        return []
-    if isinstance(flows_c, list):
-        if len(flows_c) > 0:
-            flow = flows_c.pop()
-            return [object_to_dictionary(flow)] + \
-                process_flows_from_db(flows_c)
-    elif isinstance(flows_c, str):
-        return [object_to_dictionary(flows_c)]
 
 
 def check_isolation_params(isolation_policy):

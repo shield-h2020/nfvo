@@ -173,6 +173,7 @@ class DBManager():
         Get flow according to an ID or multiple flows as saved previously.
         Flows are returned ordered - from newest first to oldest in the end
         """
+        print("db --> filters = " + str(filters))
         if filters is not None:
             # Expand filters from dictionary to parameters for mongoengine
             flows = NetworkFlow.objects(**filters).order_by("-date")
@@ -223,7 +224,7 @@ class DBManager():
         """
         Deletes all those flows which are not trusted.
         """
-        flows = NetworkFlow.objects({"trusted": False})
+        flows = NetworkFlow.objects(trusted=False)
         flows.delete()
 
     def get_nodes(self, node_id=None):
