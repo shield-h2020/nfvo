@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from core.config import FullConfParser
 from core.log import setup_custom_logger
 from flask import current_app
 from sdn.odl.carbon import ODLCarbon
@@ -35,6 +36,13 @@ class Network:
 
     def __init__(self):
         self.odl = ODLCarbon()
+        config = FullConfParser()
+        self.sdn_flow_reference = config.get("tm.sdn.reference.json")
+        print("SDN REFERENCE\n\n\n\n\n\n")
+        print(self.sdn_flow_reference)
+
+    def get_network_reference_flows(self):
+        return self.sdn_flow_reference
 
     def get_network_device_config_flows(self, flow_id=None):
         filters = {"trusted": True}
@@ -108,21 +116,24 @@ class Network:
         trust_monitor_client = TMClient()
         # Get initial data for newcomer attestation
         print("^^^^^^^^^^^ attest_and_revert_switch . BEGIN attestation_info")
-        # XXX UNCOMMENT
-        # attestation_info = trust_monitor_client.get_attestation_info()
+        attestation_info = trust_monitor_client.get_attestation_info()
+        print("^^^^^^^^^^^ attest_and_revert_switch (real). END attestation_info = " + str(attestation_info))
         # XXX DELETE
-        attestation_info = {"sdn": [{"trust": False}]}
-        print("^^^^^^^^^^^ attest_and_revert_switch . END attestation_info = " + str(attestation_info))
+        # attestation_info = {"sdn": [{"trust": False}]}
+        # print("^^^^^^^^^^^ attest_and_revert_switch (mocked). END attestation_info = " + str(attestation_info))
         if not attestation_info:
             raise NetworkConnectException("Cannot request attestation status")
         attestation_info_sdn = attestation_info.get("sdn", {})
+        print("^^^^^^^^^^^ attest_and_revert_switch (real). END attestation_info_sdn = " + str(attestation_info_sdn))
         flow = None
         flow_data = None
         for attest_sdn_switch in attestation_info_sdn:
             print("Switch to check for trust => " + str(attest_sdn_switch))
             # If node is not trusted after attestation; then restore the flows
             # XXX UNCOMMENT
+            print(">>>>>>>>>>>>>> network - attestation is trusted = " + str(attest_sdn_switch.get("trust")))
             if not attest_sdn_switch.get("trust"):
+                print("network - untrusted flow...")
                 flow_data = dict()
                 flow_data["result"] = "flow_untrusted"
                 if trusted_flow is None:
@@ -173,7 +184,7 @@ class Network:
         # In such situations, the Content-Type will be defined internally
         # Otherwise, it may be fille from a previous request and be wrong
         # Also, store external (manually) pushed rules as trusted to ease workflow
-        if flow_id is not None and flow is not None:
+        if flow_id is not None and (flow is not None or len(flow) == 0):
             current_app.mongo.store_flows(self.odl.default_device,
                                           self.odl.default_table, flow_id,
                                           flow, trusted)

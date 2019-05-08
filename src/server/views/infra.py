@@ -38,6 +38,16 @@ LOGGER = setup_custom_logger(__name__)
 nfvo_views = Blueprint("nfvo_infra_views", __name__)
 
 
+@nfvo_views.route(endpoints.NFVI_NETWORK_REF_FLOWS, methods=["GET"])
+def get_network_reference_flows():
+    """
+    Fetch reference flows to be compared against those in the switch (by TM).
+    """
+    flows_data = Network().get_network_reference_flows()
+    return HttpResponse.json(HttpCode.OK, flows_data)
+    #return HttpResponse.json_unformatted(HttpCode.OK, flows_data)
+
+
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["GET"])
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW_ID, methods=["GET"])
 def get_network_device_config_flows(flow_id=None):
@@ -78,25 +88,19 @@ def store_network_device_config_flow(flow_id=None, flow=None):
 
 @nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW, methods=["POST"])
 @nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW_ID, methods=["POST"])
-def store_network_device_running_flow(flow_id=None, flow=None, internal=False):
+def store_network_device_running_flow(flow_id=None, flow=None):
     """
     Running in the vNSFO: ODL
     Stores data in running (and config)
     """
-    exp_ct = "application/xml"
+    exp_ct = ["application/xml", "application/json"]
     header_ct = request.headers.get("Content-Type", "")
     # Internal calls will come from other methods and provide a specific flag
     # In such situations, the Content-Type will be defined internally
-    print("&&& ct? = " + str(header_ct))
-    print("&&& internal? = " + str(internal))
-    if not internal:
-        print("----------------not internal")
-    else:
-        print("----------------internal call")
-    if not internal and header_ct is not None and exp_ct not in header_ct:
+    #print("&&& ct? = " + str(header_ct))
+    if header_ct is not None and any(map(lambda ct: ct in header_ct, exp_ct)):
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
-    if not internal:
-        flow = request.data
+    flow = request.data
     print("1b--------------------- storing SDN rule/operational")
     Network().store_network_device_running_flow(flow_id, flow)
     print("1e--------------------- storing SDN rule/operational")
@@ -120,11 +124,8 @@ def store_network_device_running_flow(flow_id=None, flow=None, internal=False):
     print("2e--------------------- attesting SDN rule")
     # Indicate whether the flows should keep the trusted state or not
     # For externally (manually pushed) rules, mark these as trusted
-    if internal:
-        is_device_trusted = True
-    else:
-        is_device_trusted = True if attest_data.get("result", "") == \
-            "flow_trusted" else False
+    is_device_trusted = True if attest_data.get("result", "") == \
+        "flow_trusted" else False
     print("last_trusted_flow = " + str(last_trusted_flow))
     print("3b--------------------- storing SDN rule/config")
     flow_data = Network().store_network_device_config_flow(flow_id,

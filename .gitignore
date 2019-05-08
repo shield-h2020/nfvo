@@ -5,6 +5,7 @@ docker/mongo-entrypoint/*.sh
 !bin/docker/[D|d]ocker*.template
 cert/*
 conf/*.conf
+conf/*.json
 !conf/*.sample
 *.pyc
 venv

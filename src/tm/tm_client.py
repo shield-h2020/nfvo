@@ -60,8 +60,11 @@ class TMClient:
             self.protocol, self.host, self.port)
         try:
             response = requests.get(url, verify=False, allow_redirects=True)
+            print("^^^^^^^^^^^^^^^^^ tm_client . response = " + str(response.text))
             attestation_info = json.loads(response.text)
+            print("^^^^^^^^^^^^^^^^^ tm_client . attestation_info = " + str(attestation_info))
             nfvi_node = None
+            print("^^^^^^^^^^^^^^^^^ tm_client . attestation_info.hosts = " + str(attestation_info["hosts"]))
             for host in attestation_info["hosts"]:
                 if host["node"] == self.default_node:
                     nfvi_node = host

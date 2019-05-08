@@ -40,6 +40,7 @@ class VnsfoEndpoints:
     NFVI_NETWORK_R = "{}/running".format(NFVI_NETWORK)
     NFVI_NETWORK_R_FLOW = "{}/flows".format(NFVI_NETWORK_R)
     NFVI_NETWORK_R_FLOW_ID = "{}/flows/<flow_id>".format(NFVI_NETWORK_R)
+    NFVI_NETWORK_REF_FLOWS = "{}/reference/flows".format(NFVI_NETWORK)
     NFVI_NETWORK_TOPO = "{}/nodes".format(NFVI_NETWORK)
     # - Nodes
     NFVI_NODE_ID = "{}/<node_id>".format(NFVI_NODE)

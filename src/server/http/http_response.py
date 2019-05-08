@@ -40,6 +40,17 @@ class HttpResponse:
         return HttpResponse.generic(status_code, status_msg, headers)
 
     @staticmethod
+    def json_unformatted(status_code, status_msg):
+        headers = HttpResponse.set_content_type(
+            HttpResponse.CONTENT_TYPE_JSON)
+        try:
+            import json
+            status_msg = json.dumps(status_msg)
+        except:
+            status_msg = str(status_msg)
+        return HttpResponse.generic(status_code, status_msg, headers)
+
+    @staticmethod
     def text(status_code, status_msg):
         headers = HttpResponse.set_content_type(
             HttpResponse.CONTENT_TYPE_TEXT)
