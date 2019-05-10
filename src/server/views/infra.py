@@ -93,13 +93,14 @@ def store_network_device_running_flow(flow_id=None, flow=None):
     header_ct = request.headers.get("Content-Type", "")
     # Internal calls will come from other methods and provide a specific flag
     # In such situations, the Content-Type will be defined internally
-    if header_ct is not None and not any(map(lambda ct: ct in header_ct, exp_ct)):
+    if header_ct is not None and not \
+            any(map(lambda ct: ct in header_ct, exp_ct)):
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
     flow = request.data
     Network().store_network_device_running_flow(flow_id, flow)
     # Trigger attestation right after SDN rules are inserted
-    last_trusted_flow = Network().get_last_network_device_config_flow()\
-                        .get("flow")
+    last_trusted_flow = Network()\
+        .get_last_network_device_config_flow().get("flow")
     attest_data = None
     try:
         attest_data = Network().attest_and_revert_switch()

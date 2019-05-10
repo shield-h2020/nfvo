@@ -21,7 +21,6 @@ from sdn.odl.carbon import ODLCarbon
 from tm.tm_client import TMClient
 
 import copy
-import json
 import re
 import time
 
@@ -44,7 +43,7 @@ class Network:
         reference_structure = dict()
         reference_static_flows = self.sdn_flow_reference
         reference_structure.update(reference_static_flows)
-        # TODO Besides taking the internal flows from the file, this should also
+        # TODO Besides taking the internal flows from the file, this should
         # retrieve flows from the database and format these appropriately
         # (possibly converting from XML to JSON using the method
         # "convert_xml_flow_to_json", available in the sdn/odl/carbon module)
@@ -74,7 +73,8 @@ class Network:
         """
         flows = self.get_network_device_config_flows(flow_id)
         flow = None
-        # TODO Should return the last copy (in time) of each flow from the DB that is trusted
+        # TODO Should return the last copy (in time) of each flow
+        # from the database that is trusted (i.e., added manually)
         if "flow" in flows.keys() and len(flows.get("flow")) > 0:
             if isinstance(flows.get("flow"), list):
                 flow = flows.get("flow")[-1]
@@ -84,7 +84,6 @@ class Network:
         return flows
 
     def get_network_device_running_flows(self, flow_id=None):
-        # flows, result, details = self.odl.get_config_flows(flow_id)
         flows, result, details = self.odl.get_running_flows(flow_id)
         flows_data = dict()
         flows_data["flow_id"] = flow_id
@@ -123,9 +122,6 @@ class Network:
         trust_monitor_client = TMClient()
         # Get initial data for newcomer attestation
         attestation_info_sdn = trust_monitor_client.get_sdn_attestation()
-        # XXX REMOVE
-        # attestation_info_sdn = {"trust": False}
-        # XXX UNCOMMENT
         if not attestation_info_sdn:
             raise NetworkConnectException("Cannot request attestation status")
         flow = None
@@ -137,7 +133,8 @@ class Network:
             flow_data = dict()
             flow_data["result"] = "flow_untrusted"
             if trusted_flow is None:
-                # If flow installed in operational has failed, revert from config
+                # If installed flow in the operational side of ODL has produced
+                # an invalid attestation status, revert from internal DB/config
                 trusted_flow_data = self.get_last_network_device_config_flow()
                 if trusted_flow_data.get("flow"):
                     trusted_flow = trusted_flow_data.get("flow")
@@ -152,7 +149,7 @@ class Network:
             flow_data["details"] = "Flow removed"
             # Insert the ones previously stored and marked as trusted
             LOGGER.info("Reverting to internal status with flow: {}\n"
-                    .format(str(trusted_flow)))
+                        .format(str(trusted_flow)))
             flow_data = self.store_network_device_running_flow(
                     trusted_flow_id, trusted_flow)
             # Important: only one switch is in place to be remediated
@@ -166,16 +163,14 @@ class Network:
                 flow_data["details"] = "Flow stored in DB: {}".format(flow)
         return flow_data
 
-    def store_network_device_config_flow(self, flow_id=None, flow=None,
-            trusted=False, install=False):
+    def store_network_device_config_flow(
+            self, flow_id=None, flow=None, trusted=False, install=False):
         """
         Config in the vNSFO: DB
         """
-        # Internal calls will come from other methods and provide reply from them
-        # In such situations, the Content-Type will be defined internally
-        # Otherwise, it may be fille from a previous request and be wrong
-        # Also, store external (manually) pushed rules as trusted to ease workflow
-        if install and flow_id is not None and (flow is not None or len(flow) == 0):
+        # By default, externally added rules are marked as untrusted
+        if install and flow_id is not None and \
+                (flow is not None or len(flow) == 0):
             current_app.mongo.store_flows(self.odl.default_device,
                                           str(self.odl.default_table),
                                           flow_id, flow, trusted)
@@ -199,9 +194,10 @@ class Network:
         flow_id = self.get_flow_id_from_flow(flow)
         # Storing the flows in the running configuration and also into our DB
         LOGGER.info("Pushing flow to switch and waiting for it. Flow: {}"
-                .format(str(flow)))
+                    .format(str(flow)))
         result, details = self.odl.store_config_flow(
-                flow_id, flow, self.odl.default_device, str(self.odl.default_table))
+                flow_id, flow, self.odl.default_device,
+                str(self.odl.default_table))
         # Wait after pushing the SDN rules, before any future attestation
         time.sleep(self.odl.push_delay / 1000.0)
         flow_data = dict()

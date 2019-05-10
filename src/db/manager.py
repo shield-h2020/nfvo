@@ -193,10 +193,10 @@ class DBManager():
                 flow.flow = flow
             else:
                 flow = NetworkFlow(device_id=device_id,
-                                table_id=table_id,
-                                flow_id=flow_id,
-                                flow=flow,
-                                trusted=trusted)
+                                   table_id=table_id,
+                                   flow_id=flow_id,
+                                   flow=flow,
+                                   trusted=trusted)
             flow.save()
         except (OperationError, ValidationError):
             # Rolling back
