@@ -102,7 +102,7 @@ paths:
         - nfvi
       summary: Provides information on flows in DB
       description: >-
-        Get data from a given flow (or all flows) in the default switch and table
+        Get data from a given flow (or all flows) in the default switch and table.
         This is retrieved from the internal database, not from the controller
       operationId: getNetworkConfigFlows
       produces:
@@ -119,7 +119,7 @@ paths:
         - nfvi
       summary: Delete all flows from the internal DB
       description: >-
-        Delete all flows
+        Delete all flows.
         These are deleted from the internal database, not from the controller
       operationId: deleteNetworkConfigFlows
       responses: *API_RESPONSES
@@ -130,7 +130,7 @@ paths:
         - nfvi
       summary: Provides information on flow in DB
       description: >-
-        Get data from a given flow in the default switch and table
+        Get data from a given flow in the default switch and table.
         This is retrieved from the internal database, not from the controller
       operationId: getNetworkConfigFlow
       produces:
@@ -152,10 +152,35 @@ paths:
         - nfvi
       summary: Delete specific flow from the internal DB
       description: >-
-        Delete a specific flow
+        Delete a specific flow.
         This is deleted from the internal database, not from the controller
       operationId: deleteNetworkConfigFlow
+      parameters:
+        - name: flow_id
+          in: path
+          required: true
+          type: string
       responses: *API_RESPONSES
+
+  /nfvi/network/reference/flows:
+    get:
+      tags:
+        - nfvi
+      summary: Provides information on flows in DB
+      description: >-
+        Get current JSON flows from the internal configuration, which acts as
+        a reference to validate against the operational status of the controller.
+        This is retrieved from the internal database, not from the controller
+      operationId: getNetworkConfigReferenceFlows
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Flow information
+          schema:
+            $ref: "#/definitions/GetNetworkFlowOutputReference"
+        500:
+          description: Error when opening file
 
   /nfvi/network/running/flows:
     get:
@@ -163,7 +188,7 @@ paths:
         - nfvi
       summary: Provides information on flows in the controller
       description: >-
-        Get data from a given flow (or all flows) in the default switch and table
+        Get data from a given flow (or all flows) in the default switch and table.
         This is retrieved from the internal database, not from the controller
       operationId: getNetworkRunningFlows
       produces:
@@ -211,7 +236,7 @@ paths:
         - nfvi
       summary: Provides information on flow in controller
       description: >-
-        Get data from a given flow (or all flows) in the default switch and table
+        Get data from a given flow (or all flows) in the default switch and table.
         This is retrieved from the controller, not from the internal database
       operationId: getNetworkRunningFlow
       produces:
@@ -232,9 +257,9 @@ paths:
     post:
       tags:
         - nfvi
-      summary: Push flows to the controller
+      summary: Push flow to the controller
       description: >-
-        Submit SDN flows to the default switch and table
+        Submit SDN flow to the default switch and table
       operationId: postNetworkRunningFlow
       parameters:
         - name: flow_id
@@ -1702,6 +1727,116 @@ definitions:
       details:
         type: string
         example: ""
+
+  GetNetworkFlowOutputReference:
+    type: string
+    example: {
+     "flow-node-inventory:table" : [
+        {
+           "id" : 0,
+           "opendaylight-flow-table-statistics:flow-table-statistics" : {
+              "packets-looked-up" : 32357,
+              "active-flows" : 3,
+              "packets-matched" : 0
+           },
+           "flow" : [
+              {
+                 "instructions" : {
+                    "instruction" : [
+                       {
+                          "apply-actions" : {
+                             "action" : [
+                                {
+                                   "output-action" : {
+                                      "output-node-connector" : "NORMAL",
+                                      "max-length" : 65535
+                                   },
+                                   "order" : 0
+                                }
+                             ]
+                          },
+                          "order" : 0
+                       }
+                    ]
+                 },
+                 "opendaylight-flow-statistics:flow-statistics" : {
+                    "duration" : {
+                       "nanosecond" : 771000000,
+                       "second" : 5
+                    },
+                    "byte-count" : 0,
+                    "packet-count" : 558
+                 },
+                 "id" : "L2switch-0",
+                 "idle-timeout" : 0,
+                 "table_id" : 0,
+                 "cookie" : 3098476543630901248,
+                 "match" : {},
+                 "hard-timeout" : 0,
+                 "priority" : 101
+              },
+              {
+                 "opendaylight-flow-statistics:flow-statistics" : {
+                    "packet-count" : 48710,
+                    "byte-count" : 0,
+                    "duration" : {
+                       "second" : 2121054,
+                       "nanosecond" : 929000000
+                    }
+                 },
+                 "id" : "#UF$TABLE*0-1",
+                 "idle-timeout" : 0,
+                 "table_id" : 0,
+                 "cookie" : 3098476543630901248,
+                 "match" : {},
+                 "hard-timeout" : 0,
+                 "priority" : 0
+              },
+              {
+                 "priority" : 100,
+                 "hard-timeout" : 0,
+                 "match" : {
+                    "ethernet-match" : {
+                       "ethernet-type" : {
+                          "type" : 35020
+                       }
+                    }
+                 },
+                 "cookie" : 3098476543630901248,
+                 "table_id" : 0,
+                 "idle-timeout" : 0,
+                 "id" : "#UF$TABLE*0-2",
+                 "opendaylight-flow-statistics:flow-statistics" : {
+                    "packet-count" : 0,
+                    "byte-count" : 0,
+                    "duration" : {
+                       "nanosecond" : 877000000,
+                       "second" : 2121054
+                    }
+                 },
+                 "instructions" : {
+                    "instruction" : [
+                       {
+                          "order" : 0,
+                          "apply-actions" : {
+                             "action" : [
+                                {
+                                   "order" : 0,
+                                   "output-action" : {
+                                      "max-length" : 65535,
+                                      "output-node-connector" : "CONTROLLER"
+                                   }
+                                }
+                             ]
+                          }
+                       }
+                    ]
+                 }
+              }
+           ]
+        }
+     ]
+  }
 
   GetNodeIdOutput:
     type: object

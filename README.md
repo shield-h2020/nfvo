@@ -438,30 +438,6 @@ curl -ki https://127.0.0.1:8448/nfvi/node -X POST \
 curl -ki https://127.0.0.1:8448/nfvi/node/5b2908871745ba000163bf9e -X DELETE
 ```
 
-#### Get SDN flows from vNSFO DB
-
-```
-curl -ik https://127.0.0.1:8448/nfvi/network/config/flows/L2switch-0
-```
-
-#### Get SDN flows from switch
-
-```
-curl -ik https://127.0.0.1:8448/nfvi/network/running/flows/L2switch-0
-```
-
-#### Push SDN flows to switch
-
-```
-curl -ik -H "Accept:application/xml" -H "Content-Type:application/xml" -X POST https://127.0.0.1:8448/nfvi/network/running/flows/L2switch-0 --data '<flow xmlns="urn:opendaylight:flow:inventory"><id>L2switch-0</id><hard-timeout>0</hard-timeout><idle-timeout>0</idle-timeout><cookie>3098476543630901248</cookie><instructions><instruction><order>0</order><apply-actions><action><order>0</order><output-action><max-length>65535</max-length><output-node-connector>NORMAL</output-node-connector></output-action></action></apply-actions></instruction></instructions><priority>100</priority><flow-statistics xmlns="urn:opendaylight:flow:statistics"><packet-count>0</packet-count><byte-count>0</byte-count><duration><nanosecond>42000000</nanosecond><second>2064</second></duration></flow-statistics><table_id>0</table_id></flow>'
-```
-
-#### Delete SDN flow from switch
-
-```
-curl -ik -X DELETE https://127.0.0.1:8448/nfvi/network/config/flows/L2switch-0
-```
-
 #### Isolate a node
 
 ```
@@ -497,6 +473,45 @@ curl -ki https://127.0.0.1:8448/nfvi/node/physical/trusted
 curl -ki https://127.0.0.1:8448/nfvi/node/virtual
 curl -ki https://127.0.0.1:8448/nfvi/node/virtual/isolated
 curl -ki https://127.0.0.1:8448/nfvi/node/virtual/trusted
+```
+
+#### Get SDN flows from the internal reference
+
+```
+curl -ik https://84.88.40.183:8448/nfvi/network/reference/flows
+```
+
+#### Get SDN flows from the internal database
+
+```
+# All flows
+curl -ik https://127.0.0.1:8448/nfvi/network/config/flows
+# Specific flow
+curl -ik https://127.0.0.1:8448/nfvi/network/config/flows/L2switch-0
+```
+
+#### Get SDN flows from the switch
+
+```
+# All flows
+curl -ik https://127.0.0.1:8448/nfvi/network/running/flows
+# Specific flow
+curl -ik https://127.0.0.1:8448/nfvi/network/running/flows/L2switch-0
+```
+
+#### Push SDN flows to switch
+
+```
+curl -ik -H "Accept:application/xml" -H "Content-Type:application/xml" -X POST https://127.0.0.1:8448/nfvi/network/running/flows/L2switch-0 --data '<flow xmlns="urn:opendaylight:flow:inventory"><id>L2switch-0</id><hard-timeout>0</hard-timeout><idle-timeout>0</idle-timeout><cookie>3098476543630901248</cookie><instructions><instruction><order>0</order><apply-actions><action><order>0</order><output-action><max-length>65535</max-length><output-node-connector>NORMAL</output-node-connector></output-action></action></apply-actions></instruction></instructions><priority>101</priority><flow-statistics xmlns="urn:opendaylight:flow:statistics"><packet-count>0</packet-count><byte-count>0</byte-count><duration><nanosecond>42000000</nanosecond><second>2064</second></duration></flow-statistics><table_id>0</table_id></flow>'
+```
+
+#### Delete SDN flow from switch
+
+```
+# All flows
+curl -ik -X DELETE https://127.0.0.1:8448/nfvi/network/config/flows
+# Specific flow
+curl -ik -X DELETE https://127.0.0.1:8448/nfvi/network/config/flows/L2switch-0
 ```
 
 # Testing

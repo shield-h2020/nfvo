@@ -128,7 +128,7 @@ class Network:
         flow_data = None
         # If node is not trusted after attestation; then restore the flows
         sdn_status = attestation_info_sdn.get("trust")
-        LOGGER.info("Status of SDN attestation: " + sdn_status)
+        LOGGER.info("Status of SDN attestation: {}".format(str(sdn_status)))
         if not sdn_status:
             flow_data = dict()
             flow_data["result"] = "flow_untrusted"
