@@ -107,9 +107,16 @@ class Server(object):
                         logger.debug("SSL context defined with " +
                                      "client verification")
 
-            serving.run_simple(
-                self.host, int(self.port), self._app,
-                ssl_context=context, use_reloader=False,
-                threaded=True)
+            if self.https_enabled:
+                serving.run_simple(
+                    self.host, int(self.port), self._app,
+                    ssl_context=context, use_reloader=False,
+                    threaded=True)
+            # No HTTPS required no "ssl_context" object at all
+            else:
+                serving.run_simple(
+                    self.host, int(self.port), self._app,
+                    use_reloader=False,
+                    threaded=True)
         finally:
             self._app._got_first_request = False

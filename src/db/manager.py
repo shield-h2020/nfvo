@@ -20,6 +20,7 @@ from bson.objectid import ObjectId
 from core.config import FullConfParser
 from core.log import setup_custom_logger
 from db.models.auth.auth import PasswordAuth, KeyAuth
+from db.models.infra.network_flow import NetworkFlow
 from db.models.infra.node import Node
 from db.models.isolation.isolation_policy import InterfaceDown
 from db.models.isolation.isolation_policy import DeleteFlow
@@ -69,11 +70,18 @@ class DBManager():
                 self.auth_source)
         me_connect(host=self.auth_db_address)
         self.collections = [
-                "resource.vnsf",
-                "resource.vnsf.action",
-                "topology.physical",
-                "topology.slice",
-                "topology.slice.sdn"
+                "delete_flow",
+                "interface_down",
+                "isolation_record",
+                "key_auth",
+                "network_flow",
+                "node",
+                "openstack_isolation",
+                "openstack_termination",
+                "password_auth",
+                "shutdown",
+                "vdu",
+                "vnf_action_request"
         ]
         self.client = pymongo.MongoClient(self.address, self.port)
         self._first_setup()
@@ -159,6 +167,67 @@ class DBManager():
         else:
             nodes = Node.objects(physical=physical)
         return self.__format_nodes(nodes)
+
+    def get_flows(self, filters={}):
+        """
+        Get flow according to an ID or multiple flows as saved previously.
+        Flows are returned ordered - from newest first to oldest in the end
+        """
+        if filters is not None:
+            # Expand filters from dictionary to parameters for mongoengine
+            flows = NetworkFlow.objects(**filters).order_by("-date")
+        else:
+            flows = NetworkFlow.objects().order_by("-date")
+        return flows
+
+    def store_flows(self, device_id, table_id, flow_id, flow, trusted=False):
+        """
+        Stores the flow or multiple flows and associated data.
+        """
+        try:
+            flow = NetworkFlow.objects(
+                                device_id=device_id,
+                                table_id=table_id,
+                                flow_id=flow_id)
+            if flow is not None:
+                flow.flow = flow
+            else:
+                flow = NetworkFlow(device_id=device_id,
+                                   table_id=table_id,
+                                   flow_id=flow_id,
+                                   flow=flow,
+                                   trusted=trusted)
+            flow.save()
+        except (OperationError, ValidationError):
+            # Rolling back
+            flow.delete()
+            e = "Cannot store network information (flows)"
+            raise Exception(e)
+        return str(flow.flow_id)
+
+    def delete_flows(self, device_id, table_id, flow_id=None, date=None):
+        """
+        Deletes the flow or flows determined by the parameters.
+        """
+        if flow_id is None and date is None:
+            flows = NetworkFlow.objects(device_id=device_id,
+                                        table_id=table_id)
+        elif flow_id is None and date is not None:
+            flows = NetworkFlow.objects(device_id=device_id,
+                                        table_id=table_id,
+                                        date=date)
+        elif flow_id is not None and date is None:
+            flows = NetworkFlow.objects(device_id=device_id,
+                                        table_id=table_id,
+                                        flow_id=flow_id)
+        flows.delete()
+
+    def delete_flows_untrusted(self, device_id, table_id):
+        """
+        Deletes all those flows which are not trusted.
+        """
+        flows = NetworkFlow.objects(trusted=False)
+        flows.delete()
 
     def get_nodes(self, node_id=None):
         """

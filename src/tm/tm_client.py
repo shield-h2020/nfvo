@@ -55,22 +55,38 @@ class TMClient:
                     "isolate": True,
                     "terminate": False}}]}
 
-    def get_attestation_info(self):
+    def get_attestation_data(self):
         url = "{0}://{1}:{2}/nfvi_attestation_info/".format(
             self.protocol, self.host, self.port)
+        attestation_info = dict()
         try:
             response = requests.get(url, verify=False, allow_redirects=True)
             attestation_info = json.loads(response.text)
-            nfvi_node = None
-            for host in attestation_info["hosts"]:
-                if host["node"] == self.default_node:
-                    nfvi_node = host
-            LOGGER.info("NFVI NODE")
-            LOGGER.info(json.dumps(nfvi_node, sort_keys=True, indent=4))
-            return nfvi_node
         except Exception as excp:
             LOGGER.error("Error getting attestation info")
             LOGGER.error(excp)
+        return attestation_info
+
+    def get_host_attestation(self):
+        attestation_info = self.get_attestation_data()
+        nfvi_node = None
+        for host in attestation_info["hosts"]:
+            if host["node"] == self.default_node:
+                nfvi_node = host
+        LOGGER.info("NFVI NODE")
+        LOGGER.info(json.dumps(nfvi_node, sort_keys=True, indent=4))
+        return nfvi_node
+
+    def get_sdn_attestation(self):
+        attestation_info = self.get_attestation_data()
+        sdn_node = None
+        for node in attestation_info["sdn"]:
+            # IMPORTANT: assumes one node only. The first one is fetched
+            sdn_node = node
+            break
+        LOGGER.info("SDN NODE")
+        LOGGER.info(json.dumps(sdn_node, sort_keys=True, indent=4))
+        return sdn_node
 
     def register_node(self, node_data):
         url = "{0}://{1}:{2}/register_node/".format(

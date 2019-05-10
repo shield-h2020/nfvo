@@ -209,7 +209,7 @@ class VnsfoNs:
                 if vim == self.docker_vim:
                     LOGGER.info("Getting attestation info ...")
                     trust_monitor_client = TMClient()
-                    remediation = trust_monitor_client.get_attestation_info()
+                    remediation = trust_monitor_client.get_host_attestation()
                     node = Node(vnfr_id)
                     LOGGER.info(remediation)
                     LOGGER.info(remediation.get("vnsfs"))

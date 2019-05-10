@@ -1,0 +1,14 @@
+[general]
+    # Delay between pushing any rule and attesting (in milliseconds)
+    push_delay = 10000
+
+[controller]
+    protocol = http
+    host = {{sdn_controller_ip}}
+    port = {{sdn_controller_port}}
+    username = {{sdn_controller_user}}
+    password = {{sdn_controller_password}}
+
+[infrastructure]
+    default_device = {{sdn_switch_dpid}}
+    default_table = 0

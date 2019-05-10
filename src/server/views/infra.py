@@ -21,12 +21,13 @@ from flask import abort
 from flask import Blueprint
 from flask import current_app
 from flask import request
+from infra.network import Network
+from infra.network import NetworkConnectException
 from infra.node import Node
 from infra.node import NodeSSHException
 from server.endpoints import VnsfoEndpoints as endpoints
 from server.http.http_code import HttpCode
 from server.http.http_response import HttpResponse
-from tm.tm_client import TMClient
 
 import bson
 
@@ -37,14 +38,103 @@ LOGGER = setup_custom_logger(__name__)
 nfvo_views = Blueprint("nfvo_infra_views", __name__)
 
 
-@nfvo_views.route(endpoints.NFVI_FLOW, methods=["GET"])
-def fetch_devices_flowtable():
-    Exception.not_implemented()
+@nfvo_views.route(endpoints.NFVI_NETWORK_REF_FLOWS, methods=["GET"])
+def get_network_reference_flows():
+    """
+    Fetch reference flows to be compared against those in the switch (by TM).
+    """
+    flows_data = Network().get_network_reference_flows()
+    return HttpResponse.json(HttpCode.OK, flows_data)
 
 
-@nfvo_views.route(endpoints.NFVI_TOPO, methods=["GET"])
-def fetch_network_topology():
-    Exception.not_implemented()
+@nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["GET"])
+@nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW_ID, methods=["GET"])
+def get_network_device_config_flows(flow_id=None):
+    """
+    Config in the vNSFO: DB
+    """
+    flows_data = Network().get_last_network_device_config_flow(flow_id)
+    return HttpResponse.json(HttpCode.OK, flows_data)
+
+
+@nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW, methods=["GET"])
+@nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW_ID, methods=["GET"])
+def get_network_device_running_flows(flow_id=None):
+    """
+    Config in the vNSFO: ODL
+    """
+    flows_data = Network().get_network_device_running_flows(flow_id)
+    return HttpResponse.json(HttpCode.OK, flows_data)
+
+
+@nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["POST"])
+@nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW_ID, methods=["POST"])
+def store_network_device_config_flow(flow_id=None, flow=None):
+    """
+    Config in the vNSFO: DB
+    """
+    exp_ct = "application/xml"
+    header_ct = request.headers.get("Content-Type", "")
+    if header_ct is not None and exp_ct not in header_ct:
+        Exception.invalid_content_type("Expected: {}".format(exp_ct))
+    flow = request.data
+    flow_data = Network().store_network_device_config_flow(flow_id, flow, True)
+    return HttpResponse.json(HttpCode.OK, flow_data)
+
+
+@nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW, methods=["POST"])
+@nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW_ID, methods=["POST"])
+def store_network_device_running_flow(flow_id=None, flow=None):
+    """
+    Running in the vNSFO: ODL
+    Stores data in running (and config)
+    """
+    exp_ct = ["application/xml", "application/json"]
+    header_ct = request.headers.get("Content-Type", "")
+    # Internal calls will come from other methods and provide a specific flag
+    # In such situations, the Content-Type will be defined internally
+    if header_ct is not None and not \
+            any(map(lambda ct: ct in header_ct, exp_ct)):
+        Exception.invalid_content_type("Expected: {}".format(exp_ct))
+    flow = request.data
+    Network().store_network_device_running_flow(flow_id, flow)
+    # Trigger attestation right after SDN rules are inserted
+    last_trusted_flow = Network()\
+        .get_last_network_device_config_flow().get("flow")
+    attest_data = None
+    try:
+        attest_data = Network().attest_and_revert_switch()
+    except NetworkConnectException as e:
+        Exception.internal_error(str(e))
+    if not attest_data or attest_data is None:
+        Exception.internal_error("Cannot attest status of the device(s)")
+    # Indicate whether the flows should keep the trusted state or not
+    # For externally (manually pushed) rules, mark these as trusted
+    is_device_trusted = True if attest_data.get("result", "") == \
+        "flow_trusted" else False
+    flow_data = None
+    # Save flow in "reference" DB (as untrusted) in case the state is trusted
+    flow_data = Network().store_network_device_config_flow(
+                flow_id, last_trusted_flow, False, is_device_trusted)
+    return HttpResponse.json(HttpCode.OK, flow_data)
+
+
+@nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["DELETE"])
+@nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW_ID, methods=["DELETE"])
+def delete_network_device_config_flow(flow_id=None):
+    flow_data = Network().delete_network_device_config_flow()
+    return HttpResponse.json(HttpCode.OK, flow_data)
+
+
+@nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW, methods=["DELETE"])
+@nfvo_views.route(endpoints.NFVI_NETWORK_R_FLOW_ID, methods=["DELETE"])
+def delete_network_device_running_flow(flow_id=None):
+    """
+    Running in the vNSFO: ODL
+    Deletes data from running only
+    """
+    flow_data = Network().delete_network_device_running_flow(flow_id)
+    return HttpResponse.json(HttpCode.OK, flow_data)
 
 
 @nfvo_views.route(endpoints.NFVI_NODE_ID, methods=["DELETE"])
@@ -160,7 +250,10 @@ def register_node():
     exp_ct = "application/json"
     if exp_ct not in request.headers.get("Content-Type", ""):
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
-    node_data = request.get_json()
+    node_data = request.get_json(silent=True)
+    if node_data is None:
+        Exception.improper_usage("Body content does not follow type: {0}"
+                                 .format(exp_ct))
     missing_params = check_node_params(node_data)
     if len(missing_params) > 0:
         Exception.improper_usage("Missing node parameters: {0}".format(
@@ -181,8 +274,8 @@ def register_node():
         Exception.improper_usage("Missing termination parameters: {0}".format(
             ", ".join(missing_termination_params)))
     node_id = current_app.mongo.store_node_information(node_data)
-    trust_monitor_client = TMClient()
-    trust_monitor_client.register_node(node_data)
+    if "switch" in node_data.get("driver", "").lower():
+        Network().attest_and_revert_switch()
     return HttpResponse.json(HttpCode.OK, {"node_id": node_id})
 
 
