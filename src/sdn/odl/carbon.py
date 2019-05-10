@@ -15,8 +15,10 @@
 # limitations under the License.
 
 import configparser
+import json
 import requests
 import urllib3
+import xmltodict
 
 from core.log import setup_custom_logger
 
@@ -53,7 +55,7 @@ class ODLCarbon():
         infra_category = config["infrastructure"]
         # Infrastructure - default values
         self.default_device = infra_category["default_device"]
-        self.default_table = infra_category["default_table"]
+        self.default_table = int(infra_category["default_table"])
         # General
         general_category = config["general"]
         self.push_delay = int(general_category["push_delay"])
@@ -69,10 +71,10 @@ class ODLCarbon():
         # Query information for all flows or for specific flow from ODL
         if flow_id is None:
             flows_config_url = self.flows_config_url.format(
-                    self.default_device, self.default_table)
+                    self.default_device, str(self.default_table))
         else:
             flows_config_url = self.flow_config_url.format(
-                    self.default_device, self.default_table, flow_id)
+                    self.default_device, str(self.default_table), flow_id)
         flows_config_url = "{}{}".format(self.base_url, flows_config_url)
         response = requests.get(flows_config_url,
                                 headers=self.headers,
@@ -88,10 +90,10 @@ class ODLCarbon():
         # Query information for all flows or for specific flow from the switch
         if flow_id is None:
             flows_oper_url = self.flows_oper_url.format(
-                    self.default_device, self.default_table)
+                    self.default_device, str(self.default_table))
         else:
             flows_oper_url = self.flow_oper_url.format(
-                    self.default_device, self.default_table, flow_id)
+                    self.default_device, str(self.default_table), flow_id)
         flows_oper_url = "{}{}".format(self.base_url, flows_oper_url)
         try:
             response = requests.get(flows_oper_url,
@@ -108,17 +110,15 @@ class ODLCarbon():
 
     def store_config_flow(self, flow_id, flow, device_id=None, table_id=None):
         flow_config_url = self.flow_config_url.format(
-                self.default_device, self.default_table, flow_id)
+                self.default_device, str(self.default_table), flow_id)
         flow_config_url = "{}{}".format(self.base_url, flow_config_url)
         self.headers.update({"Content-Type": "application/xml"})
         try:
-            print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& ODL . Carbon . store_config_flow -> flow = " + str(flow))
             response = requests.put(flow_config_url,
                                     headers=self.headers,
                                     data=flow,
                                     auth=(self.username, self.password),
                                     verify=False)
-            print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& ODL . Carbon . store_config_flow -> response = " + str(response.__dict__))
             result = "success" if response.status_code == \
                 requests.status_codes.codes.CREATED else "failure"
             details = response.text or ""
@@ -132,10 +132,10 @@ class ODLCarbon():
         # Query information for all flows or for specific flow from the switch
         if flow_id is None:
             flows_config_url = self.flows_config_url.format(
-                    self.default_device, self.default_table)
+                    self.default_device, str(self.default_table))
         else:
             flows_config_url = self.flow_config_url.format(
-                    self.default_device, self.default_table, flow_id)
+                    self.default_device, str(self.default_table), flow_id)
         flows_config_url = "{}{}".format(self.base_url, flows_config_url)
         try:
             response = requests.delete(
@@ -147,3 +147,21 @@ class ODLCarbon():
             return (result, details)
         except Exception as e:
             raise ODLException(e)
+
+    def convert_xml_flow_to_json(self, xml_data):
+        xml_parsed = xmltodict.parse(xml_data)
+        json_string = json.dumps(xml_parsed)
+        json_dict = json.loads(json_string)
+        # Purge keys invalid for ODL
+        keys_to_purge = ["@xmlns"]
+
+        def purge_invalid_keys(json_d):
+            if isinstance(json_d, dict):
+                for key, val in json_d.items():
+                    if json_d[key] is not None and len(json_d[key]) > 1:
+                        purge_invalid_keys(json_d[key])
+                    if key in keys_to_purge:
+                        del(json_d[key])
+            return json_d
+        jsonj_dict_copy = dict(json_dict)
+        return purge_invalid_keys(jsonj_dict_copy)

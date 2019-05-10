@@ -45,7 +45,6 @@ def get_network_reference_flows():
     """
     flows_data = Network().get_network_reference_flows()
     return HttpResponse.json(HttpCode.OK, flows_data)
-    #return HttpResponse.json_unformatted(HttpCode.OK, flows_data)
 
 
 @nfvo_views.route(endpoints.NFVI_NETWORK_C_FLOW, methods=["GET"])
@@ -65,7 +64,6 @@ def get_network_device_running_flows(flow_id=None):
     Config in the vNSFO: ODL
     """
     flows_data = Network().get_network_device_running_flows(flow_id)
-    print("******* flows_data = " + str(flows_data))
     return HttpResponse.json(HttpCode.OK, flows_data)
 
 
@@ -77,11 +75,9 @@ def store_network_device_config_flow(flow_id=None, flow=None):
     """
     exp_ct = "application/xml"
     header_ct = request.headers.get("Content-Type", "")
-    print("&&& ct? = " + str(header_ct))
     if header_ct is not None and exp_ct not in header_ct:
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
     flow = request.data
-    print("store network device config flow ---> flow = " + str(flow))
     flow_data = Network().store_network_device_config_flow(flow_id, flow, True)
     return HttpResponse.json(HttpCode.OK, flow_data)
 
@@ -97,42 +93,28 @@ def store_network_device_running_flow(flow_id=None, flow=None):
     header_ct = request.headers.get("Content-Type", "")
     # Internal calls will come from other methods and provide a specific flag
     # In such situations, the Content-Type will be defined internally
-    #print("&&& ct? = " + str(header_ct))
-    if header_ct is not None and any(map(lambda ct: ct in header_ct, exp_ct)):
+    if header_ct is not None and not any(map(lambda ct: ct in header_ct, exp_ct)):
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
     flow = request.data
-    print("1b--------------------- storing SDN rule/operational")
     Network().store_network_device_running_flow(flow_id, flow)
-    print("1e--------------------- storing SDN rule/operational")
     # Trigger attestation right after SDN rules are inserted
-    # print("&&&&&&&&& flow = " + str(flow))
-    print("&&&&&&&&& running flow = ")
-    print(Network().get_network_device_config_flows(flow_id))
-    print("&&&&&&&&& cfg flow = ")
     last_trusted_flow = Network().get_last_network_device_config_flow()\
                         .get("flow")
-    print(last_trusted_flow)
-    print("2b--------------------- attesting SDN rule")
     attest_data = None
     try:
         attest_data = Network().attest_and_revert_switch()
     except NetworkConnectException as e:
-        print("******** ATTEST - RAISED NetworkConnectException. Details: " + str(e))
         Exception.internal_error(str(e))
     if not attest_data or attest_data is None:
         Exception.internal_error("Cannot attest status of the device(s)")
-    print("2e--------------------- attesting SDN rule")
     # Indicate whether the flows should keep the trusted state or not
     # For externally (manually pushed) rules, mark these as trusted
     is_device_trusted = True if attest_data.get("result", "") == \
         "flow_trusted" else False
-    print("last_trusted_flow = " + str(last_trusted_flow))
-    print("3b--------------------- storing SDN rule/config")
-    flow_data = Network().store_network_device_config_flow(flow_id,
-            last_trusted_flow, True)
-    print("3e--------------------- storing SDN rule/config")
-    print("\n\n\n\nstore_network_device_running_flow --->")
-    print("flow_data received = " + str(flow_data))
+    flow_data = None
+    # Save flow in "reference" DB (as untrusted) in case the state is trusted
+    flow_data = Network().store_network_device_config_flow(
+                flow_id, last_trusted_flow, False, is_device_trusted)
     return HttpResponse.json(HttpCode.OK, flow_data)
 
 
@@ -268,7 +250,6 @@ def register_node():
     if exp_ct not in request.headers.get("Content-Type", ""):
         Exception.invalid_content_type("Expected: {}".format(exp_ct))
     node_data = request.get_json(silent=True)
-    print("node_data = " + str(node_data))
     if node_data is None:
         Exception.improper_usage("Body content does not follow type: {0}"
                                  .format(exp_ct))

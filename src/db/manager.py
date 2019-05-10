@@ -173,7 +173,6 @@ class DBManager():
         Get flow according to an ID or multiple flows as saved previously.
         Flows are returned ordered - from newest first to oldest in the end
         """
-        print("db --> filters = " + str(filters))
         if filters is not None:
             # Expand filters from dictionary to parameters for mongoengine
             flows = NetworkFlow.objects(**filters).order_by("-date")
@@ -186,22 +185,25 @@ class DBManager():
         Stores the flow or multiple flows and associated data.
         """
         try:
-            print("storing flows -> to store flow_id = " + str(flow_id))
-            print("storing flows -> to store flow = " + str(flow))
-            print("storing flows -> to store trusted = " + str(trusted))
-            flows = NetworkFlow(device_id=device_id,
+            flow = NetworkFlow.objects(
+                                device_id=device_id,
+                                table_id=table_id,
+                                flow_id=flow_id)
+            if flow is not None:
+                flow.flow = flow
+            else:
+                flow = NetworkFlow(device_id=device_id,
                                 table_id=table_id,
                                 flow_id=flow_id,
                                 flow=flow,
                                 trusted=trusted)
-            print("storing flows = " + str(flows.flow))
-            flows.save()
+            flow.save()
         except (OperationError, ValidationError):
             # Rolling back
-            flows.delete()
+            flow.delete()
             e = "Cannot store network information (flows)"
             raise Exception(e)
-        return str(flows.flow_id)
+        return str(flow.flow_id)
 
     def delete_flows(self, device_id, table_id, flow_id=None, date=None):
         """

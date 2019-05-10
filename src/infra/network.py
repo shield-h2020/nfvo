@@ -21,6 +21,7 @@ from sdn.odl.carbon import ODLCarbon
 from tm.tm_client import TMClient
 
 import copy
+import json
 import re
 import time
 
@@ -38,19 +39,22 @@ class Network:
         self.odl = ODLCarbon()
         config = FullConfParser()
         self.sdn_flow_reference = config.get("tm.sdn.reference.json")
-        print("SDN REFERENCE\n\n\n\n\n\n")
-        print(self.sdn_flow_reference)
 
     def get_network_reference_flows(self):
-        return self.sdn_flow_reference
+        reference_structure = dict()
+        reference_static_flows = self.sdn_flow_reference
+        reference_structure.update(reference_static_flows)
+        # TODO Besides taking the internal flows from the file, this should also
+        # retrieve flows from the database and format these appropriately
+        # (possibly converting from XML to JSON using the method
+        # "convert_xml_flow_to_json", available in the sdn/odl/carbon module)
+        return reference_structure
 
     def get_network_device_config_flows(self, flow_id=None):
         filters = {"trusted": True}
         if flow_id is not None:
             filters.update({"flow_id": flow_id})
-        print(".... filters = " + str(filters))
         flows = current_app.mongo.get_flows(filters)
-        print(".... flows = "  + str(flows))
         # Flows must be casted (from the initial queryset) to a list
         flows = list(flows)
         flows = self.process_flows_from_db(flows)
@@ -65,15 +69,18 @@ class Network:
         return flows_data
 
     def get_last_network_device_config_flow(self, flow_id=None):
+        """
+        Get the list of the most up-to-date flows in the internal config.
+        """
         flows = self.get_network_device_config_flows(flow_id)
         flow = None
+        # TODO Should return the last copy (in time) of each flow from the DB that is trusted
         if "flow" in flows.keys() and len(flows.get("flow")) > 0:
             if isinstance(flows.get("flow"), list):
                 flow = flows.get("flow")[-1]
                 if "flow" in flow:
                     flow = flow.get("flow")
                     flows["flow"] = flow
-        print("get_last_network_cfg_flow - flow and Trusted: " + str(flow))
         return flows
 
     def get_network_device_running_flows(self, flow_id=None):
@@ -88,7 +95,7 @@ class Network:
 
     def delete_network_device_config_flow(self, flow_id=None):
         current_app.mongo.delete_flows(
-                self.odl.default_device, self.odl.default_table, flow_id)
+                self.odl.default_device, str(self.odl.default_table), flow_id)
         flow_data = dict()
         flow_data["flow_id"] = flow_id
         flow_data["result"] = "deleted"
@@ -97,7 +104,7 @@ class Network:
 
     def delete_network_device_config_flow_untrusted(self, flow_id=None):
         current_app.mongo.delete_flows_untrusted(
-                self.odl.default_device, self.odl.default_table)
+                self.odl.default_device, str(self.odl.default_table))
         flow_data = dict()
         flow_data["flow_id"] = flow_id
         flow_data["result"] = "deleted"
@@ -115,68 +122,52 @@ class Network:
     def attest_and_revert_switch(self, trusted_flow=None):
         trust_monitor_client = TMClient()
         # Get initial data for newcomer attestation
-        print("^^^^^^^^^^^ attest_and_revert_switch . BEGIN attestation_info")
-        attestation_info = trust_monitor_client.get_attestation_info()
-        print("^^^^^^^^^^^ attest_and_revert_switch (real). END attestation_info = " + str(attestation_info))
-        # XXX DELETE
-        # attestation_info = {"sdn": [{"trust": False}]}
-        # print("^^^^^^^^^^^ attest_and_revert_switch (mocked). END attestation_info = " + str(attestation_info))
-        if not attestation_info:
+        attestation_info_sdn = trust_monitor_client.get_sdn_attestation()
+        # XXX REMOVE
+        # attestation_info_sdn = {"trust": False}
+        # XXX UNCOMMENT
+        if not attestation_info_sdn:
             raise NetworkConnectException("Cannot request attestation status")
-        attestation_info_sdn = attestation_info.get("sdn", {})
-        print("^^^^^^^^^^^ attest_and_revert_switch (real). END attestation_info_sdn = " + str(attestation_info_sdn))
         flow = None
         flow_data = None
-        for attest_sdn_switch in attestation_info_sdn:
-            print("Switch to check for trust => " + str(attest_sdn_switch))
-            # If node is not trusted after attestation; then restore the flows
-            # XXX UNCOMMENT
-            print(">>>>>>>>>>>>>> network - attestation is trusted = " + str(attest_sdn_switch.get("trust")))
-            if not attest_sdn_switch.get("trust"):
-                print("network - untrusted flow...")
-                flow_data = dict()
-                flow_data["result"] = "flow_untrusted"
-                if trusted_flow is None:
-                    # If flow installed in operational has failed, revert from config
-                    trusted_flow_data = self.get_last_network_device_config_flow()
-                    if trusted_flow_data.get("flow"):
-                        trusted_flow = trusted_flow_data.get("flow")
-                    if trusted_flow_data.get("id"):
-                        trusted_flow_id = trusted_flow_data.get("id")
-                trusted_flow_id = self.get_flow_id_from_flow(trusted_flow)
-                print("last_trusted_flow_id = " + str(trusted_flow))
-                print("last_trusted_flow = " + str(trusted_flow_id))
-                print("TRUSTed switch trust=")
-                print(str(attest_sdn_switch.get("trust")))
-                print("FLOWS BEFORE DELETE --> ")
-                # XXX REMOVE
-                print(str(self.get_network_device_running_flows()))
-                # Delete all untrusted config flows
-                self.delete_network_device_config_flow_untrusted()
-                # Delete all running flows
-                self.delete_network_device_running_flow()
-                flow_data["details"] = "Flow removed: {}".format(flow)
-                flow_data = self.store_network_device_running_flow(
-                        trusted_flow_id, trusted_flow)
-                print("FLOWS AFTER DELETE AND REVERT --> ")
-                print("1) Running flows:  ")
-                print(str(self.get_network_device_running_flows()))
-                print("2) Config flows:  ")
-                print(str(self.get_network_device_config_flows()))
-                # Important: only one switch is in place to be remediated
-                # If specific controller is expected (for some switch), then
-                # use 'attest_sdn_switch.get("node")' and data should be
-                # retrieved from 'conf/isolation.conf'
-                break
-        if flow_data is None:
+        # If node is not trusted after attestation; then restore the flows
+        sdn_status = attestation_info_sdn.get("trust")
+        LOGGER.info("Status of SDN attestation: " + sdn_status)
+        if not sdn_status:
             flow_data = dict()
-            flow_data["flow_id"] = None
-            flow_data["result"] = "flow_trusted"
-            flow_data["details"] = "Flow stored in DB: {}".format(flow)
+            flow_data["result"] = "flow_untrusted"
+            if trusted_flow is None:
+                # If flow installed in operational has failed, revert from config
+                trusted_flow_data = self.get_last_network_device_config_flow()
+                if trusted_flow_data.get("flow"):
+                    trusted_flow = trusted_flow_data.get("flow")
+                if trusted_flow_data.get("id"):
+                    trusted_flow_id = trusted_flow_data.get("id")
+            trusted_flow_id = self.get_flow_id_from_flow(trusted_flow)
+            LOGGER.info("Proceeding to delete all running flows in the switch")
+            # Delete all untrusted config flows
+            # self.delete_network_device_config_flow_untrusted()
+            # Delete all running flows
+            self.delete_network_device_running_flow()
+            flow_data["details"] = "Flow removed"
+            # Insert the ones previously stored and marked as trusted
+            LOGGER.info("Reverting to internal status with flow: {}\n"
+                    .format(str(trusted_flow)))
+            flow_data = self.store_network_device_running_flow(
+                    trusted_flow_id, trusted_flow)
+            # Important: only one switch is in place to be remediated
+            # If specific controller is expected (for some switch), then
+            # use 'attest_sdn_switch.get("node")' and data should be
+            # retrieved from 'conf/isolation.conf'
+            if flow_data is None:
+                flow_data = dict()
+                flow_data["flow_id"] = None
+                flow_data["result"] = "flow_trusted"
+                flow_data["details"] = "Flow stored in DB: {}".format(flow)
         return flow_data
 
     def store_network_device_config_flow(self, flow_id=None, flow=None,
-            trusted=False):
+            trusted=False, install=False):
         """
         Config in the vNSFO: DB
         """
@@ -184,13 +175,11 @@ class Network:
         # In such situations, the Content-Type will be defined internally
         # Otherwise, it may be fille from a previous request and be wrong
         # Also, store external (manually) pushed rules as trusted to ease workflow
-        if flow_id is not None and (flow is not None or len(flow) == 0):
+        if install and flow_id is not None and (flow is not None or len(flow) == 0):
             current_app.mongo.store_flows(self.odl.default_device,
-                                          self.odl.default_table, flow_id,
-                                          flow, trusted)
-            result = "installed"
-        else:
-            result = "not_installed"
+                                          str(self.odl.default_table),
+                                          flow_id, flow, trusted)
+        result = "installed" if install else "not_installed"
         flow_data = dict()
         # Get the flow ID from the flow passed in the body
         if flow_id is None:
@@ -209,16 +198,12 @@ class Network:
         # Get the flow ID from the flow passed in the body
         flow_id = self.get_flow_id_from_flow(flow)
         # Storing the flows in the running configuration and also into our DB
-        print("prior to storing flows (running) -> flow_id = " + str(flow_id))
-        print("prior to storing flows (running) -> flow = " + str(flow))
+        LOGGER.info("Pushing flow to switch and waiting for it. Flow: {}"
+                .format(str(flow)))
         result, details = self.odl.store_config_flow(
-                flow_id, flow, self.odl.default_device, self.odl.default_table)
-        print("\n\n\n\n\nCHANGED FLOWS (running)... RESULT = " + str(result))
-        print(", DETAILS = " + str(details))
+                flow_id, flow, self.odl.default_device, str(self.odl.default_table))
         # Wait after pushing the SDN rules, before any future attestation
-        print("## before sleeping ##")
         time.sleep(self.odl.push_delay / 1000.0)
-        print("## after sleeping ##")
         flow_data = dict()
         flow_data["flow_id"] = flow_id if flow_id else ""
         flow_data["result"] = result
