@@ -1,6 +1,6 @@
 [general]
     # Delay between pushing any rule and attesting (in milliseconds)
-    push_delay = 3000
+    push_delay = 10000
 
 [controller]
     protocol = http

@@ -61,7 +61,6 @@ class TMClient:
         attestation_info = dict()
         try:
             response = requests.get(url, verify=False, allow_redirects=True)
-            # print("^^^^^ tm_client . response = " + str(response.text))
             attestation_info = json.loads(response.text)
         except Exception as excp:
             LOGGER.error("Error getting attestation info")
